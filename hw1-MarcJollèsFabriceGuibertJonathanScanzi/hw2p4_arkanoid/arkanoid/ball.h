@@ -33,7 +33,7 @@ class Ball : public Element {
         }
 
         virtual void Init() {
-            Element::Init();
+            quad.Init(Quad::Circle);
             initVec();
         }
 

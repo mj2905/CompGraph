@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "position.h"
-#include "quad.h"
+#include "../quad/quad.h"
 #include <memory>
 
 class Element {

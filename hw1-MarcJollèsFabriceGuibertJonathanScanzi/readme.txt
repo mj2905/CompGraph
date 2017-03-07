@@ -1,37 +1,29 @@
 1.1 Triangle Spirals
 
-For this exercise, we had to draw multiple triangles on the screen, with different coordinates, sizes and rotations, to form a spiral (simple, or Fermat model). Thus, what we did was to draw the same triangle at different places, by using the Draw method multiple times, with different matrices for the model.
+For this exercise, we had to draw multiple triangles on the screen, with different coordinates, sizes and rotations, to form a spiral (simple, or Fermat model). Thus, what we do is to draw the same triangle at different places, by using the Draw method multiple times, with different matrices for the model.
 
-Since the Draw is called each frame, the use of a loop was deemed necessary to create a "static" spiral at each frame. Every spiral had different parameters, according to the two spiral definitions we had. The values of said parameters were determined empirically, by inspection of the reference screenshot and incremental correction of the code and the resulting images.
+Thus, we have to use a loop, and for each iteration, we have different constants (defined according to the Spiral or the Fermat model). We use these constants to create the model matrix, to draw the triangle.
 
 First, we choose to scale the triangle, so that it's scaling according to the window center (and there is no hidden translation or rotation). Then, we translate the scaled triangle to a position r in the x axis, so that we only need to rotate the result by an angle theta.
 
 1.2 Checkerboard
 
-For this exercise, we only had to modify the fragment shader. We had uv and colormap as inputs. In the "color = texture(colormap, value).rgb;" instruction, the value went from 0 to 1, corresponding to a scale going from red to green, with 0.5 being yellow.
-Given the x and y coordinates of uv, we needed to find an implicit function that would periodically create squares of values 0, 1 and transition (shortly) through 0.5, to obtain a checkerboard.
+For this exercise, we only had to modify the fragment shader. We have uv and colormap as inputs. In the "color = texture(colormap, value).rgb;" instruction, if the value is 0 we obtain red, if it's 0.5 we have yellow and if it's 1 we have green. Thus, we need to have a value which is between 0 and 1.
+Then, we have to create some squares, given the uv.x and uv.y coordinates. 
 
-The combination of a periodic function on the x axis with another periodic function of the y axis was intuitively supposed to give a periodic behaviour that would fit for our checkerboard. We went with a sin function: sin(coordinate * 2PI) is periodic.
-The implicit function is simply f(x,y, n) = sin(x * 2PI*n) * sin(y * 2PI*n), where n defines the number of squares of a given color we have per row.
-Now, we have just a small problem. Sin functions oscillate between -1 and 1, and our color value oscillates between 0 and 1.
-We just have to switch our function f(x,y,n) by 1, but then the value oscillates between 0 and 2, so we half it!
+Thus, if we do sin(uv.x * 2 * M_PI * nb_carreaux), we have a function which does nb_carreaux periods of the sinusoid in the uv.x interval [0, 1]. The same for sin(uv.y * 2 * M_PI * nb_carreaux) which does nb_carreaux periods of the sinusoid in the uv.y interval [0, 1]. 
 
-The last function we get is then g(x, y, n) = (f(x,y,n)+1)/2 = (sin(x * 2PI * n) * sin(y * 2PI * n))/2 + 0.5
-
-Note that doing a sum of sins (sin(2*PI*x*n+coeff) + sin(Y*2PI*n + coeff)) would also give a board, but with an angle of 45° on the left.
-
+If we multiply these two functions, we will get a 2D function which does the checkerboard, but with values between -1 and 1. We have to normalize it to the interval [0, 1], by dividing the result of the function by 2, and adding 0.5 to the result. We then have our value variable.
 
 1.3 Solar System
 
 For this exercise, we use 3 quads : one for the sun, one for the earth and one for the moon.
 
 We define some angles (sun_angle, earth_angle, moon_angle), depending on the time, in the Display() function.
-We define some x and y coordinates too, for the earth, for the ellipsoidal trajectory around the sun.
-Then, we create some matrices for the sun, earth and moon, so that we can create a matrix which depends on the other matrices (if the sun moves, the earth and the moon move too for example). Thus, one transformation ripples on every other, representing the entwined state of the three objects.
+We define too some x and y coordinates, for the earth, for the ellipsoidal trajectory around the sun.
+Then, we create some matrices for the sun, earth and moon, so that we can create a matrix which depends on the other matrices (if the sun moves, the earth and the moon move too for example).
 
 When we have created the matrices, we draw the quads using the matrices (multiplied by some other matrices as the scale for example, as it would complicate the previous matrices if we had to deal with them previously).
-
-Note that this time, as opposed to 1.1, there is no need for a while loop. This time, the objects and their positions are updated as a function of the current time (with periodic sin functions once again), and will naturally move on the screen.
 
 1.4 Arkanoid
 

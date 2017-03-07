@@ -13,10 +13,21 @@ class Quad {
         GLuint MVP_id_; // MVP matrix
 
     public:
-        void Init() {
+
+        enum TypeQuad {
+            Rectangle, Circle
+        };
+
+        void Init(const TypeQuad& type = Rectangle) {
             // compile the shaders
-            program_id_ = icg_helper::LoadShaders("quad_vshader.glsl",
-                                                  "quad_fshader.glsl");
+            if(type == Circle) {
+                program_id_ = icg_helper::LoadShaders("circle_vshader.glsl",
+                                                      "circle_fshader.glsl");
+            }
+            else {
+                program_id_ = icg_helper::LoadShaders("quad_vshader.glsl",
+                                                      "quad_fshader.glsl");
+            }
 
             if(!program_id_) {
                 exit(EXIT_FAILURE);
@@ -45,6 +56,28 @@ class Quad {
                 glEnableVertexAttribArray(vertex_point_id);
                 glVertexAttribPointer(vertex_point_id, 3, GL_FLOAT, DONT_NORMALIZE,
                                       ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+            }
+
+            // texture coordinates
+            {
+                const GLfloat vertex_texture_coordinates[] = { /*V1*/ 0.0f, 0.0f,
+                                                               /*V2*/ 1.0f, 0.0f,
+                                                               /*V3*/ 0.0f, 1.0f,
+                                                               /*V4*/ 1.0f, 1.0f};
+
+                // buffer
+                glGenBuffers(1, &vertex_buffer_object_);
+                glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object_);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_texture_coordinates),
+                             vertex_texture_coordinates, GL_STATIC_DRAW);
+
+                // attribute
+                GLuint vertex_texture_coord_id = glGetAttribLocation(program_id_,
+                                                                     "vtexcoord");
+                glEnableVertexAttribArray(vertex_texture_coord_id);
+                glVertexAttribPointer(vertex_texture_coord_id, 2, GL_FLOAT,
+                                      DONT_NORMALIZE, ZERO_STRIDE,
+                                      ZERO_BUFFER_OFFSET);
             }
 
             // Model View Project uniform

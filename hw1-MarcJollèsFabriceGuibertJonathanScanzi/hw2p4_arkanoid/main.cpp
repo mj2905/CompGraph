@@ -5,8 +5,8 @@
 // contains helper functions such as shader compiler
 #include "icg_helper.h"
 
-#include "quad/ball.h"
-#include "quad/paddle.h"
+#include "arkanoid/ball.h"
+#include "arkanoid/paddle.h"
 
 constexpr float SPEED = 1;
 
@@ -16,10 +16,10 @@ Ball ball(/* diameter */ 0.08f);
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
     if(key == GLFW_KEY_RIGHT && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-        paddle.incrementPos();
+        paddle.moveRight();
     }
     else if(key == GLFW_KEY_LEFT && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-        paddle.decrementPos();
+        paddle.moveLeft();
     }
     else if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);

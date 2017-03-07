@@ -17,12 +17,12 @@ class Paddle : public Element {
         //0.04f
         Paddle(float width, float height) : Element(new Position_Paddle(0, -0.7f), width, height) {}
 
-        void incrementPos() {
+        void moveRight() {
             vecx = step, vecy = 0;
             position->moveTo(demi_width, demi_height, vecx, vecy);
         }
 
-        void decrementPos() {
+        void moveLeft() {
             vecx = -step, vecy = 0;
             position->moveTo(demi_width, demi_height, vecx, vecy);
         }
