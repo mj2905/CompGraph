@@ -1,14 +1,14 @@
 1.1 Triangle Spirals
 
-For this exercise, we had to draw multiple triangles on the screen, with different coordinates, sizes and rotations, to form a spiral (simple, or Fermat model). Thus, what we did was to draw the same triangle at different places, by using the Draw method multiple times, with different matrices for the model.
+For this exercise, we had to draw multiple triangles on the screen, with different coordinates, sizes and rotations, to form a spiral (simple, or Fermat model). Thus, what we do is to draw the same triangle at different places, by using the Draw method multiple times, with different matrices for the model.
 
-Since the Draw is called each frame, the use of a loop was deemed necessary to create a "static" spiral at each frame. Every spiral had different parameters, according to the two spiral definitions we had. The values of said parameters were determined empirically, by inspection of the reference screenshot and incremental correction of the code and the resulting images.
+Thus, we have to use a loop, and for each iteration, we use different constants (defined according to the Spiral or the Fermat model). We use these constants to create the model matrix, to draw the triangle. The values used have been found empirically, by visual inspection with the reference screenshot.
 
 First, we choose to scale the triangle, so that it's scaling according to the window center (and there is no hidden translation or rotation). Then, we translate the scaled triangle to a position r in the x axis, so that we only need to rotate the result by an angle theta.
 
 1.2 Checkerboard
 
-For this exercise, we only had to modify the fragment shader. We have uv and colormap as inputs. In the "color = texture(colormap, value).rgb;" instruction, if the value is 0 we obtain red, if it's 0.5 we have yellow and if it's 1 we have green. Thus, we need to have a value which is between 0 and 1.
+For this exercise, we only had to modify the fragment shader. We have uv and colormap as inputs. In the "color = texture(colormap, value).rgb;" instruction, if the value is 0.0 we obtain red, if it's 0.5 we have yellow and if it's 1.0 we have green. Thus, we need to have a value which is between 0.0 and 1.0.
 Then, we have to create some squares, given the uv.x and uv.y coordinates. 
 
 Thus, if we do sin(uv.x * 2 * M_PI * nb_carreaux), we have a function which does nb_carreaux periods of the sinusoid in the uv.x interval [0, 1]. The same for sin(uv.y * 2 * M_PI * nb_carreaux) which does nb_carreaux periods of the sinusoid in the uv.y interval [0, 1]. 
