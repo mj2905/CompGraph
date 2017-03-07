@@ -27,10 +27,10 @@ When we have created the matrices, we draw the quads using the matrices (multipl
 
 1.4 Arkanoid
 
-(The skeleton for this part was the same as for the hw2p3_planets. The files added are all files in the quad directory, so ball.h, element.h, paddle.h, position.h, position_ball.h, position_paddle.h. The main.cpp was of course also modified).
+(The skeleton for this part was the same as for the hw2p3_planets. The files added are all files in the arkanoid directory, so ball.h, element.h, paddle.h, position.h, position_ball.h, position_paddle.h. The main.cpp was of course also modified. quad.h has been modified, circle_fshader and circle_vshader have been added for the ball).
 
 For this exercise, we created a lot of different classes, for the different existing objects.
-We have an element (which is the base of balls and paddles) which has a quad as representation, a position and some direction vectors for moving.
+We have the class element (which is the base of balls and paddles) which has a quad as visual representation, a position and some direction vectors for moving.
 
 The paddle can move by "step" (a constant defined in the paddle class) on the right or on the left, with some boundaries in -1 and 1.
 
@@ -38,4 +38,4 @@ The ball can be Updated, so that it will move in the direction (vecx, vecy) and 
 
 Position_Ball and Position_Paddle, subclasses of Position, allow us to define the behaviors of moving (given constraints), bounce against walls, and bounce against the paddle.
 
-In the main, we added the Update function, called after the Display, so that at each iteration of the game loop, we can update the state of the game (to move the ball, make it bounce against the paddle and check if it's the end of the game, to restart it right after).
+In the main, we added the Update function, called after the Display, so that at each iteration of the game loop, we can update the state of the game (to move the ball, make it bounce against the paddle and check if it's the end of the game, to reset/restart it right after).
