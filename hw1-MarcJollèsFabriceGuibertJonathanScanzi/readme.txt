@@ -26,10 +26,12 @@ Note that doing a sum of sins (sin(2*PI*x*n+coeff) + sin(Y*2PI*n + coeff)) would
 For this exercise, we use 3 quads : one for the sun, one for the earth and one for the moon.
 
 We define some angles (sun_angle, earth_angle, moon_angle), depending on the time, in the Display() function.
-We define too some x and y coordinates, for the earth, for the ellipsoidal trajectory around the sun.
-Then, we create some matrices for the sun, earth and moon, so that we can create a matrix which depends on the other matrices (if the sun moves, the earth and the moon move too for example).
+We define some x and y coordinates too, for the earth, for the ellipsoidal trajectory around the sun.
+Then, we create some matrices for the sun, earth and moon, so that we can create a matrix which depends on the other matrices (if the sun moves, the earth and the moon move too for example). Thus, one transformation ripples on every other, representing the entwined state of the three objects.
 
 When we have created the matrices, we draw the quads using the matrices (multiplied by some other matrices as the scale for example, as it would complicate the previous matrices if we had to deal with them previously).
+
+Note that this time, as opposed to 1.1, there is no need for a while loop. This time, the objects and their positions are updated as a function of the current time (with periodic sin functions once again), and will naturally move on the screen.
 
 1.4 Arkanoid
 
