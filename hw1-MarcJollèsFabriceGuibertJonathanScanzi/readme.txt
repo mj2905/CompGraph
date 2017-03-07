@@ -30,11 +30,11 @@ When we have created the matrices, we draw the quads using the matrices (multipl
 (The skeleton for this part was the same as for the hw2p3_planets. The files added are all files in the quad directory, so ball.h, element.h, paddle.h, position.h, position_ball.h, position_paddle.h. The main.cpp was of course also modified).
 
 For this exercise, we created a lot of different classes, for the different existing objects.
-We have an element (which is the base of balls and paddles) which has a quad as representation, a position and some direction vectors for moving.
+We have an element (which is the base of balls and paddles) which has a quad as representation, a position and some direction vectors representing movements.
 
-The paddle can move by "step" (a constant defined in the paddle class) on the right or on the left, with some boundaries in -1 and 1.
+The paddle can move by "step" (a constant defined in the paddle class) on the right or on the left, with boundaries in -1 and 1.
 
-The ball can be Updated, so that it will move in the direction (vecx, vecy) and bounce against the walls. It can also tell if it's under a fixed limit (for example under the paddle), and it can be reset to the initial position (if for example the ball is under the paddle).
+The ball can be updated, such that it will move in the desired direction (vecx, vecy) and bounce against the walls. It can also tell if it's under a fixed limit (for example under the paddle), and it can be reset to the initial position (if for example the ball is under the paddle).
 
 Position_Ball and Position_Paddle, subclasses of Position, allow us to define the behaviors of moving (given constraints), bounce against walls, and bounce against the paddle.
 
