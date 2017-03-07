@@ -2,7 +2,7 @@
 
 For this exercise, we had to draw multiple triangles on the screen, with different coordinates, sizes and rotations, to form a spiral (simple, or Fermat model). Thus, what we do is to draw the same triangle at different places, by using the Draw method multiple times, with different matrices for the model.
 
-Thus, we have to use a loop, and for each iteration, we have different constants (defined according to the Spiral or the Fermat model). We use these constants to create the model matrix, to draw the triangle.
+Thus, we have to use a loop, and for each iteration, we use different constants (defined according to the Spiral or the Fermat model). We use these constants to create the model matrix, to draw the triangle. The values used have been found empirically, by visual inspection with the reference screenshot.
 
 First, we choose to scale the triangle, so that it's scaling according to the window center (and there is no hidden translation or rotation). Then, we translate the scaled triangle to a position r in the x axis, so that we only need to rotate the result by an angle theta.
 
