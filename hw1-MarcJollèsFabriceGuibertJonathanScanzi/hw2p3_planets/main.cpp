@@ -7,12 +7,12 @@
 
 #include "quad/quad.h"
 
-constexpr float SPEED = 1;
+constexpr float SPEED = 2; //in days
 
 Quad sun, earth, moon;
 
-constexpr float X_SUN = 0.25f;
-constexpr float Y_SUN = 0;
+constexpr float X_CENTER_ELLIPSIS = -0.1f;
+constexpr float Y_CENTER_ELLIPSIS = 0;
 
 constexpr float SUN_SIZE = 0.45f;
 constexpr float EARTH_SIZE = 0.15f;
@@ -20,11 +20,11 @@ constexpr float MOON_SIZE = 0.07f;
 
 constexpr float DISTANCE_EARTH_MOON = 0.15f;
 
-constexpr float A_ELLIPSE = 0.8f;
-constexpr float B_ELLIPSE = 0.55f;
+constexpr float A_ELLIPSE = 0.7f; //width of ellipsis
+constexpr float B_ELLIPSE = 0.5f; //height of ellipsis
 
-constexpr float X_CENTER_TO_FOCUS = 0.3f;
-constexpr float Y_CENTER_TO_FOCUS = 0;
+const float X_CENTER_TO_FOCUS = 0.25; //distance between center of ellipsis and sun (focus)
+const float Y_CENTER_TO_FOCUS = 0; //distance between center of ellipsis and sun (focus)
 
 void Init() {
     // sets background color
@@ -64,27 +64,33 @@ glm::mat4 scale(float s) {
 void Display() {
     glClear(GL_COLOR_BUFFER_BIT);
     float time_s = glfwGetTime();
-    float virtual_time_s = SPEED * time_s;
+    float sun_time_s = SPEED * time_s;
+    float earth_time_s = SPEED * time_s;
+    float moon_time_s = SPEED * time_s;
 
-    float sun_angle = fmod(virtual_time_s, 2*M_PI);
-    float earth_angle = fmod(2*virtual_time_s, 2*M_PI);
-    float moon_angle = earth_angle;
+    float sun_omega = fmod(sun_time_s, 24.47f) * 2 * M_PI /24.47f;
+    float earth_rot_omega = fmod(sun_time_s, 365.0f) * 2 * M_PI /365.0f;
+    float earth_omega = fmod(earth_time_s, 1) * 2 * M_PI;
 
-    float x = A_ELLIPSE*cos(-sun_angle) - X_CENTER_TO_FOCUS;
-    float y = B_ELLIPSE*sin(-sun_angle) - Y_CENTER_TO_FOCUS;
+    float moon_omega = fmod(moon_time_s, 21.0f) * 2 * M_PI/21.0f;
+
+    float x_earth = A_ELLIPSE*cos(-earth_rot_omega) + X_CENTER_ELLIPSIS;
+    float y_earth = B_ELLIPSE*sin(-earth_rot_omega) + Y_CENTER_ELLIPSIS;
+
+    float x_moon = DISTANCE_EARTH_MOON * cos(moon_omega);
+    float y_moon = DISTANCE_EARTH_MOON * sin(moon_omega);
 
 
+    glm::mat4 sun_M = IDENTITY_MATRIX;
+    glm::mat4 earth_M = sun_M * translate(x_earth, y_earth);
+    glm::mat4 moon_M = earth_M * translate(x_moon, y_moon);
 
-    glm::mat4 sun_M = translate(X_SUN, Y_SUN);
-    glm::mat4 earth_M = sun_M*translate(x,y) * rotation(earth_angle);
-    glm::mat4 moon_M = earth_M * translate(DISTANCE_EARTH_MOON) * rotation(moon_angle);
 
+    sun.Draw(sun_M * translate(X_CENTER_ELLIPSIS + X_CENTER_TO_FOCUS, Y_CENTER_ELLIPSIS + Y_CENTER_TO_FOCUS) * rotation(sun_omega) * scale(SUN_SIZE/2.0f));
 
-    sun.Draw(sun_M * rotation(sun_angle) * scale(SUN_SIZE/2.0f));
+    earth.Draw(earth_M * rotation(earth_omega) * scale(EARTH_SIZE/2.0f));
 
-    earth.Draw(earth_M* scale(EARTH_SIZE/2.0f));
-
-    moon.Draw(moon_M* scale(MOON_SIZE/2.0f));
+    moon.Draw(moon_M * rotation(moon_omega) * scale(MOON_SIZE/2.0f));
 }
 
 void ErrorCallback(int error, const char* description) {

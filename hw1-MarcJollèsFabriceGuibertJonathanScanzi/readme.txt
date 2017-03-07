@@ -9,7 +9,7 @@ First, we choose to scale the triangle, so that it's scaling according to the wi
 1.2 Checkerboard
 
 For this exercise, we only had to modify the fragment shader. We had uv and colormap as inputs. In the "color = texture(colormap, value).rgb;" instruction, the value went from 0 to 1, corresponding to a scale going from red to green, with 0.5 being yellow.
-Given the x and y coordinates of uv, we neeeded to find an implicit function that would periodically create squares of values 0, 1 and transition (shortly) through 0.5, to obtain a checkerboard.
+Given the x and y coordinates of uv, we needed to find an implicit function that would periodically create squares of values 0, 1 and transition (shortly) through 0.5, to obtain a checkerboard.
 
 The combination of a periodic function on the x axis with another periodic function of the y axis was intuitively supposed to give a periodic behaviour that would fit for our checkerboard. We went with a sin function: sin(coordinate * 2PI) is periodic.
 The implicit function is simply f(x,y, n) = sin(x * 2PI*n) * sin(y * 2PI*n), where n defines the number of squares of a given color we have per row.
