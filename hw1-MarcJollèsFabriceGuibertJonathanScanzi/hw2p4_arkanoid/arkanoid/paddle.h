@@ -19,11 +19,11 @@ class Paddle : public Element {
 
         void moveRight() {
             vecx = step, vecy = 0;
-            position->moveTo(demi_width, demi_height, vecx, vecy);
+            position->moveTo(half_width, half_height, vecx, vecy);
         }
 
         void moveLeft() {
             vecx = -step, vecy = 0;
-            position->moveTo(demi_width, demi_height, vecx, vecy);
+            position->moveTo(half_width, half_height, vecx, vecy);
         }
 };

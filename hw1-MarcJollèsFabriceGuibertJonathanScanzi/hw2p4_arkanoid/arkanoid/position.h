@@ -21,29 +21,29 @@ class Position {
             this->y = y;
         }
 
-        float under(float limit, float demi_height) {
-            return y - demi_height < limit;
+        float under(float limit, float half_height) {
+            return y - half_height < limit;
         }
 
-        float bottomY(float demi_height) {
-            return y - demi_height;
+        float bottomY(float half_height) {
+            return y - half_height;
         }
 
-        float upY(float demi_height) {
-            return y + demi_height;
+        float upY(float half_height) {
+            return y + half_height;
         }
 
-        float leftX(float demi_width) {
-            return x - demi_width;
+        float leftX(float half_width) {
+            return x - half_width;
         }
 
-        float rightX(float demi_width) {
-            return x + demi_width;
+        float rightX(float half_width) {
+            return x + half_width;
         }
 
-        virtual void yBounce(float ybottom, float yup, float xleft, float xright, float demi_width, float demi_height, float& vecy) = 0;
+        virtual void yBounce(float ybottom, float yup, float xleft, float xright, float half_width, float half_height, float& vecy) = 0;
 
-        virtual void moveTo(float demi_width, float demi_height, float& vecx, float& vecy) = 0;
+        virtual void moveTo(float half_width, float half_height, float& vecx, float& vecy) = 0;
 
         virtual ~Position() {}
 

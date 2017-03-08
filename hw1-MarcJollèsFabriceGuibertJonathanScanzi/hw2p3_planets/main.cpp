@@ -7,7 +7,7 @@
 
 #include "quad/quad.h"
 
-constexpr float SPEED = 2; //in days
+constexpr float SPEED = 1; //in days
 
 Quad sun, earth, moon;
 
@@ -23,8 +23,12 @@ constexpr float DISTANCE_EARTH_MOON = 0.15f;
 constexpr float A_ELLIPSE = 0.7f; //width of ellipsis
 constexpr float B_ELLIPSE = 0.5f; //height of ellipsis
 
-const float X_CENTER_TO_FOCUS = 0.25; //distance between center of ellipsis and sun (focus)
-const float Y_CENTER_TO_FOCUS = 0; //distance between center of ellipsis and sun (focus)
+constexpr float X_CENTER_TO_FOCUS = 0.25f; //distance between center of ellipsis and sun (focus)
+constexpr float Y_CENTER_TO_FOCUS = 0; //distance between center of ellipsis and sun (focus)
+
+constexpr float NB_ROTATIONS_EARTH_YEAR = 365;
+constexpr float NB_DAYS_ROTATION_MOON = 27;
+constexpr float NB_DAYS_ROTATION_SUN = 24.47f;
 
 void Init() {
     // sets background color
@@ -68,11 +72,11 @@ void Display() {
     float earth_time_s = SPEED * time_s;
     float moon_time_s = SPEED * time_s;
 
-    float sun_omega = fmod(sun_time_s, 24.47f) * 2 * M_PI /24.47f;
-    float earth_rot_omega = fmod(sun_time_s, 365.0f) * 2 * M_PI /365.0f;
+    float sun_omega = fmod(sun_time_s, NB_DAYS_ROTATION_SUN) * 2 * M_PI / NB_DAYS_ROTATION_SUN;
+    float earth_rot_omega = fmod(sun_time_s, NB_ROTATIONS_EARTH_YEAR) * 2 * M_PI / NB_ROTATIONS_EARTH_YEAR;
     float earth_omega = fmod(earth_time_s, 1) * 2 * M_PI;
 
-    float moon_omega = fmod(moon_time_s, 21.0f) * 2 * M_PI/21.0f;
+    float moon_omega = fmod(moon_time_s, NB_DAYS_ROTATION_MOON) * 2 * M_PI / NB_DAYS_ROTATION_MOON;
 
     float x_earth = A_ELLIPSE*cos(-earth_rot_omega) + X_CENTER_ELLIPSIS;
     float y_earth = B_ELLIPSE*sin(-earth_rot_omega) + Y_CENTER_ELLIPSIS;
@@ -86,7 +90,8 @@ void Display() {
     glm::mat4 moon_M = earth_M * translate(x_moon, y_moon);
 
 
-    sun.Draw(sun_M * translate(X_CENTER_ELLIPSIS + X_CENTER_TO_FOCUS, Y_CENTER_ELLIPSIS + Y_CENTER_TO_FOCUS) * rotation(sun_omega) * scale(SUN_SIZE/2.0f));
+    sun.Draw(sun_M * translate(X_CENTER_ELLIPSIS + X_CENTER_TO_FOCUS, Y_CENTER_ELLIPSIS + Y_CENTER_TO_FOCUS)
+                   * rotation(sun_omega) * scale(SUN_SIZE/2.0f));
 
     earth.Draw(earth_M * rotation(earth_omega) * scale(EARTH_SIZE/2.0f));
 

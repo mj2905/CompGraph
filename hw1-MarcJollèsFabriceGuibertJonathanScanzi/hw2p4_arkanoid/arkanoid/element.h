@@ -12,7 +12,7 @@ class Element {
 
     protected:
         unique_ptr<Position> position;
-        float demi_width, demi_height;
+        float half_width, half_height;
         float vecx;
         float vecy;
 
@@ -20,13 +20,13 @@ class Element {
 
     public:
         Element(Position* position, float width, float height)
-            : position(position), demi_width(width/2.0f), demi_height(height/2.0f) {}
+            : position(position), half_width(width/2.0f), half_height(height/2.0f) {}
 
         virtual ~Element()  = 0;
         void otherBounce(Element& other) {
-            other.position->yBounce(position->bottomY(demi_height), position->upY(demi_height),
-                                    position->leftX(demi_width), position->rightX(demi_width),
-                                    other.demi_width, other.demi_height, other.vecy);
+            other.position->yBounce(position->bottomY(half_height), position->upY(half_height),
+                                    position->leftX(half_width), position->rightX(half_width),
+                                    other.half_width, other.half_height, other.vecy);
         }
 
         virtual void Init() {
@@ -40,7 +40,7 @@ class Element {
         }
 
         virtual void Draw() {
-            quad.Draw(position->translate(*position) * position->scale(demi_width, demi_height));
+            quad.Draw(position->translate(*position) * position->scale(half_width, half_height));
         }
 };
 

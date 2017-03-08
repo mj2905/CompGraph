@@ -11,16 +11,16 @@ class Position_Paddle : public Position {
     public:
         Position_Paddle(float x = 0, float y = 0) : Position(x,y) {}
 
-        virtual void yBounce(float ybottom, float yup, float xleft, float xright, float demi_width, float demi_height, float& vecy) {}
+        virtual void yBounce(float ybottom, float yup, float xleft, float xright, float half_width, float half_height, float& vecy) {}
 
-        virtual void moveTo(float demi_width, float demi_height, float& vecx, float& vecy) {
+        virtual void moveTo(float half_width, float half_height, float& vecx, float& vecy) {
             x = x + vecx;
-            if(x - demi_width < -1) {
-                x = -1 + demi_width;
+            if(x - half_width < -1) {
+                x = -1 + half_width;
             }
 
-            if(x + demi_width > 1) {
-                x = 1 - demi_width;
+            if(x + half_width > 1) {
+                x = 1 - half_width;
             }
         }
 };

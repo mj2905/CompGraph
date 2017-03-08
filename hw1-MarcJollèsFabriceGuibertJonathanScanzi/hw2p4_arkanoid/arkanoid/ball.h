@@ -24,7 +24,7 @@ class Ball : public Element {
         Ball(float diameter) : Element(new Position_Ball(0, 0), diameter, diameter) {}
 
         bool under(float limit) {
-            return position->under(limit, demi_height);
+            return position->under(limit, half_height);
         }
 
         void Reset() {
@@ -38,7 +38,7 @@ class Ball : public Element {
         }
 
         void Update() {
-            position->moveTo(demi_width, demi_height, vecx, vecy);
+            position->moveTo(half_width, half_height, vecx, vecy);
             if(abs(vecx) < 0.04f && abs(vecy) < 0.04f) {
                 vecx *= 1.0001;
                 vecy *= 1.0001;
