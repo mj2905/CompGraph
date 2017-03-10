@@ -48,7 +48,24 @@ mat4 OrthographicProjection(float left, float right, float bottom,
 mat4 PerspectiveProjection(float fovy, float aspect, float near, float far) {
     // TODO 1: Create a perspective projection matrix given the field of view,
     // aspect ratio, and near and far plane distances.
-    mat4 projection = IDENTITY_MATRIX;
+
+    fovy *= M_PI/180.0f; //to transform to radians
+
+    float top = near * tan(fovy);
+    float bottom = -top;
+    float right = top * aspect;
+    float left = -right;
+
+    float r_minus_l = right - left;
+    float f_minus_n = far - near;
+    float t_minus_b = top - bottom;
+
+    mat4 projection = glm::mat4(
+                2*near/r_minus_l,         0,                        0,                        0,
+                0,                        2*near/t_minus_b,         0,                        0,
+                (right + left)/r_minus_l, (top + bottom)/t_minus_b, -(far + near)/f_minus_n,  -1,
+                0,                        0,                        -2*far*near/f_minus_n,    0
+                );
     return projection;
 }
 
@@ -99,7 +116,7 @@ void Init() {
     view_matrix = LookAt(vec3(2.0f, 2.0f, 4.0f),
                          vec3(0.0f, 0.0f, 0.0f),
                          vec3(0.0f, 1.0f, 0.0f));
-    // view_matrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, -4.0f));
+    view_matrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, -4.0f));
 
     trackball_matrix = IDENTITY_MATRIX;
 
@@ -158,6 +175,8 @@ void MousePos(GLFWwindow* window, double x, double y) {
         // trackball.Drag(...) and the value stored in 'old_trackball_matrix'.
         // See also the mouse_button(...) function.
         // trackball_matrix = ...
+
+        trackball_matrix = trackball.Drag(p.x, p.y) * old_trackball_matrix;
     }
 
     // zoom
@@ -181,12 +200,12 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, window_width, window_height);
 
     // TODO 1: Use a perspective projection instead;
-    // projection_matrix = PerspectiveProjection(45.0f,
-    //                                           (GLfloat)window_width / window_height,
-    //                                           0.1f, 100.0f);
-    GLfloat top = 1.0f;
-    GLfloat right = (GLfloat)window_width / window_height * top;
-    projection_matrix = OrthographicProjection(-right, right, -top, top, -10.0, 10.0f);
+    projection_matrix = PerspectiveProjection(45.0f,
+                                              (GLfloat)window_width / window_height,
+                                              0.1f, 100.0f);
+    //GLfloat top = 1.0f;
+    //GLfloat right = (GLfloat)window_width / window_height * top;
+    //projection_matrix = OrthographicProjection(-right, right, -top, top, -10.0, 10.0f);
 }
 
 void ErrorCallback(int error, const char* description) {

@@ -33,10 +33,21 @@ public:
       // you might want to scale the rotation magnitude by a scalar factor.
       // p.s. No need for using complicated quaternions as suggested inthe wiki
       // article.
+
+      const float SPEED = 1.0;
+      float angle = SPEED * acos(dot(anchor_pos_, current_pos)/(length(anchor_pos_) * length(current_pos)));
+
+      rotation = rotate(mat4(1.0f), angle, cross(anchor_pos_, current_pos));
+
       return rotation;
     }
 
 private:
+
+    float sq(float x) const {
+        return x*x;
+    }
+
     // projects the point p (whose z coordiante is still empty/zero) onto the
     // trackball surface. If the position at the mouse cursor is outside the
     // trackball, use a hyberbolic sheet as explained in:
@@ -44,6 +55,17 @@ private:
     // The trackball radius is given by 'radius_'.
     void ProjectOntoSurface(vec3& p) const {
       // TODO 2: Implement this function. Read above link for details.
+        float rSq = sq(radius_);
+        float xSq = sq(p.x);
+        float ySq = sq(p.y);
+
+        if(xSq + ySq <= rSq) {
+            p.z = sqrt(rSq - (xSq + ySq));
+        }
+        else {
+            p.z = rSq/2 * pow(xSq + ySq, -0.5f);
+        }
+
     }
 
     float radius_;
