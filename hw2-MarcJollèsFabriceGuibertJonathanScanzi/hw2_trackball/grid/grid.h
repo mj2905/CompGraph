@@ -40,17 +40,25 @@ class Grid {
                 // your grid should have the same dimension as that quad, i.e.,
                 // reach from [-1, -1] to [1, 1].
 
-                // vertex position of the triangles.
-                vertices.push_back(-1.0f); vertices.push_back( 1.0f);
-                vertices.push_back( 1.0f); vertices.push_back( 1.0f);
-                vertices.push_back( 1.0f); vertices.push_back(-1.0f);
-                vertices.push_back(-1.0f); vertices.push_back(-1.0f);
+                for(size_t y = 0; y <= grid_dim; ++y) {
+                    for(size_t x = 0; x <= grid_dim; ++x) {
 
-                // and indices.
-                indices.push_back(0);
-                indices.push_back(1);
-                indices.push_back(3);
-                indices.push_back(2);
+                        //values bet -1 and 1.
+                        float left = (float)x/grid_dim * 2 - 1;
+                        float down = (float)y/grid_dim * 2 - 1;
+
+                        vertices.push_back(left); vertices.push_back(down);
+
+                        if(x < grid_dim and y < grid_dim) {
+                            indices.push_back(x + (grid_dim+1)*y);
+                            indices.push_back(x+1 + (grid_dim+1)*y);
+                            indices.push_back(x+1 + (grid_dim+1)*(y+1));
+                            indices.push_back(x + (grid_dim+1)*y);
+                            indices.push_back(x+1 + (grid_dim+1)*(y+1));
+                            indices.push_back(x + (grid_dim+1)*(y+1));
+                        }
+                    }
+                }
 
                 num_indices_ = indices.size();
 
@@ -150,7 +158,7 @@ class Grid {
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             // TODO 5: depending on how you set up your vertex index buffer, you
             // might have to change GL_TRIANGLE_STRIP to GL_TRIANGLES.
-            glDrawElements(GL_TRIANGLE_STRIP, num_indices_, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
 
             glBindVertexArray(0);
             glUseProgram(0);
