@@ -27,6 +27,8 @@ mat4 old_trackball_matrix;
 mat4 cube_scale;
 mat4 quad_model_matrix;
 
+double old_y;
+
 Trackball trackball;
 
 mat4 OrthographicProjection(float left, float right, float bottom,
@@ -166,6 +168,7 @@ void MouseButton(GLFWwindow* window, int button, int action, int mod) {
         old_trackball_matrix = trackball_matrix;
         // Store the current state of the model matrix.
     }
+    old_y = -2;
 }
 
 void MousePos(GLFWwindow* window, double x, double y) {
@@ -175,7 +178,6 @@ void MousePos(GLFWwindow* window, double x, double y) {
         // trackball.Drag(...) and the value stored in 'old_trackball_matrix'.
         // See also the mouse_button(...) function.
         // trackball_matrix = ...
-
         trackball_matrix = trackball.Drag(p.x, p.y) * old_trackball_matrix;
     }
 
@@ -186,6 +188,14 @@ void MousePos(GLFWwindow* window, double x, double y) {
         // should zoom out and it. For that you have to update the current
         // 'view_matrix' with a translation along the z axis.
         // view_matrix = ...
+
+        vec2 p = TransformScreenCoords(window, x, y);
+        if(old_y < -1.5) {
+            old_y = p.y;
+        }
+
+        view_matrix = translate(view_matrix, vec3(0.0, 0.0, p.y - old_y));
+        old_y = p.y;
     }
 }
 

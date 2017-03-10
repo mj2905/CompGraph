@@ -34,7 +34,7 @@ public:
       // p.s. No need for using complicated quaternions as suggested inthe wiki
       // article.
 
-      const float SPEED = 1.0;
+      const float SPEED = 2.0;
       float angle = SPEED * acos(dot(anchor_pos_, current_pos)/(length(anchor_pos_) * length(current_pos)));
 
       rotation = rotate(mat4(1.0f), angle, cross(anchor_pos_, current_pos));
