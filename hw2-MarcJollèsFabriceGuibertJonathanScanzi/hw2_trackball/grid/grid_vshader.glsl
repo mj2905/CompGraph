@@ -9,6 +9,8 @@ uniform float time;
 
 #define M_PI 3.1415926535897932384626433832795
 
+#define Water (1)
+
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
 
@@ -17,10 +19,21 @@ void main() {
     // TODO 6: animate the height of the grid points as a sine function of the
     // 'time' and the position ('uv') within the grid.
 
+#if(!Water)
     float frequency = 2.0f;
-    float amplitude = 0.1f;
+    float amplitude = 0.08f;
 
     float height = amplitude * sin(2 * M_PI * frequency * (uv.x + uv.y) + time);
+
+#else
+    float x = uv.x - 0.5;
+    float y = uv.y - 0.5;
+    float r = sqrt(x*x + y*y);
+
+    float attenuation = 1/(1+mod(time/2.0f, 20));
+
+    float height =  attenuation*0.2f*exp(-3*r)*sin(2 * M_PI * 3 * r + 10*time);
+#endif
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
 
