@@ -46,10 +46,7 @@ class Grid {
                 for(size_t y = 0; y < grid_dim; ++y) {
                     for(size_t x = 0; x < grid_dim; ++x) {
 
-                        //values bet -1 and 1.
-                        //float left = (float)x/grid_dim * 2 - 1;
-                        //float down = (float)y/grid_dim * 2 - 1;
-
+                        //values bet -1 and 1
                         float left = (x - middle)/middle;
                         float down = (y - middle)/middle;
 
