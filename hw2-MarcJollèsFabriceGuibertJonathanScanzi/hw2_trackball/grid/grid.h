@@ -40,22 +40,28 @@ class Grid {
                 // your grid should have the same dimension as that quad, i.e.,
                 // reach from [-1, -1] to [1, 1].
 
-                for(size_t y = 0; y <= grid_dim; ++y) {
-                    for(size_t x = 0; x <= grid_dim; ++x) {
+                float middle = (grid_dim-1)/2.0f;
+
+
+                for(size_t y = 0; y < grid_dim; ++y) {
+                    for(size_t x = 0; x < grid_dim; ++x) {
 
                         //values bet -1 and 1.
-                        float left = (float)x/grid_dim * 2 - 1;
-                        float down = (float)y/grid_dim * 2 - 1;
+                        //float left = (float)x/grid_dim * 2 - 1;
+                        //float down = (float)y/grid_dim * 2 - 1;
+
+                        float left = (x - middle)/middle;
+                        float down = (y - middle)/middle;
 
                         vertices.push_back(left); vertices.push_back(down);
 
-                        if(x < grid_dim and y < grid_dim) {
-                            indices.push_back(x + (grid_dim+1)*y);
-                            indices.push_back(x+1 + (grid_dim+1)*y);
-                            indices.push_back(x+1 + (grid_dim+1)*(y+1));
-                            indices.push_back(x + (grid_dim+1)*y);
-                            indices.push_back(x+1 + (grid_dim+1)*(y+1));
-                            indices.push_back(x + (grid_dim+1)*(y+1));
+                        if(x < grid_dim-1 and y < grid_dim-1) {
+                            indices.push_back(x + (grid_dim)*y);
+                            indices.push_back(x+1 + (grid_dim)*y);
+                            indices.push_back(x+1 + (grid_dim)*(y+1));
+                            indices.push_back(x + (grid_dim)*y);
+                            indices.push_back(x+1 + (grid_dim)*(y+1));
+                            indices.push_back(x + (grid_dim)*(y+1));
                         }
                     }
                 }

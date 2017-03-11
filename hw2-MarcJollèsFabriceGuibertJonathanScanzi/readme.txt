@@ -17,3 +17,6 @@ Then, we allow the user to use the mouse to rotate the trackball : when the user
 
 Finally, when the user uses the right mouse button, we want to have a zoom functionality. We do the same transformation of the x and y positions of the mouse to normalized coordinates. We then keep somewhere (in old_y) the previous coordinates of the mouse, so that we can translate the view matrix by the new y minus the old y. Thus, instead of zooming with respect to the position on the screen, we zoom with respect to the previous position on the screen.
 
+3 Triangle Grid And Animation
+
+For this part, we want to do a grid of 100x100 squares
