@@ -35,9 +35,11 @@ public:
       // article.
 
       const float SPEED = 2.0;
-      float angle = SPEED * acos(dot(anchor_pos_, current_pos)/(length(anchor_pos_) * length(current_pos)));
+      vec3 v1 = normalize(anchor_pos_);
+      vec3 v2 = normalize(current_pos);
+      float angle = SPEED * acos(dot(v1,v2));
 
-      rotation = rotate(mat4(1.0f), angle, cross(anchor_pos_, current_pos));
+      rotation = rotate(mat4(1.0f), angle, cross(v1,v2));
 
       return rotation;
     }
