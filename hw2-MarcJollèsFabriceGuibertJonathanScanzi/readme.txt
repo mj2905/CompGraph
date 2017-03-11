@@ -19,4 +19,51 @@ Finally, when the user uses the right mouse button, we want to have a zoom funct
 
 3 Triangle Grid And Animation
 
-For this part, we want to do a grid of 100x100 squares
+For this part, we want to do a grid of 100x100 vertices. We have to use a loop to insert all vertices and indices to the vectors.
+For the formulas, we will explain for a grid_dim of 3, but it can be easily generalized to a 100x100 grid.
+
+In the loops, we have indices : x and y. They can be used to know which is the current point id using the formula x + (grid_dim)*y.
+
+We know that these indices lie between 0 and grid_dim-1.
+
+we want that for an index of 0, we get the coordinate -1, for the index grid_dim-1 a coordinate of 1 and homogeneously distributed coordinates between these two. 
+We come to the formula (index - middle)/middle, with middle = (grid_dim-1)/2. 
+A quick check tells us that these formulas work :
+
+For a grid_dim of 3, we get middle = 1.
+we then have the coordinates
+(0-1)/1 = -1
+(1-1)/1 = 0
+(2-1)/1 = 1
+
+We then can have for each new pair of indices (x,y) the coordinates (left, down) of a new and unique vertex.
+
+Then, we must link these vertices between them, so that we have triangles.
+If we do the following :
+indices.push_back(x + (grid_dim)*y);
+indices.push_back(x+1 + (grid_dim)*y);
+indices.push_back(x+1 + (grid_dim)*(y+1));
+We do link the point with its right-x-neighbor, and this neighbor with its up-y-neighbor. We thus have a triangle. 
+We apply the same principle to the other triangle of the square.
+As we know that the right-most and upper-most vertices don't have right-x and up-y neighbors, we don't do the triangle link (they were already linked to other triangles, and we don't need to have more triangles, we already have our complete grid).
+
+For the animation part, all we have to do is to use uv.x + uv.y as t in A*sin(2*pi*f*t + phi). We then have to give values to the amplitude A and the frequency f. For phi, as it's the shifting of the function, we put time in there, so that we do have an animation with respect to the time.
+
+
+
+4 Water animation
+
+In the same file as before, if we put Water to 1 in the #define, we can see that we do have another animation.
+In fact, instead of using uv.x + uv.y as t in the sinusoid, we use r, which is the polar distance between the center and (uv.x, uv.y).
+
+For the amplitude, as we want the sinusoid to be less and less big until we reach the boundaries, we put an exp(-r) in it. 
+We do put also an attenuation factor, so that after a certain amount of time, the water becomes more and more still. The animation loops every 40 seconds.
+
+
+
+
+
+
+
+
+

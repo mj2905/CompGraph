@@ -9,7 +9,7 @@ uniform float time;
 
 const float M_PI = 3.1415926535897932384626433832795;
 
-#define Water (1)
+#define Water (0)
 
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
@@ -32,7 +32,10 @@ void main() {
 
     float attenuation = 1/(1+mod(time/2.0f, 20));
 
-    float height =  attenuation*0.2f*exp(-3*r)*sin(2 * M_PI * 3 * r + 10*time);
+    float frequency = 3.0f;
+    float amplitude = attenuation*0.2f*exp(-3*r);
+
+    float height =  amplitude*sin(2 * M_PI * frequency * r + 10*time);
 #endif
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
