@@ -46,7 +46,7 @@ mat4 OrthographicProjection(float left, float right, float bottom,
     projection[3][2] = -(far + near) / (far - near);
     return projection;
 }
-
+/*
 mat4 PerspectiveProjection(float fovy, float aspect, float near, float far) {
     // TODO 1: Create a perspective projection matrix given the field of view,
     // aspect ratio, and near and far plane distances.
@@ -69,6 +69,19 @@ mat4 PerspectiveProjection(float fovy, float aspect, float near, float far) {
                 0,                        0,                        -2*far*near/f_minus_n,    0
                 );
     return projection;
+}*/
+
+mat4 PerspectiveProjection(float fovy, float aspect, float near, float far) {
+    // TODO 1: Create a perspective projection matrix given the field of view,
+    // aspect ratio, and near and far plane distances.
+
+    mat4 pro = mat4(0);
+    pro[0][0] = 1.0/(aspect*tan(fovy/2)); // near/right = near/(top*aspect) = near/(near*tan(fovy/2)*aspect) = 1/(tan(fovy/2) * aspect)
+    pro[1][1] = 1.0/tan(fovy/2); // near/top = near/(near*tan(fovy/2)) = 1 / tan(fovy/2)
+    pro[3][2] = -2.0*far*near/(far - near); // no simplification possible here :(
+    pro[2][2] = -1.0*(far+near)/(far-near); // again, nothing to be simplified :(
+    pro[2][3] = -1.0;
+    return pro; // we already transposed the matrix (since it's column major!) so no need to transpose it again
 }
 
 mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
