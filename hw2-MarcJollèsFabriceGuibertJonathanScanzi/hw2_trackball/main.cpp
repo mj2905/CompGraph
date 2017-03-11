@@ -46,38 +46,16 @@ mat4 OrthographicProjection(float left, float right, float bottom,
     projection[3][2] = -(far + near) / (far - near);
     return projection;
 }
-/*
-mat4 PerspectiveProjection(float fovy, float aspect, float near, float far) {
-    // TODO 1: Create a perspective projection matrix given the field of view,
-    // aspect ratio, and near and far plane distances.
-
-    fovy *= M_PI/180.0f; //to transform to radians
-
-    float top = near * tan(fovy);
-    float bottom = -top;
-    float right = top * aspect;
-    float left = -right;
-
-    float r_minus_l = right - left;
-    float f_minus_n = far - near;
-    float t_minus_b = top - bottom;
-
-    mat4 projection = glm::mat4(
-                2*near/r_minus_l,         0,                        0,                        0,
-                0,                        2*near/t_minus_b,         0,                        0,
-                (right + left)/r_minus_l, (top + bottom)/t_minus_b, -(far + near)/f_minus_n,  -1,
-                0,                        0,                        -2*far*near/f_minus_n,    0
-                );
-    return projection;
-}*/
 
 mat4 PerspectiveProjection(float fovy, float aspect, float near, float far) {
     // TODO 1: Create a perspective projection matrix given the field of view,
     // aspect ratio, and near and far plane distances.
+
+    fovy *= M_PI/180.0f;
 
     mat4 pro = mat4(0);
-    pro[0][0] = 1.0/(aspect*tan(fovy/2)); // near/right = near/(top*aspect) = near/(near*tan(fovy/2)*aspect) = 1/(tan(fovy/2) * aspect)
-    pro[1][1] = 1.0/tan(fovy/2); // near/top = near/(near*tan(fovy/2)) = 1 / tan(fovy/2)
+    pro[0][0] = 1.0/(aspect*tan(fovy)); // near/right = near/(top*aspect) = near/(near*tan(fovy/2)*aspect) = 1/(tan(fovy/2) * aspect)
+    pro[1][1] = 1.0/tan(fovy); // near/top = near/(near*tan(fovy/2)) = 1 / tan(fovy/2)
     pro[3][2] = -2.0*far*near/(far - near); // no simplification possible here :(
     pro[2][2] = -1.0*(far+near)/(far-near); // again, nothing to be simplified :(
     pro[2][3] = -1.0;
