@@ -61,11 +61,11 @@ private:
         float xSq = sq(p.x);
         float ySq = sq(p.y);
 
-        if(xSq + ySq <= rSq) {
+        if(xSq + ySq <= rSq/2.0f) {
             p.z = sqrt(rSq - (xSq + ySq));
         }
         else {
-            p.z = rSq/2 * pow(xSq + ySq, -0.5f);
+            p.z = rSq/2.0f * pow(xSq + ySq, -0.5f);
         }
 
     }
