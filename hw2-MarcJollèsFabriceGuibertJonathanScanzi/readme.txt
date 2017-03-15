@@ -5,7 +5,7 @@ We had to be careful about the angle, which is given in degrees and must be conv
 
 2 Trackball
 
-For this part, we had to implement ProjectOntoSurface (with a given x and a y, the aim is to compute the z component such that the resulting point sits on the trackball surface, or if it's outside the trackball, on a hyperbolic sheet). Doing this only required us to implement the publicly available formulas in our code, according to the x^2 + y^2 > r^2 condition.
+For this part, we had to implement ProjectOntoSurface (with a given x and a y, the aim is to compute the z component such that the resulting point sits on the trackball surface, or if it's outside the trackball, on a hyperbolic sheet). Doing this only required us to implement the publicly available formulas in our code, according to the x^2 + y^2 > r^2/2 condition.
 
 We also had to implement Drag. From two vectors (the anchor and the current position), it defines the rotation which should be applied to the object.
 To do this, we have to know the angle between the two vectors, which can be obtained by the dot product between these two vectors:
