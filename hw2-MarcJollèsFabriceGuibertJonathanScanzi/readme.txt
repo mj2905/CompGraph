@@ -1,7 +1,7 @@
 1 Perspective Projection
 
 For this part, we had to take the perspective projection matrix and implement it in the PerspectiveProjection function.
-We had to be careful about the angle, which is given in degrees and must be converted to radians. In addition, we had to put the matrix in a column-major order, following OpenGL specifications. Considering our system as symetrical (ie: top = -bottom and right = -left) we also applied some simplifications to aforementioned matrix to save CPU time.
+We had to be careful about the angle, which is given in degrees and must be converted to radians. In addition, we had to put the matrix in a column-major order, following OpenGL specifications. Considering our system as symetrical (ie: top = -bottom and right = -left) we also applied some simplifications to aforementioned matrix to save computations.
 
 2 Trackball
 
