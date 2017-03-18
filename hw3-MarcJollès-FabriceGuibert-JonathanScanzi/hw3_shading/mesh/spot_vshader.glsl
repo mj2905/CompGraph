@@ -13,6 +13,7 @@ uniform vec3 spot_dir;
 out vec3 normal_mv;
 out vec3 light_dir;
 out vec3 view_dir;
+out vec3 vpoint_mv3;
 
 void main() {
     mat4 MV = view * model;
@@ -22,4 +23,5 @@ void main() {
     normal_mv = normalize(vec3(inverse(transpose(MV)) * vec4(vnormal, 1.0)));
     light_dir = normalize(light_pos - vec3(vpoint_mv));
     view_dir = normalize(- vec3(vpoint_mv));
+    vpoint_mv3 = vec3(vpoint_mv);
 }

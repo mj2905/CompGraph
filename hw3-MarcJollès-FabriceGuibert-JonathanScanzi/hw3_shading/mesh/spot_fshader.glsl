@@ -4,12 +4,13 @@
 out vec3 color;
 
 
-const float spot_cos_cutoff = 0.995; // cos 10 degrees  ->>>>>>> WARNING modification from 0.985 to 0.995. To change if answer in forum
+const float spot_cos_cutoff = 0.985; // cos 10 degrees
 const float spot_exp = 150;
 
 in vec3 normal_mv;
 in vec3 light_dir;
 in vec3 view_dir;
+in vec3 vpoint_mv3;
 
 uniform vec3 spot_dir;
 
@@ -45,7 +46,6 @@ void main() {
 
     float spot_effect = pow(dot(normalize(light_dir), normalize(spot_dir)), spot_exp);
 
-    color = ((dot(normalize(light_dir), normalize(spot_dir)) > spot_cos_cutoff) ? color*spot_effect : ka * La);
-    // ->>>>>>> WARNING ka * La might be vec3(0), it depends on the forum answer
+    color = ((dot(normalize(-vpoint_mv3), normalize(spot_dir)) > spot_cos_cutoff) ? color*spot_effect : ka * La);
 
 }
