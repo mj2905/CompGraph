@@ -43,8 +43,8 @@ void main() {
     color = kd * nDotL * Ld
                     + ks * pow(rDotV, alpha) * Ls;
 
-    float spot_effect = pow(dot(normalize(view_dir.xyz), normalize(spot_dir)), spot_exp);
+    float spot_effect = pow(dot(normalize(light_dir), normalize(spot_dir)), spot_exp);
 
-    color = ka * La + ((dot(normalize(view_dir.xyz), normalize(spot_dir)) > spot_cos_cutoff) ? color*spot_effect : vec3(0.0));
+    color = ka * La + ((dot(normalize(light_dir), normalize(spot_dir)) > spot_cos_cutoff) ? color*spot_effect : vec3(0.0));
 
 }
