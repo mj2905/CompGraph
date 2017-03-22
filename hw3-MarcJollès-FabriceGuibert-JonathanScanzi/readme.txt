@@ -44,6 +44,6 @@ Then, we do the same calculus as in the phong model.
 
 For the vertex shader, we use the same as in the phong vertex shader, but we add as output the vpoint_mv, as we need it to know if we are inside the cone.
 
-In the fragment shader, we do the same computations as in the phong fragment shader (without the ambient term), but in addition, we need to compute the spot effect using the formula in the statement (but instead of using the light dir, we use the view direction), and to know if we are in the cone, we do the dot product between the view direction and the spot direction (normalized) to get the cos(angle between them), and we compare it with the cos_cutoff.
+In the fragment shader, we do the same computations as in the phong fragment shader (without the ambient term), but in addition, we need to compute the spot effect using the formula in the statement, and to know if we are in the cone, we do the dot product between the light direction and the spot direction (normalized) to get the cos(angle between them), and we compare it with the cos_cutoff.
 
 We add the ambient term in the end, as whenever we are or not in the cone, we have this component.
