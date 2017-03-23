@@ -1,13 +1,13 @@
 1 Phong Shading
 	
 In the vertex shader, we need to compute the inverse of the transpose of the model_view matrix, to correctly compute the normals for each vertex. Then, for the light, as we want to point toward the light, we do light_pos - vpoint_mv.
-For the vire_dir, it's the same, however, as vpoint_mv is already in the camera space, we only do -vpoint_mv, as the camera is at (0,0,0).
+For the view_dir, it's the same, however, as vpoint_mv is already in the camera space, we only do -vpoint_mv, as the camera is at (0,0,0).
 
-We pay attention to normalize the vectors at each step.
+We make sure to normalize the vectors at each step.
 
 In the fragment shader, we just use the formula given the interpolation of what was previously computed in the vertex shader. 
 
-We pay attention to clamp the dot products to positive values.
+We make sure to clamp the dot products to positive values.
 
 
 2 Toon Shading
@@ -16,7 +16,7 @@ For the vertex shader, we have exactly the same shader as in the phong one.
 
 For the binding, we just have to retrieve the uniform location tex1D in mesh.h, and assign the texture n°0 to it.
 
-For the fragment shader, as we are given a sampler, we use it with texture(tex1D, value).r
+For the fragment shader, as we are given a uniform sampler, we use it with texture(tex1D, value).r
 For the values, we use the two dot products, and we get as output the dot products sampled.
 Then, we just apply the formula, as in the phong fragment shader.
 
