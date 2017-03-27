@@ -53,7 +53,7 @@ void Display() {
     // mirror the camera position
     vec3 cam_down(0.0f, 0.0f, -1.0f);
     mat4 view_inverted = lookAt(cam_pos, cam_look, cam_down);
-    view_projection_inverted = projection_matrix * view_inverted;
+    mat4 view_projection_inverted = projection_matrix * view_inverted;
 
 
     // TODO: create new VP for mirrored camera
