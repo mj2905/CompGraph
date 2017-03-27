@@ -1,6 +1,8 @@
 #pragma once
 #include "icg_helper.h"
 
+#include <vector>
+
 class ScreenQuad {
 
     private:
@@ -13,9 +15,10 @@ class ScreenQuad {
         float screenquad_height_;
         bool is_horizontal_;
 
-        size_t SIZE_G = 40;
+        vector<float> G;
 
     public:
+
         void Init(float screenquad_width, float screenquad_height,
                   GLuint texture, bool is_horizontal = true) {
 
@@ -104,7 +107,11 @@ class ScreenQuad {
             this->screenquad_height_ = screenquad_height;
         }
 
-        void Draw(float std) {
+        void changeG(vector<float> G){
+            this->G = G;
+        }
+
+        void Draw() {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
@@ -116,13 +123,7 @@ class ScreenQuad {
             glUniform1i(glGetUniformLocation(program_id_, "is_horizontal"),
                         this->is_horizontal_);
 
-            float G[SIZE_G];
-            for(size_t i = 0; i < SIZE_G; ++i) {
-                float x = i - SIZE_G/2;
-                G[i] = exp(-(x*x)/(2.0*std*std*std*std));
-            }
-
-            glUniform1fv(glGetUniformLocation(program_id_, "G"), SIZE_G, G);
+            glUniform1fv(glGetUniformLocation(program_id_, "G"), G.size(), G.data());
 
             // bind texture
             glActiveTexture(GL_TEXTURE0);

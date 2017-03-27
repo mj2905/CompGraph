@@ -51,8 +51,8 @@ void Display() {
     mat4 view_projection = projection_matrix * view;
 
     // mirror the camera position
-    vec3 cam_down(0.0f, 0.0f, -1.0f);
-    mat4 view_inverted = lookAt(cam_pos, cam_look, cam_down);
+    vec3 cam_mirror_pos = vec3(2.0, 2.0, -2.0);
+    mat4 view_inverted = lookAt(cam_mirror_pos, cam_look, cam_up);
     mat4 view_projection_inverted = projection_matrix * view_inverted;
 
 
@@ -61,13 +61,13 @@ void Display() {
     // HINT: this render will be done in the framebuffer texture (remember bind/unbind)
     framebuffer.Clear();
     framebuffer.Bind();
-        cube.Draw(view_projection);
+        cube.Draw(view_projection_inverted);
     framebuffer.Unbind();
 
         glViewport(0, 0, window_width, window_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //cube.Draw(view_projection);
+        cube.Draw(view_projection);
         shinyfloor.Draw(view_projection);
 }
 
