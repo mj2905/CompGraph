@@ -69,11 +69,8 @@ void Init(GLFWwindow* window) {
 void Display() {
     // render to framebuffer
     framebuffer.Clear();
-    framebuffer.Bind();
+    framebuffer.Bind(GL_COLOR_ATTACHMENT0);
     {
-        const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
-        glDrawBuffers(1 /*length of buffers[]*/, buffers);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         cube.Draw(cube_model_matrix, view_matrix, projection_matrix);
         quad.Draw(IDENTITY_MATRIX, view_matrix, projection_matrix);
     }
@@ -83,9 +80,7 @@ void Display() {
     glViewport(0, 0, window_width, window_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    framebuffer.Bind();
-        const GLenum buffers[] = { GL_COLOR_ATTACHMENT1 };
-        glDrawBuffers(1 /*length of buffers[]*/, buffers);
+    framebuffer.Bind(GL_COLOR_ATTACHMENT1);
         screenquad.Draw(gaussian_std);
     framebuffer.Unbind();
 

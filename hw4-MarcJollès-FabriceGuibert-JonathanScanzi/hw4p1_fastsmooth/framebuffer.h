@@ -13,9 +13,12 @@ class FrameBuffer {
 
     public:
         // warning: overrides viewport!!
-        void Bind() {
+        void Bind(GLuint attachment) {
             glViewport(0, 0, width_, height_);
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
+            const GLenum buffers[] = { attachment };
+            glDrawBuffers(1 /*length of buffers[]*/, buffers);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
         void Unbind() {

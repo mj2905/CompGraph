@@ -79,6 +79,15 @@ class FrameBuffer {
             return color_texture_id_;
         }
 
+        void Clear() {
+            glViewport(0, 0, width_, height_);
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
+                glDrawBuffer(GL_COLOR_ATTACHMENT0);
+                glClearColor(1.0, 1.0, 1.0, 1.0);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+
         void Cleanup() {
             glDeleteTextures(1, &color_texture_id_);
             glDeleteRenderbuffers(1, &depth_render_buffer_id_);
