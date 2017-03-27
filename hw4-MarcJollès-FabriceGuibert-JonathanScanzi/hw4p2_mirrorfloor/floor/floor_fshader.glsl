@@ -3,6 +3,7 @@ out vec3 color;
 in vec2 uv;
 uniform sampler2D tex;
 uniform sampler2D tex_mirror;
+in vec4 gl_FragCoord;
 
 void main() {
     /// TODO: query window_width/height using the textureSize(..) function on tex_mirror
@@ -10,5 +11,8 @@ void main() {
     /// NOTE: make sure you normalize gl_FragCoord by window_width/height
     /// NOTE: you will have to flip the "v" coordinate as framebuffer is upside/down
     /// TODO: mix the texture(tex,uv).rgb with the value you fetch by texture(tex_mirror,vec2(_u,_v)).rgb
+
+    //ivec2 size = textureSize(tex_mirror);
+
     color = texture(tex,uv).rgb;
 }
