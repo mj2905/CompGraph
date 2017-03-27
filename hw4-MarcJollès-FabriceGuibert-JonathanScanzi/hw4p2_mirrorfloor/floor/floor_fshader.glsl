@@ -3,6 +3,7 @@ out vec3 color;
 in vec2 uv;
 uniform sampler2D tex;
 uniform sampler2D tex_mirror;
+in vec4 gl_FragCoord;
 
 void main() {
     /// TODO: query window_width/height using the textureSize(..) function on tex_mirror

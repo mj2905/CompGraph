@@ -17,6 +17,7 @@ FrameBuffer framebuffer;
 Cube cube;
 Floor shinyfloor;
 
+
 using namespace glm;
 
 mat4 projection_matrix;
@@ -35,6 +36,7 @@ void Init(GLFWwindow* window) {
 
     // TODO: initialize framebuffer
     // TODO: initialize shinyfloor with the FB texture
+
     shinyfloor.Init(framebuffer_texture_id);
 }
 
@@ -48,7 +50,12 @@ void Display() {
     mat4 view = lookAt(cam_pos, cam_look, cam_up);
     mat4 view_projection = projection_matrix * view;
 
-    // TODO: mirror the camera position
+    // mirror the camera position
+    vec3 cam_down(0.0f, 0.0f, -1.0f);
+    mat4 view_inverted = lookAt(cam_pos, cam_look, cam_down);
+    view_projection_inverted = projection_matrix * view_inverted;
+
+
     // TODO: create new VP for mirrored camera
     // TODO: render the cube using the mirrored camera
     // HINT: this render will be done in the framebuffer texture (remember bind/unbind)
