@@ -21,7 +21,7 @@ Quad quad;
 int window_width = 800;
 int window_height = 600;
 
-constexpr static size_t SIZE_G = 40;
+constexpr static size_t SIZE_G = 100;
 vector<float> G(SIZE_G);
 
 FrameBuffer framebuffer;

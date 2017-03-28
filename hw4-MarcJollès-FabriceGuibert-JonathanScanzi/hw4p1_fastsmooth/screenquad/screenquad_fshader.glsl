@@ -5,7 +5,7 @@ in vec2 uv;
 out vec3 color;
 
 uniform int size_G;
-uniform float G[40];
+uniform float G[100];
 
 uniform bool is_horizontal;
 
