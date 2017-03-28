@@ -33,6 +33,6 @@ void main() {
     // gl_Position =  MVP * R(50*time)* vec4(vpoint,1);
 
     // still
-    // gl_Position =  MVP * R(0) * vec4(vpoint,1);
+    //gl_Position =  MVP * R(0) * vec4(vpoint,1);
     uv = vtexcoord;
 }

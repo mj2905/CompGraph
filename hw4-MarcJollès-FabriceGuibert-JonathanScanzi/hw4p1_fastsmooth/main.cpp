@@ -2,8 +2,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <vector>
-
 // contains helper functions such as shader compiler
 #include "icg_helper.h"
 #include "glm/gtc/matrix_transform.hpp"
@@ -14,19 +12,14 @@
 #include "quad/quad.h"
 #include "screenquad/screenquad.h"
 
-
 Cube cube;
 Quad quad;
 
 int window_width = 800;
 int window_height = 600;
 
-constexpr static size_t SIZE_G = 40;
-vector<float> G(SIZE_G);
-
 FrameBuffer framebuffer;
 ScreenQuad screenquad;
-ScreenQuad screenquad2;
 
 using namespace glm;
 
@@ -34,17 +27,7 @@ mat4 projection_matrix;
 mat4 view_matrix;
 mat4 cube_model_matrix;
 
-float gaussian_std = 2.0;
 
-void regenerateG() {
-    for(size_t i = 0; i < G.size(); ++i) {
-        float x = i - G.size()/2;
-        G[i] = exp(-(x*x)/(2.0*gaussian_std*gaussian_std*gaussian_std*gaussian_std));
-    }
-
-    screenquad.changeG(G);
-    screenquad2.changeG(G);
-}
 
 void Init(GLFWwindow* window) {
     glClearColor(1.0, 1.0, 1.0 /*white*/, 1.0 /*solid*/);
@@ -70,39 +53,38 @@ void Init(GLFWwindow* window) {
     // this unsures that the framebuffer has the same size as the window
     // (see http://www.glfw.org/docs/latest/window.html#window_fbsize)
     glfwGetFramebufferSize(window, &window_width, &window_height);
-
-    GLuint framebuffer_texture_id;
-    GLuint framebuffer_texture_id_2;
-
-    std::tie(framebuffer_texture_id, framebuffer_texture_id_2) =
-            framebuffer.Init(window_width, window_height);
-
-    //GLuint framebuffer_texture_id = framebuffer.Init(window_width, window_height);
-    screenquad.Init(window_width, window_height, framebuffer_texture_id);
-    screenquad2.Init(window_width, window_height, framebuffer_texture_id_2, false);
-
-    regenerateG();
+    GLuint framebuffer_texture_id, framebuffer_second_texture_id;
+    std::tie(framebuffer_texture_id, framebuffer_second_texture_id) = framebuffer.Init(window_width, window_height);
+    screenquad.Init(window_width, window_height, framebuffer_texture_id, framebuffer_second_texture_id);
 }
 
 void Display() {
     // render to framebuffer
     framebuffer.Clear();
-    framebuffer.Bind(GL_COLOR_ATTACHMENT0);
+
+    // First bind to write our initial "vanilla" textures
+    framebuffer.Bind();
     {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         cube.Draw(cube_model_matrix, view_matrix, projection_matrix);
         quad.Draw(IDENTITY_MATRIX, view_matrix, projection_matrix);
+    }
+    framebuffer.Unbind();
+
+
+    // Next bind, to draw a new pass, using previous textures as input and blurring it horizontally
+    // Binding twice ensures that we write to the other attachment
+    framebuffer.Bind();
+    {
+        screenquad.Draw(1); // we call Draw(1), meaning we call Draw(int pass) with pass = 1. This ensures horizontal blur in shader
+
     }
     framebuffer.Unbind();
 
     // render to Window
     glViewport(0, 0, window_width, window_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    framebuffer.Bind(GL_COLOR_ATTACHMENT1);
-        screenquad.Draw();
-    framebuffer.Unbind();
-
-    screenquad2.Draw();
+    screenquad.Draw(0); // finally we draw to the output. To this end, we use the last texture written as input, and blur it vertically (hence 0)
 }
 
 // gets called when the windows/framebuffer is resized.
@@ -129,16 +111,6 @@ void ErrorCallback(int error, const char* description) {
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
-    }
-    if(key == GLFW_KEY_Q && action == GLFW_PRESS) {
-        if(gaussian_std > 0.3) {
-            gaussian_std -= 0.25;
-            regenerateG();
-        }
-    }
-    if(key == GLFW_KEY_W && action == GLFW_PRESS) {
-        gaussian_std += 0.25;
-        regenerateG();
     }
 }
 

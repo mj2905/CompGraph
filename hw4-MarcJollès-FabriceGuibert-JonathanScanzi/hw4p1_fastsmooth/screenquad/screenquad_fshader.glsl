@@ -2,25 +2,38 @@
 
 in vec2 uv;
 
-out vec3 color;
-
-uniform int size_G;
-uniform float G[40];
-
-uniform bool is_horizontal;
 
 uniform sampler2D tex;
+uniform sampler2D tex2;
+
+uniform int pass;
+
+layout(location=0) out vec3 color;
+layout(location=1) out vec3 color2;
+
 uniform float tex_width;
 uniform float tex_height;
+uniform int size;
+uniform float G[120];
 
+
+#define Type 2
 float rgb_2_luma(vec3 c) {
     return 0.3*c[0] + 0.59*c[1] + 0.11*c[2];
 }
 
-//Type 0 : edge detection
-//Type 1 : gaussian blur
-//Type 2 : gaussian blur optimized
-#define Type 2
+vec3 monoblur(int size, sampler2D t, int horizontal){
+    vec3 color_tot = vec3(0,0,0);
+    float weight_tot = 0;
+
+    for(int i = 0; i< size; i++){
+        int a = i - size/2;
+        vec3 neigh_color = texture(t, uv + vec2((horizontal)*a/tex_width, (1- horizontal)* a/tex_height)).rgb;
+        color_tot += G[i]*neigh_color;
+        weight_tot += G[i];
+    }
+    return color_tot / weight_tot;
+}
 
 void main() {
 #if Type == 0
@@ -44,17 +57,15 @@ void main() {
     // color = texture(tex,uv).rgb; ///< passthrough shading
     // color = abs( vec3(sx, sx, sx) ); ///< derivatives x
     // color = abs( vec3(sy, sy, sy) ); ///< derivatives y
-    color = vec3(g, g, g);    
-
+    color = vec3(g, g, g);
 #elif Type == 1
     // gaussian convolution
     float std = 2; // standard deviation (<.3 disable)
     // float std = .1; // standard deviation (<.3 disable)
     vec3 color_tot = vec3(0,0,0);
     float weight_tot = 0;
-    int SIZE = 1 + 2 * 3 * int(ceil(std));
-    for(int i=-SIZE; i<=SIZE; i++){
-        for(int j=-SIZE; j<=SIZE; j++){
+    for(int i=-size; i<=size; i++){
+        for(int j=-size; j<=size; j++){
             float w = exp(-(i*i+j*j)/(2.0*std*std*std*std));
             vec3 neigh_color = texture(tex, uv+vec2(i/tex_width,j/tex_height)).rgb;
             color_tot += w * neigh_color; 
@@ -62,29 +73,11 @@ void main() {
         }
     }
     color = color_tot / weight_tot; // ensure \int w = 1
-
 #else
+    //opt gaussian convolution
 
-    vec2 direction;
-    if(is_horizontal) {
-        direction = vec2(1, 0);
-    }
-    else {
-        direction = vec2(0, 1);
-    }
-
-    vec3 color_tot = vec3(0,0,0);
-    float weight_tot = 0;
-    int SIZE = G.length();
-    for(int i = 0; i < SIZE; ++i){
-        int x = i - SIZE/2;
-        float w = G[i];
-        vec3 neigh_color = texture(tex, uv+ direction*vec2(x/tex_width,x/tex_height)).rgb;
-        color_tot += w * neigh_color;
-        weight_tot += w;
-    }
-    color = color_tot / weight_tot; // ensure \int w = 1
-
+    color = monoblur(size, tex2, pass);
+    color2= monoblur(size, tex, pass);
 
 #endif
 }

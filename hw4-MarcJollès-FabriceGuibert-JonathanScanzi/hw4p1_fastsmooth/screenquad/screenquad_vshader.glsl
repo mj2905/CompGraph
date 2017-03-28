@@ -2,6 +2,7 @@
 
 in vec3 vpoint;
 in vec2 vtexcoord;
+uniform float std_dev;
 
 out vec2 uv;
 
