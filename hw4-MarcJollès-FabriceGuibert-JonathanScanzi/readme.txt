@@ -28,4 +28,6 @@ As gl_FragCoord is between 0 and the dimensions of the window, we divide it by t
 
 3 Motion Blur
 
+For this problem, in the quad_fshader, we take the difference between the two positions (x and y coordinates), each position being divided by w as we want to be on the screen.
 
+Then, in the screenquad_fshader, we take the texture values of the actual position, and of nb_samples positions in the opposite direction of the velocity vector, as this vector is pointing the move, and we want previous positions. We do the directional convolution with these positions, and we get the new color which is output.
