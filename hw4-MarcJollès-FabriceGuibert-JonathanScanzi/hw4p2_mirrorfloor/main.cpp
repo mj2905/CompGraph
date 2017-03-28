@@ -58,17 +58,16 @@ void Display() {
 
 
     // TODO: render the cube using the mirrored camera
-
-
-
     // HINT: this render will be done in the framebuffer texture (remember bind/unbind)
-  //  framebuffer.Clear();
     framebuffer.Clear();
+
     framebuffer.Bind();
-    cube.Draw(view_projection_inverted);
+        cube.Draw(view_projection_inverted);
     framebuffer.Unbind();
+
     glViewport(0, 0, window_width, window_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     cube.Draw(view_projection);
     shinyfloor.Draw(view_projection);
 

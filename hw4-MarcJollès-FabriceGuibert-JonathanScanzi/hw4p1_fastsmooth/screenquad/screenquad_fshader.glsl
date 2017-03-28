@@ -4,8 +4,10 @@ in vec2 uv;
 
 out vec3 color;
 
-uniform int SIZE_G;
-uniform float G[400];
+const int MAX_SIZE = 400; // /!\ modify too in main if modified
+
+uniform int SIZE_OPT;
+uniform float G[MAX_SIZE];
 
 uniform bool is_horizontal;
 
@@ -75,10 +77,10 @@ void main() {
 
     vec3 color_tot = vec3(0);
     float weight_tot = 0;
-    for(int i = 0; i < SIZE_G; ++i){
-        int x = i - SIZE_G/2;
-        float w = G[i];
-        vec3 neigh_color = texture(tex, uv + direction*vec2(x/tex_width,x/tex_height)).rgb;
+    //We choose these boundaries, as they are the same as for basic gaussian blur
+    for(int i = -SIZE_OPT; i <= SIZE_OPT; ++i){
+        float w = G[i + SIZE_OPT];
+        vec3 neigh_color = texture(tex, uv + direction*vec2(i/tex_width,i/tex_height)).rgb; //direction is (0, 1) or (1, 0)
         color_tot += w * neigh_color;
         weight_tot += w;
     }
