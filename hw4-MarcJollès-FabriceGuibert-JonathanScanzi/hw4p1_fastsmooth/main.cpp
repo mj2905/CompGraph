@@ -37,8 +37,8 @@ mat4 cube_model_matrix;
 float gaussian_std = 2.0;
 
 void regenerateG() {
-    for(size_t i = 0; i < G.size(); ++i) {
-        float x = i - G.size()/2;
+    for(size_t i = 0; i < SIZE_G; ++i) {
+        int x = i - SIZE_G/2;
         G[i] = exp(-(x*x)/(2.0*gaussian_std*gaussian_std*gaussian_std*gaussian_std));
     }
 
