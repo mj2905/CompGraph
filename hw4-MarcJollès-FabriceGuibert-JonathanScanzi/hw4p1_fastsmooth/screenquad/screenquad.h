@@ -123,6 +123,8 @@ class ScreenQuad {
             glUniform1i(glGetUniformLocation(program_id_, "is_horizontal"),
                         this->is_horizontal_);
 
+            glUniform1i(glGetUniformLocation(program_id_, "SIZE_G"),
+                        this->G.size());
             glUniform1fv(glGetUniformLocation(program_id_, "G"), G.size(), G.data());
 
             // bind texture

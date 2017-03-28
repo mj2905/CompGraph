@@ -21,8 +21,7 @@ Quad quad;
 int window_width = 800;
 int window_height = 600;
 
-constexpr static size_t SIZE_G = 100;
-vector<float> G(SIZE_G);
+vector<float> G;
 
 FrameBuffer framebuffer;
 ScreenQuad screenquad;
@@ -34,12 +33,17 @@ mat4 projection_matrix;
 mat4 view_matrix;
 mat4 cube_model_matrix;
 
+size_t MAX_SIZE = 400;
 float gaussian_std = 2.0;
 
 void regenerateG() {
+
+    int SIZE_G = 1 + 2 * 3 * int(ceil(gaussian_std));
+
+    G.clear();
     for(size_t i = 0; i < SIZE_G; ++i) {
         int x = i - SIZE_G/2;
-        G[i] = exp(-(x*x)/(2.0*gaussian_std*gaussian_std*gaussian_std*gaussian_std));
+        G.push_back(exp(-(x*x)/(2.0*gaussian_std*gaussian_std*gaussian_std*gaussian_std)));
     }
 
     screenquad.changeG(G);
@@ -137,8 +141,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
     if(key == GLFW_KEY_W && action == GLFW_PRESS) {
-        gaussian_std += 0.25;
-        regenerateG();
+        if(gaussian_std < (MAX_SIZE-1)/6.0f) {
+            gaussian_std += 0.25;
+            regenerateG();
+        }
     }
 }
 

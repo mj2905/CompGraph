@@ -4,7 +4,8 @@ in vec2 uv;
 
 out vec3 color;
 
-uniform float G[100];
+uniform int SIZE_G;
+uniform float G[400];
 
 uniform bool is_horizontal;
 
@@ -74,9 +75,8 @@ void main() {
 
     vec3 color_tot = vec3(0);
     float weight_tot = 0;
-    int SIZE = G.length();
-    for(int i = 0; i < SIZE; ++i){
-        int x = i - SIZE/2;
+    for(int i = 0; i < SIZE_G; ++i){
+        int x = i - SIZE_G/2;
         float w = G[i];
         vec3 neigh_color = texture(tex, uv + direction*vec2(x/tex_width,x/tex_height)).rgb;
         color_tot += w * neigh_color;
