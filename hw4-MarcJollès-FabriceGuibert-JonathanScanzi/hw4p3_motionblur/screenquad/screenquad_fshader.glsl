@@ -14,13 +14,13 @@ void main() {
 
     vec2 velocity = 0.1f*texture(velocityTex, uv).xy;
 
-    vec2 xy = uv + (nb_samples/2)*((velocity) / window_dim);
+    vec2 xy = uv;
     vec3 c = vec3(0);
     for(int i = 0; i < nb_samples; ++i) {
         c += texture(colorTex, xy).rgb;
         xy = clamp(xy - velocity, 0, 1);
     }
-    c /= float(nb_samples);
+    c /= nb_samples;
 
     color = vec4(c, 1);
 }
