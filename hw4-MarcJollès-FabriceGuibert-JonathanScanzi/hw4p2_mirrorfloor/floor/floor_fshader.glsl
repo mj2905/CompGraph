@@ -14,6 +14,6 @@ void main() {
     //color = texture(tex,uv).rgb;
 
     ivec2 window_dim = textureSize(tex_mirror, 0);
-    vec2 window_rel = vec2(gl_FragCoord.x / window_dim.x,  1- gl_FragCoord.y / window_dim.y);
+    vec2 window_rel = vec2(gl_FragCoord.x / window_dim.x, 1 - gl_FragCoord.y / window_dim.y);
     color = mix(texture(tex,uv).rgb, texture(tex_mirror, window_rel).rgb, vec3(.15));
 }

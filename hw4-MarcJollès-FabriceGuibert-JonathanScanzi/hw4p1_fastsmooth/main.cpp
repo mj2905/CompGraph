@@ -2,6 +2,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <vector>
+
 // contains helper functions such as shader compiler
 #include "icg_helper.h"
 #include "glm/gtc/matrix_transform.hpp"
@@ -12,11 +14,15 @@
 #include "quad/quad.h"
 #include "screenquad/screenquad.h"
 
+
 Cube cube;
 Quad quad;
 
 int window_width = 800;
 int window_height = 600;
+
+constexpr static size_t SIZE_G = 40;
+vector<float> G(SIZE_G);
 
 FrameBuffer framebuffer;
 ScreenQuad screenquad;
@@ -29,6 +35,16 @@ mat4 view_matrix;
 mat4 cube_model_matrix;
 
 float gaussian_std = 2.0;
+
+void regenerateG() {
+    for(size_t i = 0; i < G.size(); ++i) {
+        float x = i - G.size()/2;
+        G[i] = exp(-(x*x)/(2.0*gaussian_std*gaussian_std*gaussian_std*gaussian_std));
+    }
+
+    screenquad.changeG(G);
+    screenquad2.changeG(G);
+}
 
 void Init(GLFWwindow* window) {
     glClearColor(1.0, 1.0, 1.0 /*white*/, 1.0 /*solid*/);
@@ -64,6 +80,8 @@ void Init(GLFWwindow* window) {
     //GLuint framebuffer_texture_id = framebuffer.Init(window_width, window_height);
     screenquad.Init(window_width, window_height, framebuffer_texture_id);
     screenquad2.Init(window_width, window_height, framebuffer_texture_id_2, false);
+
+    regenerateG();
 }
 
 void Display() {
@@ -81,10 +99,10 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     framebuffer.Bind(GL_COLOR_ATTACHMENT1);
-        screenquad.Draw(gaussian_std);
+        screenquad.Draw();
     framebuffer.Unbind();
 
-    screenquad2.Draw(gaussian_std);
+    screenquad2.Draw();
 }
 
 // gets called when the windows/framebuffer is resized.
@@ -115,10 +133,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if(key == GLFW_KEY_Q && action == GLFW_PRESS) {
         if(gaussian_std > 0.3) {
             gaussian_std -= 0.25;
+            regenerateG();
         }
     }
     if(key == GLFW_KEY_W && action == GLFW_PRESS) {
         gaussian_std += 0.25;
+        regenerateG();
     }
 }
 

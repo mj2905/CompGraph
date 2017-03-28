@@ -52,13 +52,9 @@ void Display() {
 
     // mirror the camera position
 
-
-    vec3 cam_pos_inv(2.0f, 2.0f, -2.0f);
-    vec3 cam_look_inv(0.0f, 0.0f, 0.0f);
-    vec3 cam_up_inv(0.0f, 0.0f, 1.0f);
-    mat4 view_inv = lookAt(cam_pos_inv, cam_look_inv, cam_up_inv);
-    mat4 view_projection_inv = projection_matrix * view_inv;
-    mat4 view_projection_inverted = scale(view_projection_inv, vec3(1.0, 1.0, 1.0));
+    vec3 cam_mirror_pos = vec3(2.0, 2.0, -2.0);
+    mat4 view_inverted = lookAt(cam_mirror_pos, cam_look, cam_up);
+    mat4 view_projection_inverted = projection_matrix * view_inverted;
 
 
     // TODO: render the cube using the mirrored camera
@@ -67,18 +63,15 @@ void Display() {
 
     // HINT: this render will be done in the framebuffer texture (remember bind/unbind)
   //  framebuffer.Clear();
+    framebuffer.Clear();
     framebuffer.Bind();
+    cube.Draw(view_projection_inverted);
+    framebuffer.Unbind();
     glViewport(0, 0, window_width, window_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    cube.Draw(view_projection_inverted);
-
-
-
-    framebuffer.Unbind();
     cube.Draw(view_projection);
     shinyfloor.Draw(view_projection);
 
-  //  shinyfloor.Draw(view_projection);
 }
 
 // Gets called when the windows/framebuffer is resized.
