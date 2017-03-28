@@ -4,7 +4,7 @@ uniform sampler2D colorTex;
 uniform sampler2D velocityTex;
 out vec4 color;
 
-int nb_samples = 30;
+const int nb_samples = 30;
 
 void main() {
     /// TODO: use the velocity vector stored in velocityTex to compute the line integral
@@ -14,13 +14,13 @@ void main() {
 
     vec2 velocity = 0.1f*texture(velocityTex, uv).xy;
 
-    vec2 xy = uv;
+    vec2 xy = uv + (nb_samples/2)*((velocity) / window_dim);
     vec3 c = vec3(0);
     for(int i = 0; i < nb_samples; ++i) {
         c += texture(colorTex, xy).rgb;
         xy = clamp(xy - velocity, 0, 1);
     }
-    c /= nb_samples;
+    c /= float(nb_samples);
 
     color = vec4(c, 1);
 }

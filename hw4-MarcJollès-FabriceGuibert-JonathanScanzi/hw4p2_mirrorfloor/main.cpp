@@ -10,8 +10,8 @@
 #include "floor/floor.h"
 #include "cube/cube.h"
 
-int window_width = 1280;
-int window_height = 720;
+int window_width = 640;
+int window_height = 480;
 
 FrameBuffer framebuffer;
 Cube cube;
@@ -28,7 +28,7 @@ void Init(GLFWwindow* window) {
     glEnable(GL_MULTISAMPLE);
 
     float ratio = window_width / (float) window_height;
-    projection_matrix = perspective(45.0f, ratio, 0.1f, 10.0f);
+    projection_matrix = perspective(45.0f, ratio, 1.0f, 15.0f);
 
     cube.Init();
 
@@ -51,24 +51,27 @@ void Display() {
     mat4 view_projection = projection_matrix * view;
 
     // mirror the camera position
+
     vec3 cam_mirror_pos = vec3(2.0, 2.0, -2.0);
     mat4 view_inverted = lookAt(cam_mirror_pos, cam_look, cam_up);
     mat4 view_projection_inverted = projection_matrix * view_inverted;
 
 
-    // TODO: create new VP for mirrored camera
     // TODO: render the cube using the mirrored camera
+
+
+
     // HINT: this render will be done in the framebuffer texture (remember bind/unbind)
+  //  framebuffer.Clear();
     framebuffer.Clear();
     framebuffer.Bind();
-        cube.Draw(view_projection_inverted);
+    cube.Draw(view_projection_inverted);
     framebuffer.Unbind();
+    glViewport(0, 0, window_width, window_height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    cube.Draw(view_projection);
+    shinyfloor.Draw(view_projection);
 
-        glViewport(0, 0, window_width, window_height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        cube.Draw(view_projection);
-        shinyfloor.Draw(view_projection);
 }
 
 // Gets called when the windows/framebuffer is resized.
