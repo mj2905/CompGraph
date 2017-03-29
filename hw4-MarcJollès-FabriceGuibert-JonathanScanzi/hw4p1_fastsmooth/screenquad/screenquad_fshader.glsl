@@ -7,14 +7,16 @@ uniform sampler2D tex;
 uniform sampler2D tex2;
 
 uniform int pass;
+uniform int size;
+
+#define BOUND 256
 
 layout(location=0) out vec3 color;
 layout(location=1) out vec3 color2;
 
 uniform float tex_width;
 uniform float tex_height;
-uniform int size;
-uniform float G[120];
+uniform float G[BOUND];
 
 
 #define Type 2
@@ -22,15 +24,21 @@ float rgb_2_luma(vec3 c) {
     return 0.3*c[0] + 0.59*c[1] + 0.11*c[2];
 }
 
-vec3 monoblur(int size, sampler2D t, int horizontal){
+vec3 monoblur(sampler2D t, int horizontal){
     vec3 color_tot = vec3(0,0,0);
     float weight_tot = 0;
 
-    for(int i = 0; i< size; i++){
-        int a = i - size/2;
-        vec3 neigh_color = texture(t, uv + vec2((horizontal)*a/tex_width, (1- horizontal)* a/tex_height)).rgb;
-        color_tot += G[i]*neigh_color;
-        weight_tot += G[i];
+    int s = 0;
+    if(size > BOUND){
+        s = BOUND/2;
+    }else{
+        s = size/2 ;
+    }
+    for(int i = -s; i<= s; i++){
+        //int a = i - s/2;
+        vec3 neigh_color = texture(t, uv + vec2(horizontal*i*1.0/tex_width, (1- horizontal)*i*1.0/tex_height)).rgb;
+        color_tot += G[i+s]*neigh_color;
+        weight_tot += G[i+s];
     }
     return color_tot / weight_tot;
 }
@@ -76,8 +84,12 @@ void main() {
 #else
     //opt gaussian convolution
 
-    color = monoblur(size, tex2, pass);
-    color2= monoblur(size, tex, pass);
+    if(pass==1){
+        color2 = monoblur(tex, pass);
+    }else{
+        color = monoblur(tex2, pass);
+    }
+
 
 #endif
 }

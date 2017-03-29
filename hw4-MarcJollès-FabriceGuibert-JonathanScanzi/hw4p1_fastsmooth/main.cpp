@@ -53,9 +53,15 @@ void Init(GLFWwindow* window) {
     // this unsures that the framebuffer has the same size as the window
     // (see http://www.glfw.org/docs/latest/window.html#window_fbsize)
     glfwGetFramebufferSize(window, &window_width, &window_height);
+
+    //Creating the two texture ids and getting their values from the framebuffer
     GLuint framebuffer_texture_id, framebuffer_second_texture_id;
     std::tie(framebuffer_texture_id, framebuffer_second_texture_id) = framebuffer.Init(window_width, window_height);
+
+    //Passing them to the screenquad
     screenquad.Init(window_width, window_height, framebuffer_texture_id, framebuffer_second_texture_id);
+    check_error_gl();
+
 }
 
 void Display() {
@@ -71,20 +77,23 @@ void Display() {
     }
     framebuffer.Unbind();
 
-
     // Next bind, to draw a new pass, using previous textures as input and blurring it horizontally
     // Binding twice ensures that we write to the other attachment
     framebuffer.Bind();
     {
         screenquad.Draw(1); // we call Draw(1), meaning we call Draw(int pass) with pass = 1. This ensures horizontal blur in shader
-
     }
     framebuffer.Unbind();
 
     // render to Window
     glViewport(0, 0, window_width, window_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //framebuffer.Bind();{
     screenquad.Draw(0); // finally we draw to the output. To this end, we use the last texture written as input, and blur it vertically (hence 0)
+    //}
+    //framebuffer.Unbind();
+    check_error_gl();
+
 }
 
 // gets called when the windows/framebuffer is resized.
@@ -111,6 +120,13 @@ void ErrorCallback(int error, const char* description) {
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+
+    if(key == GLFW_KEY_Q && action == GLFW_PRESS){
+        screenquad.update(-0.25);
+    }
+    if(key == GLFW_KEY_W && action == GLFW_PRESS){
+        screenquad.update(0.25);
     }
 }
 
@@ -156,6 +172,8 @@ int main(int argc, char *argv[]) {
         fprintf( stderr, "Failed to initialize GLEW\n");
         return EXIT_FAILURE;
     }
+    check_error_gl();
+
 
     cout << "OpenGL" << glGetString(GL_VERSION) << endl;
 

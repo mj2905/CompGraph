@@ -11,9 +11,8 @@ class ScreenQuad {
     private:
         GLuint vertex_array_id_, program_id_, vertex_buffer_object_; // vertex array object, GLSL shader program ID, memory buffer
         float screenquad_width_, screenquad_height_;
-        float standard_dev_ = 60.0;
         int size;
-        int pass;
+        float standard_dev_ = 2.0;
         vector<float> G;
 
         GLuint text1_id_, tex2_id_;
@@ -93,20 +92,6 @@ class ScreenQuad {
             GLuint tmp2 = glGetUniformLocation(program_id_, "tex2");
             glUniform1i(tmp2, 1);
 
-            // Create and assign Gaussian Kernel
-            glUniform1f(glGetUniformLocation(program_id_, "std_dev"),this->standard_dev_);
-            size = 1 + 2 * 3 * int(ceil(standard_dev_));
-            glUniform1i(glGetUniformLocation(program_id_, "size"), this->size );
-
-            int s = size;
-            int a = standard_dev_;
-            G.clear();
-            for(int i=0; i<s; i++){
-                int x = i - s/2;
-                G.push_back(exp(-x*x/(2.0*a*a*a*a)));
-            }
-            glUniform1fv(glGetUniformLocation(program_id_, "G"), G.size(), G.data());
-
             // to avoid the current object being polluted
             glBindTexture(GL_TEXTURE_2D, 0);
             glBindVertexArray(0);
@@ -129,19 +114,33 @@ class ScreenQuad {
             this->screenquad_height_ = screenquad_height;
         }
 
+        void update(float c){
+            standard_dev_ = standard_dev_ + c;
+        }
+
         void Draw(int p) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
+
+            // Create and assign Gaussian Kernel
+            int size = 1 + 6 * int(ceil(standard_dev_));
+
+            G.clear();
+            for(int i=-size; i<=size; i++){
+                G.push_back(exp(-i*i/(2.0*standard_dev_*standard_dev_*standard_dev_*standard_dev_)));
+            }
+
+            glUniform1fv(glGetUniformLocation(program_id_, "G"), G.size(), G.data());
+            glUniform1i(glGetUniformLocation(program_id_, "size"), G.size());
             // window size uniforms
             glUniform1f(glGetUniformLocation(program_id_, "tex_width"),
                         this->screenquad_width_);
             glUniform1f(glGetUniformLocation(program_id_, "tex_height"),
                         this->screenquad_height_);
 
-            // The pass value is used in the fshader to choose whether to blur horizontally or vertic
-            this->pass = p;
-            glUniform1i(glGetUniformLocation(program_id_, "pass"), this->pass);
+            // The pass value is used in the fshader to choose whether to blur horizontally or vertically
+            glUniform1i(glGetUniformLocation(program_id_, "pass"), p);
 
             // Here, we bind both textures, so that they exist and can be read and written to.
             glActiveTexture(GL_TEXTURE0);
