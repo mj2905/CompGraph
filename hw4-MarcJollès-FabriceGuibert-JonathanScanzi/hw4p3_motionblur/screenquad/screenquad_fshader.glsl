@@ -17,7 +17,7 @@ void main() {
     vec2 xy = uv;
     vec3 c = vec3(0);
     for(int i = 0; i < nb_samples; ++i) {
-        c += texture(colorTex, xy).rgb;
+        c += texture(colorTex, clamp(xy, 0, 1)).rgb;
         xy -= velocity;
     }
     c /= nb_samples;

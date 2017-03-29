@@ -23,9 +23,9 @@ Here we use the same formula as in the gaussian blur, but we don't do an inner l
 
 --------
 
-Alternative option: 1 FBO with 2 attachments approach
+Alternative option: one screenquad approach
 
-The idea of the code is to do ping ponging between two textures. Ping pong shading is extensively described for the purpose of post processing and multi-pass rendering; this is why we chose this approach.
+The idea of the code is to do ping ponging between two textures. Ping pong shading is extensively described for the purpose of post processing and multi-pass rendering; this is why, even if we didn't do it this way, we talk about this approach.
 
 
 - The FBO
