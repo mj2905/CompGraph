@@ -8,8 +8,6 @@
 
 #include "framebuffer.h"
 
-#include "limits"
-
 #include "quad/quad.h"
 #include "screenquad/screenquad.h"
 
