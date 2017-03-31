@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(icg17)
+project(icg17-private)
 
 # load the common ICG configuration
 include(common/icg_settings.cmake)
@@ -15,15 +15,8 @@ include(common/icg_settings.cmake)
 
 # week 3
 #add_subdirectory(lab3_opengl3d)
-#add_subdirectory(hw3_trackball)
+#add_subdirectory(hw2_trackball)
 
-# week 4
-#add_subdirectory(hw4_shading)
 
-# week 5
-#add_subdirectory(lab5_framebuffer)
-# TODO : copy the lab folder and call it hw4p1_fastsmooth, then uncomment line below
-add_subdirectory(hw4p1_fastsmooth)
-add_subdirectory(hw4p2_mirrorfloor)
-add_subdirectory(hw4p3_motionblur)
-
+# Project
+add_subdirectory(main)
