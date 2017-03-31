@@ -102,12 +102,12 @@ class Grid {
 
             // create 1D texture (colormap)
             {
-                const int ColormapSize=5;
-                GLfloat tex[3*ColormapSize] = {/*yellow*/    1.0, 1.0, 0.0,
-                                                /*yellow*/    0.5, 1.0, 0.0,
-                                               /*green*/ 0.0, 1.0, 0.0,
-                                               /*darkgreen*/ 0, 0, 0,
-                                               /*white*/  1.0, 1.0, 1.0};
+                const int ColormapSize=4;
+                GLfloat tex[3*ColormapSize] = {/*yellow*/    0.6, 0.6, 0.0,
+                                                /*yellow*/    //0.5, 0.9, 0.0,
+                                               /*darkgreen*/ 0.2, 0.4, 0.2,
+                                               /*white*/  0.75, 0.75, 0.75,
+                                              /*white*/  0.9, 0.9, 0.9};
                 glGenTextures(1, &interpolation_id_);
                 glBindTexture(GL_TEXTURE_1D, interpolation_id_);
                 glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
@@ -135,8 +135,8 @@ class Grid {
             GLuint Ls_id = glGetUniformLocation(program_id_, "Ls");
 
             glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
-            glm::vec3 kd = glm::vec3(0.6f, 0.6f, 0.6f);
-            glm::vec3 ks = glm::vec3(0.2f, 0.2f, 0.2f);
+            glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
+            glm::vec3 ks = glm::vec3(0.4f, 0.4f, 0.4f);
             float alpha = 60.0f;
 
             GLuint ka_id = glGetUniformLocation(program_id_, "ka");
