@@ -46,7 +46,7 @@ class FrameBuffer {
                 // create texture for the color attachment
                 // see Table.2 on
                 // khronos.org/opengles/sdk/docs/man3/docbook4/xhtml/glTexImage2D.xml
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width_, height_, 0,
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width_, height_, 0,
                              GL_RGB, GL_UNSIGNED_BYTE, NULL);
             }
 
@@ -84,7 +84,7 @@ class FrameBuffer {
             glViewport(0, 0, width_, height_);
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
             glDrawBuffer(GL_COLOR_ATTACHMENT0);
-            glClearColor(1.0, 1.0, 1.0, 1.0);
+            glClearColor(0.0, 0.0, 0.0, 1.0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }

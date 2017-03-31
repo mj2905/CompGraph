@@ -16,6 +16,9 @@
 Grid grid;
 PerlinNoise perlin;
 
+float persistence = .5;
+float scale_persistence = 0.01f;
+
 int window_width = 800;
 int window_height = 600;
 
@@ -104,14 +107,14 @@ void Init() {
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
     // applied in a rotated coordinate frame.
     // uncomment lower line to achieve this.
-    view_matrix = LookAt(vec3(2.0f, 2.0f, 4.0f),
+    view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
                          vec3(0.0f, 0.0f, 0.0f),
                          vec3(0.0f, 1.0f, 0.0f));
-    view_matrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, -3.0f));
+    view_matrix = rotate(translate(mat4(1.0f), vec3(0.0f, 0.0f, -2.0f)), (float)M_PI/4, vec3(1, 0, 0));
 
     trackball_matrix = IDENTITY_MATRIX;
 
-    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
+    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -1, 0.0f));
 
     GLuint texture_id = framebuffer.Init(window_width, window_height);
     perlin.Init();
@@ -120,7 +123,7 @@ void Init() {
     // draw a quad on the ground.
     framebuffer.ClearContent();
     framebuffer.Bind();
-        perlin.Draw();
+        perlin.Draw(persistence);
     framebuffer.Unbind();
 }
 
@@ -213,6 +216,28 @@ void ErrorCallback(int error, const char* description) {
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+    else if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+        if(persistence - scale_persistence > 0) {
+            persistence -= scale_persistence;
+            cout << "Persistence : " << persistence << endl;
+
+            framebuffer.ClearContent();
+            framebuffer.Bind();
+                perlin.Draw(persistence);
+            framebuffer.Unbind();
+        }
+    }
+    else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+        if(persistence + scale_persistence < 1) {
+            persistence += scale_persistence;
+            cout << "Persistence : " << persistence << endl;
+
+            framebuffer.ClearContent();
+            framebuffer.Bind();
+                perlin.Draw(persistence);
+            framebuffer.Unbind();
+        }
     }
 }
 

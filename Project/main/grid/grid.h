@@ -11,7 +11,9 @@ class Grid {
         GLuint program_id_;                     // GLSL shader program ID
         GLuint texture_id_;                     // texture ID
         GLuint num_indices_;                    // number of vertices to render
-        GLuint MVP_id_;                         // model, view, proj matrix ID
+        GLuint M_id_;                         // model matrix ID
+        GLuint V_id_;                         // view matrix ID
+        GLuint P_id_;                         // proj matrix ID
 
     public:
         void Init(GLuint texture) {
@@ -34,7 +36,7 @@ class Grid {
                 std::vector<GLuint> indices;
                 // TODO 5: make a triangle grid with dimension 100x100.
                 // always two subsequent entries in 'vertices' form a 2D vertex position.
-                int grid_dim = 100;
+                int grid_dim = 512;
 
                 // the given code below are the vertices for a simple quad.
                 // your grid should have the same dimension as that quad, i.e.,
@@ -97,8 +99,41 @@ class Grid {
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
 
+            glm::vec3 light_pos = glm::vec3(1.0f, 1.0f, 2.0f);
+
+            glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
+            glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
+            glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
+
+            GLuint light_pos_id = glGetUniformLocation(program_id_, "light_pos");
+
+            GLuint La_id = glGetUniformLocation(program_id_, "La");
+            GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
+            GLuint Ls_id = glGetUniformLocation(program_id_, "Ls");
+
+            glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
+            glm::vec3 kd = glm::vec3(0.7f, 0.7f, 0.7f);
+            glm::vec3 ks = glm::vec3(0.2f, 0.2f, 0.2f);
+            float alpha = 60.0f;
+
+            GLuint ka_id = glGetUniformLocation(program_id_, "ka");
+            GLuint kd_id = glGetUniformLocation(program_id_, "kd");
+            GLuint ks_id = glGetUniformLocation(program_id_, "ks");
+            GLuint alpha_id = glGetUniformLocation(program_id_, "alpha");
+
+            glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
+            glUniform3fv(La_id, 1, glm::value_ptr(La));
+            glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
+            glUniform3fv(Ls_id, 1, glm::value_ptr(Ls));
+            glUniform3fv(ka_id, ONE, glm::value_ptr(ka));
+            glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
+            glUniform3fv(ks_id, ONE, glm::value_ptr(ks));
+            glUniform1f(alpha_id, alpha);
+
             // other uniforms
-            MVP_id_ = glGetUniformLocation(program_id_, "MVP");
+            M_id_ = glGetUniformLocation(program_id_, "model");
+            V_id_ = glGetUniformLocation(program_id_, "view");
+            P_id_ = glGetUniformLocation(program_id_, "projection");
 
             // to avoid the current object being polluted
             glBindVertexArray(0);
@@ -126,8 +161,9 @@ class Grid {
             glBindTexture(GL_TEXTURE_2D, texture_id_);
 
             // setup MVP
-            glm::mat4 MVP = projection*view*model;
-            glUniformMatrix4fv(MVP_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(MVP));
+            glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
+            glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
+            glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.
