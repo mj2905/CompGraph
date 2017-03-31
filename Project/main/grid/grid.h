@@ -10,6 +10,7 @@ class Grid {
         GLuint vertex_buffer_object_index_;     // memory buffer for indices
         GLuint program_id_;                     // GLSL shader program ID
         GLuint texture_id_;                     // texture ID
+        GLuint interpolation_id_;                     // texture ID
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                         // model matrix ID
         GLuint V_id_;                         // view matrix ID
@@ -99,6 +100,28 @@ class Grid {
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
 
+            // create 1D texture (colormap)
+            {
+                const int ColormapSize=5;
+                GLfloat tex[3*ColormapSize] = {/*yellow*/    1.0, 1.0, 0.0,
+                                                /*yellow*/    0.5, 1.0, 0.0,
+                                               /*green*/ 0.0, 1.0, 0.0,
+                                               /*darkgreen*/ 0, 0, 0,
+                                               /*white*/  1.0, 1.0, 1.0};
+                glGenTextures(1, &interpolation_id_);
+                glBindTexture(GL_TEXTURE_1D, interpolation_id_);
+                glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                GLuint tex_id = glGetUniformLocation(program_id_, "colormap");
+                glUniform1i(tex_id, 1 /*GL_TEXTURE1*/);
+                // check_error_gl();
+
+                glBindTexture(GL_TEXTURE_1D, 0);
+            }
+
+
             glm::vec3 light_pos = glm::vec3(1.0f, 1.0f, 2.0f);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -112,7 +135,7 @@ class Grid {
             GLuint Ls_id = glGetUniformLocation(program_id_, "Ls");
 
             glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
-            glm::vec3 kd = glm::vec3(0.7f, 0.7f, 0.7f);
+            glm::vec3 kd = glm::vec3(0.6f, 0.6f, 0.6f);
             glm::vec3 ks = glm::vec3(0.2f, 0.2f, 0.2f);
             float alpha = 60.0f;
 
@@ -159,6 +182,10 @@ class Grid {
             // bind textures
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture_id_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_1D, interpolation_id_);
 
             // setup MVP
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));

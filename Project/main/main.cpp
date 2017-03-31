@@ -110,11 +110,11 @@ void Init() {
     view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
                          vec3(0.0f, 0.0f, 0.0f),
                          vec3(0.0f, 1.0f, 0.0f));
-    view_matrix = rotate(translate(mat4(1.0f), vec3(0.0f, 0.0f, -2.0f)), (float)M_PI/4, vec3(1, 0, 0));
+    view_matrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, -2.0f));
 
-    trackball_matrix = IDENTITY_MATRIX;
+    trackball_matrix = glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -1, 0.0f));
+    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
 
     GLuint texture_id = framebuffer.Init(window_width, window_height);
     perlin.Init();

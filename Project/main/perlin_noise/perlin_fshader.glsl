@@ -69,13 +69,13 @@ float perlin(vec2 xy) {
     float st = mix(grad(s, xfyf), grad(t, xfyf-vec2(1, 0)), f(xfyf.x));
     float uv = mix(grad(u, xfyf-vec2(0, 1)), grad(v, xfyf-vec2(1, 1)), f(xfyf.x));
 
-    return (mix(st, uv, f(xfyf.y))+1)/2.0;
+    return (mix(st, uv, f(xfyf.y)));
 }
 
 float octavePerlin(vec2 xy) {
     float total = 0;
     float frequency = 1;
-    float amplitude = 1;
+    float amplitude = 0.5;
     float maxValue = 0;
     for(int i = 0; i < nb_octaves; ++i) {
         total += amplitude * perlin(frequency * uv);
