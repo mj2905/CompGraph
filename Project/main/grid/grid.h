@@ -37,7 +37,7 @@ class Grid {
                 std::vector<GLuint> indices;
                 // TODO 5: make a triangle grid with dimension 100x100.
                 // always two subsequent entries in 'vertices' form a 2D vertex position.
-                int grid_dim = 512;
+                int grid_dim = 1024;
 
                 // the given code below are the vertices for a simple quad.
                 // your grid should have the same dimension as that quad, i.e.,

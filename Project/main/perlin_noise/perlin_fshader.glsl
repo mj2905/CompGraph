@@ -8,7 +8,7 @@ const int SIZE_PERM = 256;
 uniform int[SIZE_PERM] perm;
 
 const int nb_subdivisions = 2;
-const int nb_octaves = 50;
+const int nb_octaves = 40;
 uniform float persistence;
 
 int p[2*SIZE_PERM];

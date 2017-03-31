@@ -116,7 +116,7 @@ void Init() {
 
     quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
 
-    GLuint texture_id = framebuffer.Init(window_width, window_height);
+    GLuint texture_id = framebuffer.Init(window_width, window_height, true);
     perlin.Init();
     grid.Init(texture_id);
 
