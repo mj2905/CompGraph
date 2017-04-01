@@ -32,6 +32,8 @@ mat4 quad_model_matrix;
 
 double old_y;
 
+const float begin_time = glfwGetTime();
+
 Trackball trackball;
 FrameBuffer framebuffer;
 

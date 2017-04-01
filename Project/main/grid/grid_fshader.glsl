@@ -27,6 +27,6 @@ void main() {
     vec3 r = normalize(reflect(- light_dir, normal_mv));
     float rDotV = max(dot(r, view_dir), 0);
 
-    color = texture(colormap, (texture(tex, uv).r + 1)/2).rgb * La + kd * nDotL * Ld
+    color = texture(colormap, texture(tex, uv).r).rgb * La + kd * nDotL * Ld
                     + ks * pow(rDotV, alpha) * Ls;
 }

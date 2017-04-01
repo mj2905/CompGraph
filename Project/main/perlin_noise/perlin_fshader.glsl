@@ -7,9 +7,10 @@ out vec3 heightmap;
 const int SIZE_PERM = 256;
 uniform int[SIZE_PERM] perm;
 
-const int nb_subdivisions = 2;
+//const int nb_subdivisions = 1;
 const int nb_octaves = 20;
 uniform float persistence;
+uniform float time;
 
 int p[2*SIZE_PERM];
 
@@ -38,58 +39,44 @@ float grad(int hash, vec2 v)
 }
 
 int inc(int num) {
-    return (num+1)%(2*SIZE_PERM);
+    return (num+1)%SIZE_PERM;
 }
 
-/*
-    vec2 xfyf = vec2(mod(uv.x*nb_subdivisions, 1.0), mod(uv.y*nb_subdivisions, 1.0));
-    ivec2 xiyi = ivec2(uv * nb_subdivisions);
-
-    int s = p[p[xiyi.x ]+    xiyi.y ];
-    int t = p[p[xiyi.x + 1 ]+    xiyi.y ];
-    int u = p[inc(p[xiyi.x ]+ xiyi.y)];
-    int v = p[inc(p[xiyi.x + 1 ]+ xiyi.y)];
-
-    float st = mix(grad(s, xfyf), grad(t, xfyf-vec2(1, 0)), f(xfyf.x));
-    float uv = mix(grad(u, xfyf-vec2(0, 1)), grad(v, xfyf-vec2(1, 1)), f(xfyf.x));
-
-    heightmap = (vec3(mix(st, uv, f(xfyf.y)))+1)/2.0;
-
-    */
-
-float perlin(vec2 xy) {
+float perlin(vec2 xy, float nb_subdivisions) {
     vec2 xfyf = vec2(mod(xy.x*nb_subdivisions, 1.0), mod(xy.y*nb_subdivisions, 1.0));
     ivec2 xiyi = ivec2(xy * nb_subdivisions) % 256;
+    float fx = f(xfyf.x), fy = f(xfyf.y);
 
     int s = p[p[xiyi.x ]+    xiyi.y ];
     int t = p[p[xiyi.x + 1 ]+    xiyi.y ];
     int u = p[inc(p[xiyi.x ]+ xiyi.y)];
     int v = p[inc(p[xiyi.x + 1 ]+ xiyi.y)];
 
-    float st = mix(grad(s, xfyf), grad(t, xfyf-vec2(1, 0)), f(xfyf.x));
-    float uv = mix(grad(u, xfyf-vec2(0, 1)), grad(v, xfyf-vec2(1, 1)), f(xfyf.x));
+    float st = mix(grad(s, xfyf), grad(t, xfyf-vec2(1, 0)), fx);
+    float uv = mix(grad(u, xfyf-vec2(0, 1)), grad(v, xfyf-vec2(1, 1)), fx);
 
-    return (mix(st, uv, f(xfyf.y)));
+    return (mix(st, uv, fy));
 }
 
-float octavePerlin(vec2 xy) {
+float octavePerlin(vec2 xy, float time) {
     float total = 0;
-    float frequency = 1;
-    float amplitude = 0.4;
+    float frequency = 2;
+    float amplitude = 0.5;
     float maxValue = 0;
     for(int i = 0; i < nb_octaves; ++i) {
-        total += amplitude * perlin(frequency * uv);
+        total += amplitude * perlin(uv+time, frequency);
         maxValue += amplitude;
         amplitude *= persistence;
         frequency *= 2;
     }
-    return total/maxValue;
+    return (total/maxValue + 0.5); //bet -0.5 and 1.5 => more of lowest and highest values
+    // /!\ warning : I don't understand why these values are between 0 and 1 and not -0.5 and 1.5 as planned
 }
 
 void main() {
 
     generateP();
-    heightmap = vec3(octavePerlin(uv));
+    heightmap = vec3(octavePerlin(uv, time));
 
 
 }
