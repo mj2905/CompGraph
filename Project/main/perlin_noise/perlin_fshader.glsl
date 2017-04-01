@@ -7,8 +7,7 @@ out float heightmap;
 const int SIZE_PERM = 256;
 uniform int[SIZE_PERM] perm;
 
-//const int nb_subdivisions = 1;
-const int nb_octaves = 20;
+const int nb_octaves = 8;
 uniform float persistence;
 uniform float time;
 
