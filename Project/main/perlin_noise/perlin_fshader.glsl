@@ -25,15 +25,11 @@ float f(float t) {
 
 float grad(int hash, vec2 v)
 {
-    int hashMasked = hash & 0x7;
+    int hashMasked = hash & 0x3;
          if(hashMasked == 0x0) return  v.x + v.y; // (1, 1)
     else if(hashMasked == 0x1) return  v.y - v.x; // (-1, 1)
     else if(hashMasked == 0x2) return  v.x - v.y; // (1, -1)
     else if(hashMasked == 0x3) return  -v.x - v.y; // (-1, -1)
-    else if(hashMasked == 0x4) return  -0.5*v.x+ 0.5*v.y; // (-0.5, 0.5)
-    else if(hashMasked == 0x5) return  0.5*v.x + 0.5*v.y; // (0.5, 0.5)
-    else if(hashMasked == 0x6) return  -0.5*v.x-0.5*v.y; // (-0.5, -0.5)
-    else if(hashMasked == 0x7) return  0.5*v.x-0.5*v.y; // (0.5, -0.5)
     else                       return 0;
 }
 
@@ -57,13 +53,14 @@ float perlin(vec2 xy, float nb_subdivisions) {
     return (mix(st, uv, fy));
 }
 
+
 float octavePerlin(vec2 xy, float time) {
     float total = 0;
-    float frequency = 2;
-    float amplitude = 0.5;
+    float frequency = 2.8;
+    float amplitude = 1;
     float maxValue = 0;
     for(int i = 0; i < nb_octaves; ++i) {
-        total += amplitude * perlin(uv+time, frequency);
+        total += amplitude * perlin(uv+time, frequency)/2;
         maxValue += amplitude;
         amplitude *= persistence;
         frequency *= 2;
@@ -144,16 +141,16 @@ float perlin(vec2 xy, float nb_subdivisions) {
 
 float octavePerlin(vec2 xy, float time) {
     float total = 0;
-    float frequency = 1;
+    float frequency = 1.6;
     float amplitude = 1;
     float maxValue = 0;
     for(int i = 0; i < nb_octaves; ++i) {
-        total += amplitude * (0.45-abs(perlin(uv+time, frequency)));
-        maxValue += amplitude/2;
+        total += amplitude * (-abs(perlin(uv+time, frequency)));
+        maxValue += amplitude;
         amplitude *= persistence;
         frequency *= 2;
     }
-    return (total/maxValue); //bet 0 and 1
+    return (total/maxValue + 0.7); //bet 0 and 1
 }
 
 void main() {
