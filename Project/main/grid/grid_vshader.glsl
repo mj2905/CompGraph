@@ -29,4 +29,7 @@ void main() {
     light_dir = normalize(light_pos - vec3(vpoint_mv));
     view_dir = normalize(- vec3(vpoint_mv));
 
+
+
 }
+

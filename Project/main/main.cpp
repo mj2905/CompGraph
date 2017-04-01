@@ -17,7 +17,7 @@ Grid grid;
 PerlinNoise perlin;
 
 float persistence = .5;
-float scale_persistence = 0.01f;
+float scale_persistence = 0.1f;
 
 int window_width = 800;
 int window_height = 600;

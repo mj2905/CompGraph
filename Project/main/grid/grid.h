@@ -120,7 +120,7 @@ class Grid {
             }
 
 
-            glm::vec3 light_pos = glm::vec3(1.0f, 1.0f, 2.0f);
+            glm::vec3 light_pos = glm::vec3(2.0f, 2.0f, 0.5f);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
             glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -134,7 +134,7 @@ class Grid {
 
             glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
             glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
-            glm::vec3 ks = glm::vec3(0.4f, 0.4f, 0.4f);
+            glm::vec3 ks = glm::vec3(0.1f, 0.1f, 0.1f);
             float alpha = 60.0f;
 
             GLuint ka_id = glGetUniformLocation(program_id_, "ka");
