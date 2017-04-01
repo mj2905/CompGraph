@@ -8,7 +8,7 @@ const int SIZE_PERM = 256;
 uniform int[SIZE_PERM] perm;
 
 const int nb_subdivisions = 2;
-const int nb_octaves = 40;
+const int nb_octaves = 20;
 uniform float persistence;
 
 int p[2*SIZE_PERM];
@@ -59,7 +59,7 @@ int inc(int num) {
 
 float perlin(vec2 xy) {
     vec2 xfyf = vec2(mod(xy.x*nb_subdivisions, 1.0), mod(xy.y*nb_subdivisions, 1.0));
-    ivec2 xiyi = ivec2(xy * nb_subdivisions);
+    ivec2 xiyi = ivec2(xy * nb_subdivisions) % 256;
 
     int s = p[p[xiyi.x ]+    xiyi.y ];
     int t = p[p[xiyi.x + 1 ]+    xiyi.y ];
@@ -75,7 +75,7 @@ float perlin(vec2 xy) {
 float octavePerlin(vec2 xy) {
     float total = 0;
     float frequency = 1;
-    float amplitude = 0.5;
+    float amplitude = 0.4;
     float maxValue = 0;
     for(int i = 0; i < nb_octaves; ++i) {
         total += amplitude * perlin(frequency * uv);
@@ -83,7 +83,7 @@ float octavePerlin(vec2 xy) {
         amplitude *= persistence;
         frequency *= 2;
     }
-    return total;
+    return total/maxValue;
 }
 
 void main() {

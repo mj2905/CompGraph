@@ -102,12 +102,11 @@ class Grid {
 
             // create 1D texture (colormap)
             {
-                const int ColormapSize=4;
-                GLfloat tex[3*ColormapSize] = {/*yellow*/    0.6, 0.6, 0.0,
-                                                /*yellow*/    //0.5, 0.9, 0.0,
-                                               /*darkgreen*/ 0.2, 0.4, 0.2,
-                                               /*white*/  0.75, 0.75, 0.75,
-                                              /*white*/  0.9, 0.9, 0.9};
+                const int ColormapSize=3;
+                GLfloat tex[3*ColormapSize] = {/*yellow*/    0.8, 0.8, 0.0,
+                                               /*darkgreen*/ 0.0, 0.2, 0.0,
+                                               /*white*/  //0.75, 0.75, 0.75,
+                                              /*white*/  1, 1, 1};
                 glGenTextures(1, &interpolation_id_);
                 glBindTexture(GL_TEXTURE_1D, interpolation_id_);
                 glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
