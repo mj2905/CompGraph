@@ -2,7 +2,7 @@
 
 in vec2 uv;
 
-out vec3 heightmap;
+out float heightmap;
 
 const int SIZE_PERM = 256;
 uniform int[SIZE_PERM] perm;
@@ -70,13 +70,12 @@ float octavePerlin(vec2 xy, float time) {
         frequency *= 2;
     }
     return (total/maxValue + 0.5); //bet -0.5 and 1.5 => more of lowest and highest values
-    // /!\ warning : I don't understand why these values are between 0 and 1 and not -0.5 and 1.5 as planned
 }
 
 void main() {
 
     generateP();
-    heightmap = vec3(octavePerlin(uv, time));
+    heightmap = (octavePerlin(uv, time));
 
 
 }
