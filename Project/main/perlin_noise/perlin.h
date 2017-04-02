@@ -95,7 +95,7 @@ class PerlinNoise {
             glDeleteVertexArrays(1, &vertex_array_id_);
         }
 
-        void Draw(float persistence, float time=5) {
+        void Draw(float persistence, float time=15) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
