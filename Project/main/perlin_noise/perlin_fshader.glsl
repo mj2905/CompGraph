@@ -53,6 +53,7 @@ float perlin(vec2 xy, float nb_subdivisions) {
     return (mix(st, uv, fy));
 }
 
+/*
 float octavePerlin(vec2 xy, float time) {
     float total = 0;
     float frequency = 2.8;
@@ -66,23 +67,12 @@ float octavePerlin(vec2 xy, float time) {
     }
     return (total/(1.5*maxValue) + 0.5); //bet -1/6 and 7/6
 }
-
-
-void main() {
-
-    generateP();
-    heightmap = (octavePerlin(uv, time));
-
-
-}
-
+*/
 
 //Hybrid multifractal
-
-/*
 float octavePerlin(vec2 xy, float time) {
     float total = 0;
-    float frequency = 1.6;
+    float frequency = 1.2;
     float amplitude = 1;
     float maxValue = 0;
     for(int i = 0; i < nb_octaves; ++i) {
@@ -93,4 +83,10 @@ float octavePerlin(vec2 xy, float time) {
     }
     return (1 - total/maxValue); //bet 0 and 1
 }
-*/
+
+
+
+void main() {
+    generateP();
+    heightmap = (octavePerlin(uv, time));
+}
