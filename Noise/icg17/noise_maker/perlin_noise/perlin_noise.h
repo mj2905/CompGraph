@@ -7,7 +7,6 @@ class Perlin_noise {
         GLuint vertex_array_id_;        // vertex array object
         GLuint program_id_;             // GLSL shader program ID
         GLuint vertex_buffer_object_;   // memory buffer
-        GLuint texture_id_;             // texture ID
 
         float screenquad_width_;
         float screenquad_height_;
@@ -92,12 +91,6 @@ class Perlin_noise {
                                       ZERO_BUFFER_OFFSET);
             }
 
-            // load/Assign texture
-            glBindTexture(GL_TEXTURE_2D, texture_id_);
-            GLuint tex_id = glGetUniformLocation(program_id_, "tex");
-            glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
-            glBindTexture(GL_TEXTURE_2D, 0);
-
             // to avoid the current object being polluted
             glUniform1iv(glGetUniformLocation(program_id_, "permutation"),256, permutation);
 
@@ -112,7 +105,6 @@ class Perlin_noise {
             glDeleteBuffers(1, &vertex_buffer_object_);
             glDeleteProgram(program_id_);
             glDeleteVertexArrays(1, &vertex_array_id_);
-            glDeleteTextures(1, &texture_id_);
         }
 
         void UpdateSize(int screenquad_width, int screenquad_height) {
@@ -129,9 +121,6 @@ class Perlin_noise {
                         this->screenquad_width_);
             glUniform1f(glGetUniformLocation(program_id_, "tex_height"),
                         this->screenquad_height_);
-            // bind texture
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture_id_);
 
             // draw
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

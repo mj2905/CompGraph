@@ -21,11 +21,9 @@ float fade(float t){
 }
 
 
-
 int inc(int num){
     return (num+1)%256;
 }
-
 
 
 vec3 perlinNoise(vec2 zx){
@@ -53,14 +51,14 @@ vec3 perlinNoise(vec2 zx){
     // On hash les coordonnées des coins du cube.
     int aa, ab, ba, bb;
     aa = p[(p[xx]+yy)];
-    ab = p[(p[xx]+ yy+1)];
-    ba = p[(p[xx+1]+ yy)];
-    bb = p[(p[xx+1]+yy+1)];
+    ab = p[(p[xx]+ inc(yy))];
+    ba = p[p[xx+1]+ yy];
+    bb = p[p[xx+1]+ inc(yy)];
 
     // On trouve les produits scalaires en utilisant les hash précédents pour accéder aux gradients
     float s = dot(grad[aa%4], xryr);
-    float t = dot(grad[ab%4], xryr - vec2(1,0));
-    float o = dot(grad[ba%4], xryr - vec2(0,1));
+    float t = dot(grad[ba%4], xryr - vec2(1,0));
+    float o = dot(grad[ab%4], xryr - vec2(0,1));
     float v = dot(grad[bb%4], xryr- vec2(1,1));
 
     // Interp linéaire (mix) puis renvoi
