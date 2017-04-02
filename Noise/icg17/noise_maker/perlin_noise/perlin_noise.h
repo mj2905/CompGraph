@@ -13,7 +13,7 @@ class Perlin_noise {
 
     public:
 
-        void Init(float screenquad_width, float screenquad_height) {
+        void Init() {
 
             int permutation[256] = { 151,160,137,91,90,15,                 // Hash lookup table as defined by Ken Perlin.  This is a randomly
                 131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,    // arranged array of all numbers from 0-255 inclusive.
@@ -29,13 +29,6 @@ class Perlin_noise {
                 49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
                 138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
             };
-
-
-
-
-            // set screenquad size
-            this->screenquad_width_ = screenquad_width;
-            this->screenquad_height_ = screenquad_height;
 
             // compile the shaders
             program_id_ = icg_helper::LoadShaders("perlin_vshader.glsl",
@@ -107,20 +100,12 @@ class Perlin_noise {
             glDeleteVertexArrays(1, &vertex_array_id_);
         }
 
-        void UpdateSize(int screenquad_width, int screenquad_height) {
-            this->screenquad_width_ = screenquad_width;
-            this->screenquad_height_ = screenquad_height;
-        }
 
         void Draw() {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
             // window size uniforms
-            glUniform1f(glGetUniformLocation(program_id_, "tex_width"),
-                        this->screenquad_width_);
-            glUniform1f(glGetUniformLocation(program_id_, "tex_height"),
-                        this->screenquad_height_);
 
             // draw
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

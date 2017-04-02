@@ -54,8 +54,8 @@ void Init(GLFWwindow* window) {
 
     quad.Init(framebuffer_texture_id);
 
-    //Passing them to the screenquad
-    perlin.Init(window_width, window_height);
+    //Let's create the noise
+    perlin.Init();
 
     framebuffer.Clear();
     framebuffer.Bind();

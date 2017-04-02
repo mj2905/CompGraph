@@ -25,45 +25,46 @@ int inc(int num){
     return (num+1)%256;
 }
 
+/**
+  This function is used to compute the dot product between a gradient and a vector v(x,y).
+  The 4 gradients we have are (1,1), (1,-1), (-1,1), (-1,-1)
+  Given an index, we must select between 4 possible values;
+  x+y, x-y, -x+y, -x-y.
+
+  **/
+float grad_dot(int index, vec2 pos){
+    int h = index & 3;
+    float u = h < 2? pos.x: -pos.x;
+    float v = h == 0? pos.y : h == 2? pos.y : -pos.y;
+    return u+v;
+}
 
 vec3 perlinNoise(vec2 zx){
-    vec2 grad[4];
-    grad[0] = vec2(1,1);
-    grad[1] = vec2(1,-1);
-    grad[2] = vec2(-1,1);
-    grad[3] = vec2(-1,-1);
-
-
-    int p[512];                                                    // Doubled permutation to avoid overflow
+    int p[512];
     for(int i=0; i < 512;i++){
         p[i] = permutation[i%256];
     }
 
-    // numéro de zone
+    // Selects the cube we're in
     ivec2 xiyi = ivec2(zx * CUBE_NUMBER )%256;
 
     int xx = xiyi.x;
     int yy = xiyi.y;
-    // coordonnées dans le cube
+
+    // Represents the coordinates inside of the cube
     vec2 xryr = vec2(mod(zx.x*CUBE_NUMBER, 1.0), mod(zx.y*CUBE_NUMBER, 1.0));
 
 
-    // On hash les coordonnées des coins du cube.
+    // We hash the coordinates of the corner
     int aa, ab, ba, bb;
     aa = p[(p[xx]+yy)];
     ab = p[(p[xx]+ inc(yy))];
     ba = p[p[xx+1]+ yy];
     bb = p[p[xx+1]+ inc(yy)];
 
-    // On trouve les produits scalaires en utilisant les hash précédents pour accéder aux gradients
-    float s = dot(grad[aa%4], xryr);
-    float t = dot(grad[ba%4], xryr - vec2(1,0));
-    float o = dot(grad[ab%4], xryr - vec2(0,1));
-    float v = dot(grad[bb%4], xryr- vec2(1,1));
-
-    // Interp linéaire (mix) puis renvoi
-    float st = mix(s, t, fade(xryr.x));
-    float ov = mix(o, v, fade(xryr.x));
+    // We compute with grad_dot s,t, u and v directly, and use them in st and ov
+    float st = mix(grad_dot(aa, xryr), grad_dot(ba, xryr - vec2(1,0)), fade(xryr.x));
+    float ov = mix(grad_dot(ab, xryr - vec2(0,1)), grad_dot(bb, xryr - vec2(1,1)), fade(xryr.x));
     float noise = mix(st, ov, fade(xryr.y));
 
     return vec3(noise,noise,noise);
