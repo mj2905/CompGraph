@@ -37,7 +37,7 @@ const float begin_time = glfwGetTime();
 Trackball trackball;
 FrameBuffer framebuffer;
 
-float offsetX = 2;
+float offsetX = 0;
 float offsetY = 0;
 
 mat4 OrthographicProjection(float left, float right, float bottom,
@@ -138,7 +138,7 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
-    float time = glfwGetTime()/2;
+    float time = 0;//glfwGetTime()/2;
 
     mat4 rotTime = rotate(IDENTITY_MATRIX, time, vec3(0, 1, 0));
 
@@ -247,17 +247,17 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
 
-    else if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
-        offsetY += 0.1;
+    if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        offsetY += 0.005;
     }
-    else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-        offsetY -= 0.1;
+    if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        offsetY -= 0.005;
     }
-    else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-        offsetX -= 0.1;
+    if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        offsetX -= 0.005;
     }
-    else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-        offsetX += 0.1;
+    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        offsetX += 0.005;
     }
 }
 

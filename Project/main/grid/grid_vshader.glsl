@@ -15,8 +15,17 @@ uniform sampler2D tex;
 
 uniform vec2 offset;
 
+float zoom = 2;
+
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
+
+    vec2 xy = vec2(uv.x / zoom + offset.x, uv.y / zoom + offset.y);
+    vec2 d = vec2(mod(int(xy.x), 2) == 0 ? 1 : 0,
+                  mod(int(xy.y), 2) == 0 ? 1 : 0);
+    d = vec2(xy.x >= 0 ? d.x : 1-d.x, xy.y >= 0 ? d.y : 1-d.y);
+
+    uv = vec2(d.x == 0 ? mod(xy.x, 1.0) : 1 - mod(xy.x, 1.0), d.y == 0 ? mod(xy.y, 1.0) : 1-mod(xy.y, 1.0));
 
     // convert the 2D position into 3D positions that all lay in a horizontal
     // plane.

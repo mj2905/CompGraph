@@ -56,7 +56,7 @@ float perlin(vec2 xy, float nb_subdivisions) {
 
 float octavePerlin(vec2 xy, vec2 offset) {
     float total = 0;
-    float frequency = 2.8;
+    float frequency = 8;
     float amplitude = 1;
     float maxValue = 0;
     for(int i = 0; i < nb_octaves; ++i) {
