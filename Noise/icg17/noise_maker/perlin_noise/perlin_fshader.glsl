@@ -5,8 +5,6 @@
 // the array and permutations of the perlinNoise function, as well as the fade function all comes from:
 // http://flafla2.github.io/2014/08/09/perlinnoise.html
 
-
-
 in vec2 uv;
 
 uniform int permutation[256];
@@ -25,6 +23,7 @@ int inc(int num){
     return (num+1)%256;
 }
 
+
 /**
   This function is used to compute the dot product between a gradient and a vector v(x,y).
   The 4 gradients we have are (1,1), (1,-1), (-1,1), (-1,-1)
@@ -39,7 +38,7 @@ float grad_dot(int index, vec2 pos){
     return u+v;
 }
 
-vec3 perlinNoise(vec2 zx){
+float perlinNoise(vec2 zx){
     int p[512];
     for(int i=0; i < 512;i++){
         p[i] = permutation[i%256];
@@ -67,12 +66,30 @@ vec3 perlinNoise(vec2 zx){
     float ov = mix(grad_dot(ab, xryr - vec2(0,1)), grad_dot(bb, xryr - vec2(1,1)), fade(xryr.x));
     float noise = mix(st, ov, fade(xryr.y));
 
-    return vec3(noise,noise,noise);
+    return noise;
 
 }
 
 
+float OctavePerlin(float x, float y, int octaves, float persistence) {
+    float total = 0;
+    float frequency = 1;
+    float amplitude = 1;
+    float maxValue = 0;
+    for(int i=0;i<octaves;i++) {
+        total += perlinNoise(vec2(x*frequency,y*frequency))*amplitude;
+        maxValue += amplitude;
+        amplitude *= persistence;
+        frequency *= 2;
+    }
+
+    return total/maxValue;
+}
+
+
+
 void main(void)
 {
-    color = perlinNoise(uv);
+    float n = OctavePerlin(uv.x,uv.y, 8, 0.5);
+    color = vec3(n,n,n);
 }
