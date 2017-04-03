@@ -9,7 +9,7 @@ uniform int[SIZE_PERM] perm;
 
 const int nb_octaves = 8;
 uniform float persistence;
-uniform float time;
+uniform vec2 off = vec2(0, 0);
 
 int p[2*SIZE_PERM];
 
@@ -50,43 +50,44 @@ float perlin(vec2 xy, float nb_subdivisions) {
     float st = mix(grad(s, xfyf), grad(t, xfyf-vec2(1, 0)), fx);
     float uv = mix(grad(u, xfyf-vec2(0, 1)), grad(v, xfyf-vec2(1, 1)), fx);
 
-    return (mix(st, uv, fy));
+    return mix(st, uv, fy);
 }
 
-/*
-float octavePerlin(vec2 xy, float time) {
+
+float octavePerlin(vec2 xy, vec2 offset) {
     float total = 0;
     float frequency = 2.8;
     float amplitude = 1;
     float maxValue = 0;
     for(int i = 0; i < nb_octaves; ++i) {
-        total += amplitude * perlin(uv+time, frequency)/2;
+        total += amplitude * perlin(uv+offset, frequency);
         maxValue += amplitude;
         amplitude *= persistence;
         frequency *= 2;
     }
-    return (total/(1.5*maxValue) + 0.5); //bet -1/6 and 7/6
+    return (total/(2*maxValue) + 0.5); //bet -1/6 and 7/6
 }
-*/
+
 
 //Hybrid multifractal
-float octavePerlin(vec2 xy, float time) {
+/*
+float octavePerlin(vec2 xy, vec2 offset) {
     float total = 0;
     float frequency = 1.2;
     float amplitude = 1;
     float maxValue = 0;
     for(int i = 0; i < nb_octaves; ++i) {
-        total += amplitude * (abs(perlin(uv+time, frequency)));
+        total += amplitude * (abs(perlin(uv+offset, frequency)));
         maxValue += amplitude;
         amplitude *= persistence;
         frequency *= 2;
     }
     return (1 - total/maxValue); //bet 0 and 1
 }
-
+*/
 
 
 void main() {
     generateP();
-    heightmap = (octavePerlin(uv, time));
+    heightmap = (octavePerlin(uv, off));
 }

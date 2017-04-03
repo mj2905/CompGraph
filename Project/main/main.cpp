@@ -37,6 +37,9 @@ const float begin_time = glfwGetTime();
 Trackball trackball;
 FrameBuffer framebuffer;
 
+float offsetX = 2;
+float offsetY = 0;
+
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
     assert(right > left);
@@ -131,13 +134,15 @@ void Init() {
 
 // gets called for every frame.
 void Display() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, window_width, window_height);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
-    grid.Draw(trackball_matrix * quad_model_matrix, view_matrix, projection_matrix);
+    float time = 0;//glfwGetTime()/2;
+
+    mat4 rotTime = rotate(IDENTITY_MATRIX, time, vec3(0, 1, 0));
+
+    grid.Draw(trackball_matrix * quad_model_matrix * rotTime, view_matrix, projection_matrix);
 
 }
 
@@ -240,6 +245,19 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 perlin.Draw(persistence);
             framebuffer.Unbind();
         }
+    }
+
+    else if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+        offsetY += 0.1;
+    }
+    else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+        offsetY -= 0.1;
+    }
+    else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+        offsetX -= 0.1;
+    }
+    else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+        offsetX += 0.1;
     }
 }
 
