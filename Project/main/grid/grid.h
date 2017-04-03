@@ -171,7 +171,8 @@ class Grid {
             glDeleteTextures(1, &texture_id_);
         }
 
-        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
+        void Draw(float offsetX, float offsetY,
+                  const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
             glUseProgram(program_id_);
@@ -189,6 +190,11 @@ class Grid {
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
+
+
+            glm::vec2 offset = glm::vec2(offsetX, offsetY);
+
+            glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.

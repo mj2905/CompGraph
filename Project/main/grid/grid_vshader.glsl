@@ -13,6 +13,8 @@ uniform vec3 light_pos;
 
 uniform sampler2D tex;
 
+uniform vec2 offset;
+
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
 

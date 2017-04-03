@@ -138,11 +138,11 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
-    float time = 0;//glfwGetTime()/2;
+    float time = glfwGetTime()/2;
 
     mat4 rotTime = rotate(IDENTITY_MATRIX, time, vec3(0, 1, 0));
 
-    grid.Draw(trackball_matrix * quad_model_matrix * rotTime, view_matrix, projection_matrix);
+    grid.Draw(offsetX, offsetY, trackball_matrix * quad_model_matrix * rotTime, view_matrix, projection_matrix);
 
 }
 
