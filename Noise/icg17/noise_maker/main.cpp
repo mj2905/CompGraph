@@ -20,6 +20,7 @@ Trackball trackball;
 
 int window_width = 800;
 int window_height = 600;
+double old_y;
 
 using namespace glm;
 
@@ -157,12 +158,7 @@ void MouseButton(GLFWwindow* window, int button, int action, int mod) {
         old_trackball_matrix = trackball_matrix;
         // Store the current state of the model matrix.
     }
-
-    if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        double x_i, y_i;
-        glfwGetCursorPos(window, &x_i, &y_i);
-        q = y_i;
-    }
+    old_y = -2;
 }
 
 void MousePos(GLFWwindow* window, double x, double y) {
@@ -171,24 +167,25 @@ void MousePos(GLFWwindow* window, double x, double y) {
         // TODO 3: Calculate 'trackball_matrix' given the return value of
         // trackball.Drag(...) and the value stored in 'old_trackball_matrix'.
         // See also the mouse_button(...) function.
-        trackball_matrix = trackball.Drag(x-window_width/2.0,y-window_height/2.0 ) * old_trackball_matrix;
+        // trackball_matrix = ...
+        trackball_matrix = trackball.Drag(p.x, p.y) * old_trackball_matrix;
     }
 
     // zoom
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-        //vec2 p = TransformScreenCoords(window, x, y);
-        double x_i, y_i;
-        glfwGetCursorPos(window, &x_i, &y_i);
-     /*
-        if(q.y < -2.0){
-            q = p;
-        }*/
+        // TODO 4: Implement zooming. When the right mouse button is pressed,
+        // moving the mouse cursor up and down (along the screen's y axis)
+        // should zoom out and it. For that you have to update the current
+        // 'view_matrix' with a translation along the z axis.
+        // view_matrix = ...
 
+        vec2 p = TransformScreenCoords(window, x, y);
+        if(old_y < -1.5) {
+            old_y = p.y;
+        }
 
-         view_matrix = translate(mat4(1.0f), vec3(0,0,(y_i-q)/20));
-
-
-
+        view_matrix = translate(view_matrix, vec3(0.0, 0.0, p.y - old_y));
+        old_y = p.y;
     }
 }
 

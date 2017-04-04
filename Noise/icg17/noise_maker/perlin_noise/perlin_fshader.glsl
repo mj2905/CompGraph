@@ -90,6 +90,6 @@ float OctavePerlin(float x, float y, int octaves, float persistence) {
 
 void main(void)
 {
-    float n = OctavePerlin(uv.x,uv.y, 8, 0.5);
+    float n = OctavePerlin(uv.x,uv.y, 8, 0.1); // 2nd parameter is directly related to the spike numbers
     color = vec3(n,n,n);
 }
