@@ -39,6 +39,9 @@ FrameBuffer framebuffer;
 
 float offsetX = 0;
 float offsetY = 0;
+float scale_offset = 0.1;
+
+float distance_camera = -2.0f;
 
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
@@ -115,7 +118,7 @@ void Init() {
     view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
                          vec3(0.0f, 0.0f, 0.0f),
                          vec3(0.0f, 1.0f, 0.0f));
-    view_matrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, -2.0f));
+    view_matrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, distance_camera));
 
     trackball_matrix = glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
@@ -194,6 +197,7 @@ void MousePos(GLFWwindow* window, double x, double y) {
 
         view_matrix = translate(view_matrix, vec3(0.0, 0.0, p.y - old_y));
         old_y = p.y;
+        cout << view_matrix[3][2] << endl;
     }
 }
 
@@ -248,16 +252,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 
     if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetY += 0.005;
+        offsetY += scale_offset;
     }
     if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetY -= 0.005;
+        offsetY -= scale_offset;
     }
     if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetX -= 0.005;
+        offsetX -= scale_offset;
     }
     if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetX += 0.005;
+        offsetX += scale_offset;
     }
 }
 
