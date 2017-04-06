@@ -2,6 +2,12 @@
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
 
+#include "texture.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+// setup 1D color texture
 #define NB_COLOR 6
 GLfloat tex[NB_COLOR] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0};
 
@@ -61,6 +67,7 @@ class Grid: public Material, public Light {
         GLuint vertex_array_id_;                // vertex array object
         GLuint vertex_buffer_object_position_;  // memory buffer for positions
         GLuint vertex_buffer_object_index_;     // memory buffer for indices
+        GLuint vertex_normal_buffer_object_;    // memory buffer for normals
         GLuint program_id_;                     // GLSL shader program ID
         GLuint texture_id_;                     // texture ID
         GLuint num_indices_;                    // number of vertices to render
@@ -121,6 +128,11 @@ class Grid: public Material, public Light {
                 glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat),
                              &vertices[0], GL_STATIC_DRAW);
 
+                glGenBuffers(ONE, &vertex_normal_buffer_object_);
+                glBindBuffer(GL_ARRAY_BUFFER, vertex_normal_buffer_object_);
+                glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat),
+                             &vertices[0], GL_STATIC_DRAW);
+
                 // vertex indices
                 glGenBuffers(1, &vertex_buffer_object_index_);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_buffer_object_index_);
@@ -134,17 +146,6 @@ class Grid: public Material, public Light {
                                       ZERO_STRIDE, ZERO_BUFFER_OFFSET);
             }
 
-
-            // vertex attribute id for positions
-            GLint vertex_point_id = glGetAttribLocation(program_id_, "vpoint");
-            if (vertex_point_id >= 0) {
-                glEnableVertexAttribArray(vertex_point_id);
-
-                glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object_index_);
-                glVertexAttribPointer(vertex_point_id, 3 /*vec3*/, GL_FLOAT,
-                                      DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
-            }
-
             this->texture_id_= texture;
 
             glBindTexture(GL_TEXTURE_2D, texture_id_);
@@ -156,7 +157,6 @@ class Grid: public Material, public Light {
 
             // other uniforms
             MVP_id_ = glGetUniformLocation(program_id_, "MVP");
-
 
             // to avoid the current object being polluted
             glBindVertexArray(0);
@@ -180,16 +180,28 @@ class Grid: public Material, public Light {
             glBindVertexArray(vertex_array_id_);
 
 
-
             Material::Setup(program_id_);
             Light::Setup(program_id_);
-
 
             // bind textures
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture_id_);
 
             // setup MVP
+            glm::mat4 M = model;
+            M = glm::translate(M, glm::vec3(0.0f, 0.0f, 0.5f));
+            M = glm::rotate(M, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+            GLint model_id = glGetUniformLocation(program_id_,
+                                                  "model");
+            glUniformMatrix4fv(model_id, ONE, DONT_TRANSPOSE, glm::value_ptr(M));
+            GLint view_id = glGetUniformLocation(program_id_,
+                                                 "view");
+            glUniformMatrix4fv(view_id, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
+            GLint projection_id = glGetUniformLocation(program_id_,
+                                                       "projection");
+            glUniformMatrix4fv(projection_id, ONE, DONT_TRANSPOSE,
+                               glm::value_ptr(projection));
             glm::mat4 MVP = projection*view*model;
             glUniformMatrix4fv(MVP_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(MVP));
 

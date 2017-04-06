@@ -11,8 +11,12 @@ uniform int permutation[256];
 
 out vec3 color;
 
-#define CUBE_NUMBER 10.0
 #define SQRT2 1.41421356237
+#define FREQ 2
+#define CUBE_NUMBER FREQ
+#define AMPLITUDE 1
+#define OCTAVES 8
+#define  PERSISTENCE 0.45
 
 float fade(float t){
     return t*t*t*(t*(t*6.0 -15.0) +10.0);
@@ -73,8 +77,8 @@ float perlinNoise(vec2 zx){
 
 float OctavePerlin(float x, float y, int octaves, float persistence) {
     float total = 0;
-    float frequency = 1;
-    float amplitude = 1;
+    float frequency = FREQ;
+    float amplitude = AMPLITUDE;
     float maxValue = 0;
     for(int i=0;i<octaves;i++) {
         total += perlinNoise(vec2(x*frequency,y*frequency))*amplitude;
@@ -90,6 +94,6 @@ float OctavePerlin(float x, float y, int octaves, float persistence) {
 
 void main(void)
 {
-    float n = OctavePerlin(uv.x,uv.y, 8, 0.1); // 2nd parameter is directly related to the spike numbers
+    float n = OctavePerlin(uv.x,uv.y, OCTAVES, PERSISTENCE); // 2nd parameter is directly related to the spike numbers
     color = vec3(n,n,n);
 }
