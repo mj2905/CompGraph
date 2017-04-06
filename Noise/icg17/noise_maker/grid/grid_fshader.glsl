@@ -17,15 +17,24 @@ uniform sampler2D tex;
 void main() {
 
     vec3 p = vpoint_mv.xyz;
-    vec3 normal_mv = normalize(cross(dFdx(p), dFdy(p)));
+    float epsilonx = 1.0;
+    float p1 = texture(tex, uv + vec2(epsilonx, epsilonx)).r;
+    float p2 = texture(tex, uv + vec2(epsilonx, -epsilonx)).r;
+    float p3 = texture(tex, uv + vec2(-epsilonx, epsilonx)).r;
+    float p4 = texture(tex, uv + vec2(-epsilonx, -epsilonx)).r;
+    vec3 v1 = vec3(-1,0,p1);
+    vec3 v2 = vec3(1,0,p2);
+    vec3 v3 = vec3(0,1, p3);
+    vec3 v4 = vec3(0,-1, p4);
+    vec3 normal_mv = normalize(cross(v2 - v1, v3- v4));
+
+    //vec3 normal_mv = normalize(cross(dFdx(p), dFdy(p)));
     float nDotL = max(dot(normal_mv, light_dir), 0);
 
     vec3 r = normalize(reflect(- light_dir, normal_mv));
     float rDotV = max(dot(r, view_dir), 0);
 
-    float alt = texture(tex, uv).r;
-
-    color = ka * La + kd * nDotL * Ld
+    color = texture(tex, uv).r * La + kd * nDotL * Ld
                     + ks * pow(rDotV, alpha) * Ls;
 
 }

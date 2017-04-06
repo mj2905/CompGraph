@@ -40,10 +40,10 @@ struct Light {
 };
 
 struct Material {
-        glm::vec3 ka = glm::vec3(0.18f, 0.1f, 0.1f);
-        glm::vec3 kd = glm::vec3(0.9f, 0.5f, 0.5f);
-        glm::vec3 ks = glm::vec3(0.8f, 0.8f, 0.8f);
-        float alpha = 60.0f;
+        glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
+        glm::vec3 kd = glm::vec3(0.0f, 0.1f, 0.3f); // affects the color of the material
+        glm::vec3 ks = glm::vec3(0.1f, 0.1f, 0.1f);
+        float alpha = 0.5f;
 
         // pass material properties to the shaders
         void Setup(GLuint program_id) {

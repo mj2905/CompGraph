@@ -48,7 +48,7 @@ class FrameBuffer {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        GLuint Init(int image_width, int image_height, bool use_interpolation = false) {
+        GLuint Init(int image_width, int image_height, bool use_interpolation = true) {
             this->width_ = image_width;
             this->height_ = image_height;
 
