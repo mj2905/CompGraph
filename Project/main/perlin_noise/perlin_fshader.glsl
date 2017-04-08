@@ -4,20 +4,12 @@ in vec2 uv;
 
 out float heightmap;
 
-const int SIZE_PERM = 256;
-uniform int[SIZE_PERM] perm;
+const int SIZE_PERM = 512;
+uniform int[SIZE_PERM] p;
 
 int nb_octaves = 8;
 const float persistence = 0.45f;
 uniform vec2 off;
-
-int p[2*SIZE_PERM];
-
-void generateP() {
-    for(int i = 0; i < 512; ++i) {
-        p[i] = perm[i%256];
-    }
-}
 
 float f(float t) {
     return t*t*t*((t*(t*6.0 - 15.0)) + 10.0);
@@ -88,6 +80,5 @@ float octavePerlin(vec2 xy, vec2 offset) {
 
 
 void main() {
-    generateP();
     heightmap = octavePerlin(uv, off);
 }

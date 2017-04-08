@@ -132,12 +132,9 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
-    float time = 0;//glfwGetTime()/2;
+    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
-    mat4 rotTime = rotate(IDENTITY_MATRIX, time, vec3(0, 1, 0));
-    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(4,2, 4));
-
-    grid.Draw(offsetX, offsetY, trackball_matrix * quad_model_matrix * rotTime * scale, view_matrix, projection_matrix);
+    grid.Draw(offsetX, offsetY, trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
 
 }
 
