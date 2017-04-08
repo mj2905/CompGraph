@@ -134,7 +134,7 @@ class Grid {
 
             glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
             glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
-            glm::vec3 ks = glm::vec3(0.1f, 0.1f, 0.1f);
+            glm::vec3 ks = glm::vec3(0.0f, 0.0f, 0.0f);
             float alpha = 60.0f;
 
             GLuint ka_id = glGetUniformLocation(program_id_, "ka");

@@ -136,8 +136,9 @@ void Display() {
     float time = 0;//glfwGetTime()/2;
 
     mat4 rotTime = rotate(IDENTITY_MATRIX, time, vec3(0, 1, 0));
+    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(2,1.5,2));
 
-    grid.Draw(offsetX, offsetY, trackball_matrix * quad_model_matrix * rotTime, view_matrix, projection_matrix);
+    grid.Draw(offsetX, offsetY, trackball_matrix * quad_model_matrix * rotTime * scale, view_matrix, projection_matrix);
 
 }
 

@@ -212,7 +212,7 @@ private:
         float x_visible, y_visible;
         Grid& grid;
         PerlinNoise perlin;
-        int size_tile = 102;
+        int size_tile = 256;
         array<FrameBuffer, 8> framebuffers;
         array<size_t, 8> framebuffers_positions;
 
