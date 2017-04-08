@@ -16,7 +16,7 @@
 
 float offsetX = 10000.5;
 float offsetY = 10000.5;
-const float scale_offset = 0.1;
+const float scale_offset = 0.005;
 
 Grid grid;
 MultiTiles multitiles(grid, offsetX, offsetY, scale_offset);
@@ -36,10 +36,7 @@ double old_y;
 
 Trackball trackball;
 
-float distance_camera = -2.0f;
-float clamp(float x, float mi, float ma) {
-    return x < mi ? mi : x > ma ? ma : x;
-}
+float distance_camera = -2.5;
 
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
@@ -130,13 +127,15 @@ void Init() {
 // gets called for every frame.
 void Display() {
 
+    offsetY = multitiles.incrementY();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
     float time = 0;//glfwGetTime()/2;
 
     mat4 rotTime = rotate(IDENTITY_MATRIX, time, vec3(0, 1, 0));
-    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(2,1.5,2));
+    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(4,2, 4));
 
     grid.Draw(offsetX, offsetY, trackball_matrix * quad_model_matrix * rotTime * scale, view_matrix, projection_matrix);
 

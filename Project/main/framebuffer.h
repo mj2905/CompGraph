@@ -87,7 +87,7 @@ class FrameBuffer {
             glViewport(0, 0, width_, height_);
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
             glDrawBuffer(GL_COLOR_ATTACHMENT0);
-            glClearColor(0.0, 0.0, 0.0, 1.0);
+            glClearColor(0.4294117647f, 0.7078431373f, 0.9803921569f, 1.0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
