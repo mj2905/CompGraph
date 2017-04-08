@@ -16,7 +16,7 @@
 
 float offsetX = 10000.5;
 float offsetY = 10000.5;
-const float scale_offset = 0.005;
+const float scale_offset = 0.002;
 
 Grid grid;
 MultiTiles multitiles(grid, offsetX, offsetY, scale_offset);

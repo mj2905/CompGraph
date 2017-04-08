@@ -20,23 +20,19 @@ using namespace glm;
 
 class MultiTiles {
 public:
-    MultiTiles(Grid& grid, float x, float y, float increment) : grid(grid), x(x), y(y), x_visible(x), y_visible(y), increment(increment) {}
+    MultiTiles(Grid& grid, float x, float y, float increment) : grid(grid), x(x), y(y), x_visible(x), y_visible(y), increment(increment),
+    framebuffers_positions({BL_TILE, BR_TILE, TL_TILE, TR_TILE, NV_LR_B, NV_LR_T, NV_BT_R, NV_BT_L}){}
 
     void Init() {
 
-        framebuffers_positions = {BL_TILE, BR_TILE, TL_TILE, TR_TILE, NV_LR_B, NV_LR_T, NV_BT_R, NV_BT_L};
-
         for(size_t i = 0; i < framebuffers.size(); ++i) {
-            framebuffers[i].Init(size_tile, size_tile, false);
+            framebuffers[i].Init(size_tile, size_tile, true);
         }
 
         perlin.Init();
 
         for(int i = 0; i < 4; ++i) {
-            framebuffers[i].ClearContent();
-            framebuffers[i].Bind();
-                perlin.Draw(x + (-0.5+ (i%2)), y + (-0.5 + i/2));
-            framebuffers[i].Unbind();
+            drawPerlin(framebuffers[i], x + (-0.5+ (i%2)), y + (-0.5 + i/2));
         }
         grid.changeTexture(getTexturesVisible());
     }
