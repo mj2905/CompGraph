@@ -95,12 +95,13 @@ class PerlinNoise {
             glDeleteVertexArrays(1, &vertex_array_id_);
         }
 
-        void Draw(float persistence) {
+        void Draw(float x=0, float y=0) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
+            glm::vec2 offset = glm::vec2(x, y);
 
-            glUniform1f(glGetUniformLocation(program_id_, "persistence"), persistence);
+            glUniform2fv(glGetUniformLocation(program_id_, "off"), 1, glm::value_ptr(offset));
 
             // draw
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

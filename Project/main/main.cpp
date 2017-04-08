@@ -8,16 +8,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "grid/grid.h"
-#include "framebuffer.h"
 #include "perlin_noise/perlin.h"
 
 #include "trackball.h"
 
-Grid grid;
-PerlinNoise perlin;
+#include "multitiles/multitiles.h"
 
-float persistence = .45;
-float scale_persistence = 0.05f;
+float offsetX = 10000.5;
+float offsetY = 10000.5;
+const float scale_offset = 0.1;
+
+Grid grid;
+MultiTiles multitiles(grid, offsetX, offsetY, scale_offset);
 
 int window_width = 800;
 int window_height = 600;
@@ -32,16 +34,12 @@ mat4 quad_model_matrix;
 
 double old_y;
 
-const float begin_time = glfwGetTime();
-
 Trackball trackball;
-FrameBuffer framebuffer;
-
-float offsetX = 0;
-float offsetY = 0;
-float scale_offset = 0.1;
 
 float distance_camera = -2.0f;
+float clamp(float x, float mi, float ma) {
+    return x < mi ? mi : x > ma ? ma : x;
+}
 
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
@@ -124,15 +122,9 @@ void Init() {
 
     quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
 
-    GLuint texture_id = framebuffer.Init(window_width, window_height, true);
-    perlin.Init();
-    grid.Init(texture_id);
+    grid.Init();
+    multitiles.Init();
 
-    // draw a quad on the ground.
-    framebuffer.ClearContent();
-    framebuffer.Bind();
-        perlin.Draw(persistence);
-    framebuffer.Unbind();
 }
 
 // gets called for every frame.
@@ -196,8 +188,8 @@ void MousePos(GLFWwindow* window, double x, double y) {
         }
 
         view_matrix = translate(view_matrix, vec3(0.0, 0.0, p.y - old_y));
+        distance_camera += p.y - old_y;
         old_y = p.y;
-        cout << view_matrix[3][2] << endl;
     }
 }
 
@@ -228,40 +220,18 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
-    else if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-        if(persistence - scale_persistence > 0) {
-            persistence -= scale_persistence;
-            cout << "Persistence : " << persistence << endl;
-
-            framebuffer.ClearContent();
-            framebuffer.Bind();
-                perlin.Draw(persistence);
-            framebuffer.Unbind();
-        }
-    }
-    else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-        if(persistence + scale_persistence < 1) {
-            persistence += scale_persistence;
-            cout << "Persistence : " << persistence << endl;
-
-            framebuffer.ClearContent();
-            framebuffer.Bind();
-                perlin.Draw(persistence);
-            framebuffer.Unbind();
-        }
-    }
 
     if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetY += scale_offset;
+        offsetY = multitiles.incrementY();
     }
     if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetY -= scale_offset;
+        offsetY = multitiles.decrementY();
     }
     if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetX -= scale_offset;
+        offsetX = multitiles.decrementX();
     }
     if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetX += scale_offset;
+        offsetX = multitiles.incrementX();
     }
 }
 
@@ -330,9 +300,7 @@ int main(int argc, char *argv[]) {
         glfwPollEvents();
     }
 
-    perlin.Cleanup();
-    grid.Cleanup();
-    framebuffer.Cleanup();
+    multitiles.Cleanup();
 
     // close OpenGL window and terminate GLFW
     glfwDestroyWindow(window);

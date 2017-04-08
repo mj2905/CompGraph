@@ -1,6 +1,7 @@
 #pragma once
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <array>
 
 class Grid {
 
@@ -9,7 +10,12 @@ class Grid {
         GLuint vertex_buffer_object_position_;  // memory buffer for positions
         GLuint vertex_buffer_object_index_;     // memory buffer for indices
         GLuint program_id_;                     // GLSL shader program ID
-        GLuint texture_id_;                     // texture ID
+
+        GLuint texture_id_BL_;                     // texture ID bottom left
+        GLuint texture_id_BR_;                     // texture ID bottom right
+        GLuint texture_id_UL_;                     // texture ID upper left
+        GLuint texture_id_UR_;                     // texture ID upper right
+
         GLuint interpolation_id_;                     // texture ID
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                         // model matrix ID
@@ -17,7 +23,7 @@ class Grid {
         GLuint P_id_;                         // proj matrix ID
 
     public:
-        void Init(GLuint texture) {
+        void Init() {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("grid_vshader.glsl",
                                                   "grid_fshader.glsl");
@@ -89,26 +95,18 @@ class Grid {
 
             // load/Assign textures
             {
-                this->texture_id_ = texture;
-                glBindTexture(GL_TEXTURE_2D, texture_id_);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-                GLuint tex_id = glGetUniformLocation(program_id_, "tex");
-                glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
-
-                // cleanup
-                glBindTexture(GL_TEXTURE_2D, 0);
+                glUniform1i(glGetUniformLocation(program_id_, "texBL"), 0 /*GL_TEXTURE0*/);
+                glUniform1i(glGetUniformLocation(program_id_, "texBR"), 1 /*GL_TEXTURE1*/);
+                glUniform1i(glGetUniformLocation(program_id_, "texUL"), 2 /*GL_TEXTURE2*/);
+                glUniform1i(glGetUniformLocation(program_id_, "texUR"), 3 /*GL_TEXTURE3*/);
             }
 
             // create 1D texture (colormap)
             {
                 const int ColormapSize=3;
-                GLfloat tex[3*ColormapSize] = {/*yellow*/    0.4, 0.5, 0.0,
+                GLfloat tex[3*ColormapSize] = {/*yellow*/    0.3, 0.5, 0.0,
                                                /*darkgreen*/ 0.0, 0.2, 0.0,
-                                              /*white*/  0.8, 0.8, 0.8};
+                                              /*white*/  0.7, 0.7, 0.7};
                 glGenTextures(1, &interpolation_id_);
                 glBindTexture(GL_TEXTURE_1D, interpolation_id_);
                 glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
@@ -116,8 +114,7 @@ class Grid {
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 GLuint tex_id = glGetUniformLocation(program_id_, "colormap");
-                glUniform1i(tex_id, 1 /*GL_TEXTURE1*/);
-                // check_error_gl();
+                glUniform1i(tex_id, 4 /*GL_TEXTURE4*/);
 
                 glBindTexture(GL_TEXTURE_1D, 0);
             }
@@ -164,6 +161,13 @@ class Grid {
             glUseProgram(0);
         }
 
+        void changeTexture(const array<GLuint, 4>& ids) {
+            texture_id_BL_ = ids[0];
+            texture_id_BR_ = ids[1];
+            texture_id_UL_ = ids[2];
+            texture_id_UR_ = ids[3];
+        }
+
         void Cleanup() {
             glBindVertexArray(0);
             glUseProgram(0);
@@ -171,7 +175,10 @@ class Grid {
             glDeleteBuffers(1, &vertex_buffer_object_index_);
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteProgram(program_id_);
-            glDeleteTextures(1, &texture_id_);
+            glDeleteTextures(1, &texture_id_BL_);
+            glDeleteTextures(1, &texture_id_BR_);
+            glDeleteTextures(1, &texture_id_UL_);
+            glDeleteTextures(1, &texture_id_UR_);
         }
 
         void Draw(float offsetX, float offsetY,
@@ -183,10 +190,22 @@ class Grid {
 
             // bind textures
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture_id_);
+            glBindTexture(GL_TEXTURE_2D, texture_id_BL_);
 
             // bind textures
             glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, texture_id_BR_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, texture_id_UL_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, texture_id_UR_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_1D, interpolation_id_);
 
             // setup MVP

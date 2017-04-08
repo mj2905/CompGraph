@@ -11,6 +11,7 @@ class FrameBuffer {
         GLuint color_texture_id_;
 
     public:
+
         // warning: overrides viewport!!
         void Bind() {
             glViewport(0, 0, width_, height_);
@@ -23,7 +24,11 @@ class FrameBuffer {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        int Init(int image_width, int image_height,
+        GLuint getTextureId() {
+            return color_texture_id_;
+        }
+
+        void Init(int image_width, int image_height,
                                   bool use_interpolation = false) {
             this->width_ = image_width;
             this->height_ = image_height;
@@ -76,8 +81,6 @@ class FrameBuffer {
                 }
                 glBindFramebuffer(GL_FRAMEBUFFER, 0); // avoid pollution
             }
-
-            return color_texture_id_;
         }
 
         void ClearContent() {
