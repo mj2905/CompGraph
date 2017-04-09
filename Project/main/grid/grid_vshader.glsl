@@ -26,6 +26,7 @@ const float zoom = 1; //constant to zoom in the textures
 #define THRESHOLD_LINKS (2e-3)
 #define MULT_THRESHOLD_FACTOR (0.5/THRESHOLD_LINKS)
 
+
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
     uv /= zoom;

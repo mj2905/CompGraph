@@ -29,10 +29,14 @@ using namespace glm;
 
 class MultiTiles {
 public:
-    MultiTiles(float x, float y, float increment) : x(x), y(y), x_visible(x), y_visible(y), increment(increment),
-    framebuffers_positions({BL_TILE, BR_TILE, TL_TILE, TR_TILE, NV_LR_B, NV_LR_T, NV_BT_R, NV_BT_L}){} //we assign values to the array (initial order)
+    MultiTiles(unsigned int x, unsigned int y) : x(x+0.5), y(y+0.5), x_visible(x+0.5), y_visible(y+0.5),
+    framebuffers_positions({BL_TILE, BR_TILE, TL_TILE, TR_TILE, NV_LR_B, NV_LR_T, NV_BT_R, NV_BT_L}){ //we assign values to the array (initial order)
+
+    }
 
     void Init() {
+
+        assert(INCREMENT <= 0.5);
 
         for(size_t i = 0; i < framebuffers.size(); ++i) {
             framebuffers[i].Init(size_tile, size_tile, true);
@@ -51,15 +55,16 @@ public:
               const mat4 &view = IDENTITY_MATRIX,
               const mat4 &projection = IDENTITY_MATRIX) {
         grid.Draw(x_visible, y_visible, model, view, projection);
+        //perlin.Draw(x_visible, y_visible);
     }
 
     void incrementX() {
         //if we are moving a bit to the right from the center, we compute and store the right not visible tiles
-        if(x_visible <= x and x_visible + increment > x) {
+        if(x_visible <= x and x_visible + INCREMENT > x) {
             drawRightTiles();
         }
         //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
-        if(x_visible + increment >= x + 0.5) {
+        if(x_visible + INCREMENT >= x + 0.5) {
 
             GLuint tmp_down = framebuffers_positions[NV_LR_B];
             framebuffers_positions[NV_LR_B] = framebuffers_positions[BL_TILE];
@@ -91,16 +96,16 @@ public:
             }
         }
 
-        x_visible += increment;
+        x_visible += INCREMENT;
     }
 
     void decrementX() {
         //if we are moving a bit to the left from the center, we compute and store the left not visible tiles
-        if(x_visible >= x and x_visible - increment < x) {
+        if(x_visible >= x and x_visible - INCREMENT < x) {
             drawLeftTiles();
         }
         //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
-        if(x_visible - increment <= x - 0.5) {
+        if(x_visible - INCREMENT <= x - 0.5) {
 
             GLuint tmp_down = framebuffers_positions[NV_LR_B];
             framebuffers_positions[NV_LR_B] = framebuffers_positions[BR_TILE];
@@ -131,16 +136,16 @@ public:
             }
         }
 
-        x_visible -= increment;
+        x_visible -= INCREMENT;
     }
 
     void incrementY() {
         //if we are moving a bit to the top from the center, we compute and store the top not visible tiles
-        if(y_visible <= y and y_visible + increment > y) {
+        if(y_visible <= y and y_visible + INCREMENT > y) {
             drawUpTiles();
         }
         //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
-        if(y_visible + increment >= y + 0.5) {
+        if(y_visible + INCREMENT >= y + 0.5) {
 
             GLuint tmp_right = framebuffers_positions[NV_BT_R];
             framebuffers_positions[NV_BT_R] = framebuffers_positions[BR_TILE];
@@ -171,16 +176,16 @@ public:
             }
         }
 
-        y_visible += increment;
+        y_visible += INCREMENT;
     }
 
     void decrementY() {
         //if we are moving a bit to the bottom from the center, we compute and store the bottom not visible tiles
-        if(y_visible >= y and y_visible - increment < y) {
+        if(y_visible >= y and y_visible - INCREMENT < y) {
             drawDownTiles();
         }
         //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
-        if(y_visible - increment <= y - 0.5) {
+        if(y_visible - INCREMENT <= y - 0.5) {
 
             GLuint tmp_right = framebuffers_positions[NV_BT_R];
             framebuffers_positions[NV_BT_R] = framebuffers_positions[TR_TILE];
@@ -211,7 +216,7 @@ public:
             }
         }
 
-        y_visible -= increment;
+        y_visible -= INCREMENT;
     }
 
     void Cleanup() {
@@ -223,7 +228,7 @@ public:
     }
 
 private:
-        const float increment;
+        const float INCREMENT = 0.005; // the increment step, must be <= 0.5
         float x, y;
         float x_visible, y_visible;
         Grid grid;

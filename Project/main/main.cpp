@@ -14,11 +14,10 @@
 
 #include "multitiles/multitiles.h"
 
-const float OFFSET_X = 10000.5; // /!\ needs to end with 0.5, as the system is built this way (for the 4 tiles center)
-const float OFFSET_Y = 10000.5;
-const float INCREMENT_OFFSET = 0.005; // the increment step
+const unsigned int OFFSET_X = 256;
+const unsigned int OFFSET_Y = 256;
 
-MultiTiles multitiles(OFFSET_X, OFFSET_Y, INCREMENT_OFFSET);
+MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 
 int window_width = 800;
 int window_height = 600;
