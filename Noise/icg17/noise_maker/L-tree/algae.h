@@ -71,7 +71,7 @@ class Algae {
              * Pour dessiner un quad, il faut quatre points, je ne t'apprends rien.
              * Ici, tu as donc "deux points" par quad; ils représentent les milieux. En déduire les points autour n'est pas très compliqué.
              * Note qu'il existe aussi une méthode en OpenGL pour dessiner des lignes. Toutefois, j'ai estimé que ça n'était pas
-             * préférable ici et que nous voudrions un peu...D'épaisseur, disons.
+             * préférable ici et que nous voudrions un peu...D'épaisseur, disons.(
              *
              *
              * */
