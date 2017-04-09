@@ -5,10 +5,16 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <string.h>
 #include <sstream>
+#include "../quad/quad.h"
 
 // This code is based on L systems described here: http://www.naturewizard.at/tutorial04.html
 
 using namespace glm;
+/*
+struct QuadLists {
+        vector<Quad> quads;
+        // pass material properties to the shaders
+};*/
 
 class Algae {
 
@@ -17,12 +23,16 @@ class Algae {
        GLuint depth_;
        vector<glm::vec3> states;
        vector<char> branches;
+       vector<Quad> quads;
+       vector<glm::mat4> transfos;
 
     public:
        void Init(GLuint depth, vec3 origin){
-            tree = "B";
+            tree = "A";
             depth_ = depth;
             states.push_back(origin);
+
+            initTree();
        }
 
 
@@ -59,37 +69,40 @@ class Algae {
            }
        }
 
-       vec3 drawMethod(vec3 targetDepth, char parentType, char targetType){
-            /* Pour t'expliquer, il y a deux règles de grammaire comme tu l'auras lu plus haut
-             * A -> AB et B->A. Dans le deuxième cas.
-             * Pour le 2e cas, ça veut dire que parentType ='B' et targetType = 'A'
-             * Les profondeurs respectives seront donc (x_B, y_B, z_B) et (x_B, y_B, z_B+1) par exemple.
-             * En gros la deuxième coordonnée passée sert vraiment à conserver la "hauteur" mais pas le reste.
-             * Le but notamment ici, c'est de calculer en fonction de la lettre parente et celle enfant.
-             * Pour B -> A, on a un truc en ligne, donc rien à changer sur la coordonnée fille pour le dessin.
-             *
-             * Mais dans le cas de A->AB, on fait DEUX appels à cette méthode (l'algo qui appelle drawMethod est itératif,
-             * c'est pour ça). Or, là on veut (par simplicité) un truc en fourche pour les deux "filles".
-             * Donc la coordonnée du 2e A va être par exemple décallée de 0.5 sur la gauche en X, le B de 0.5 sur la droite.
-             * Pour dessiner un quad, il faut quatre points, je ne t'apprends rien.
-             * Ici, tu as donc "deux points" par quad; ils représentent les milieux. En déduire les points autour n'est pas très compliqué.
-             * Note qu'il existe aussi une méthode en OpenGL pour dessiner des lignes. Toutefois, j'ai estimé que ça n'était pas
-             * préférable ici et que nous voudrions un peu...D'épaisseur, disons.(
-             *
-             *
-             * */
+       vec3 generateQuads(vec3 originDepth, char parentType, char targetType){
+           vec4 dest =  vec4(originDepth,1.0); // vec3(originDepth.x, originDepth.y, originDepth.z + 0.25)
+           mat4 t = scale(mat4(1.0f), vec3(0.01f,0.05f,0));
+           mat4 transf = t*IDENTITY_MATRIX;
+           if(parentType == 'A'){
+               if(targetType == 'B'){
+                    transf = rotate(mat4(1.0f),(float) (45.0*3.14159/180.0), vec3(0.0f,0.0f,1.0f))*transf;
+               } else if(targetType == 'A'){
+                    transf = rotate(mat4(1.0f), (float) ((-45.0)*3.14159/180.0), vec3(0.0f,0.0f,1.0f))*transf;
+               }
+               // here we'll rotate our dear dest vector
+
+           } else if(parentType == 'B'){
+               if(targetType == 'A'){ // only possible case for now
+                    // we do nothing
+               }
+           }
+           transf = transf*translate(mat4(1.0f), vec3(0.25f,0.25f,0.0f));
+           Quad tmp_quad;
+           tmp_quad.Init();
+           quads.push_back(tmp_quad);
+           dest = transf*dest;
+           transfos.push_back(transf);
+
+           return vec3(dest);
        }
 
-       // This algae only has branches
-       vec3 drawBranch(vec3 origin, vec3 destination){
-            return origin;
-       }
 
-       void drawAlgae(){
+       void generateAlgae(){
            glm::vec3 so = states.back();
            glm::vec3 s1;
            char lo = 'n';
            char l1 = 'n';
+           cout << branches.size() << endl;
            for(size_t i = 1; i < tree.length(); i++){
                char str = tree.at(i);
                if(str == ']'){
@@ -98,11 +111,11 @@ class Algae {
                    so = states.back();
                } else if(str == 'A' || tree.at(i) == 'B'){
                     lo = str;
-                    if(states.size() != 0 && branches.size() != 0){
+                    if(states.size() > 0 && branches.size() > 0){
                         states.pop_back();
                         s1 = states.back();
                         l1 = branches.back();
-                        so = drawMethod(s1, lo, l1);
+                        so = generateQuads(s1, lo, l1);
                         states.push_back(so);
                     }
                } else if(str == '>'){
@@ -113,15 +126,46 @@ class Algae {
 
        }
 
-       void beginTree(){
+       void initTree(){
            firstExpand();
            for(size_t i = 0; i < depth_; ++i){
                 expand();
             }
+           generateAlgae();
        }
 
        void printTree(){
            cout << tree << endl;
+       }
+
+       void Draw(){
+           /*vector<Quad> v;
+           Quad q1, q2, q3;
+           q1.Init();
+           q2.Init();
+           q3.Init();
+           v.push_back(q1);
+           v.push_back(q2);
+           vector<mat4> t;
+           t.push_back(rotate(mat4(1.0f),(float)(45.0*3.14159/180.0), vec3(0.0f,0.0f,1.0f))*scale(mat4(1.0f), vec3(0.01f,0.5f,0)));
+           t.push_back(rotate(mat4(1.0f),(float)((-45.0)*3.14159/180.0), vec3(0.0f,0.0f,1.0f))*scale(mat4(1.0f), vec3(0.01f,0.5f,0)));
+           v.at(0).Draw(t.at(0));
+           v.at(1).Draw(t.at(1));*/
+/*
+           for(size_t i =0; i < v.size(); ++i){
+               v.at(i).Draw(t.at(i));
+           }*/
+
+
+           for(size_t i = 0; i < quads.size(); ++i){
+               quads.at(i).Draw(transfos.at(i));
+           }
+       }
+
+       void Cleanup(){
+           for(size_t i = 0; i < quads.size(); ++i){
+               quads.at(i).Cleanup();
+           }
        }
 
 };

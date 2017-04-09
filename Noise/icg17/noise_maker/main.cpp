@@ -106,13 +106,13 @@ void Init() {
 
 
     //Let's create the noise
-    perlin.Init();
+   /* perlin.Init();
 
     framebuffer.Bind();
     {
         perlin.Draw();
     }
-    framebuffer.Unbind();
+    framebuffer.Unbind();*/
 
     // enable depth test.
     glEnable(GL_DEPTH_TEST);
@@ -126,6 +126,12 @@ void Init() {
 
     // scaling matrix to scale the cube down to a reasonable size.
     quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
+
+    vector<float> vec;
+    if(vec.size() != 0){
+        cout <<"coucou"<<endl;
+    }
+    alga.Init(2,vec3(0.0f,0.0f,0.0f));
 }
 
 // gets called for every frame.
@@ -138,8 +144,10 @@ void Display() {
     cube_transf = translate(cube_transf, vec3(0.75f, 0.0f, 0.0f));
     cube_transf = rotate(cube_transf, 2.0f * time, vec3(0.0f, 1.0f, 0.0f));
 
+
     // draw a quad on the ground.
-    grid.Draw(time, trackball_matrix * quad_model_matrix, view_matrix, projection_matrix);
+  //  grid.Draw(time, trackball_matrix * quad_model_matrix, view_matrix, projection_matrix);
+    alga.Draw();
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.
@@ -221,8 +229,61 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 
 int main(int argc, char *argv[]) {
-    alga.Init(1, vec3(0.0f,0.0f,0.0f));
-    alga.beginTree();
+    // GLFW Initialization
+    if(!glfwInit()) {
+        fprintf(stderr, "Failed to initialize GLFW\n");
+        return EXIT_FAILURE;
+    }
+
+    glfwSetErrorCallback(ErrorCallback);
+
+    // hint GLFW that we would like an OpenGL 3 context (at least)
+    // http://www.glfw.org/faq.html#how-do-i-create-an-opengl-30-context
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // attempt to open the window: fails if required version unavailable
+    // note some Intel GPUs do not support OpenGL 3.2
+    // note update the driver of your graphic card
+    GLFWwindow* window = glfwCreateWindow(512, 512, "AlgaeInvaders", NULL, NULL);
+    if(!window) {
+        glfwTerminate();
+        return EXIT_FAILURE;
+    }
+
+    // makes the OpenGL context of window current on the calling thread
+    glfwMakeContextCurrent(window);
+
+    // set the callback for escape key
+    glfwSetKeyCallback(window, KeyCallback);
+
+    // GLEW Initialization (must have a context)
+    // https://www.opengl.org/wiki/OpenGL_Loading_Library
+    glewExperimental = GL_TRUE; // fixes glew error (see above link)
+    if(glewInit() != GLEW_NO_ERROR) {
+        fprintf( stderr, "Failed to initialize GLEW\n");
+        return EXIT_FAILURE;
+    }
+
+    cout << "OpenGL" << glGetString(GL_VERSION) << endl;
+
+    // initialize our OpenGL program
+    Init();
     alga.printTree();
+    // render loop
+   while(!glfwWindowShouldClose(window)) {
+       Display();
+       glfwSwapBuffers(window);
+       glfwPollEvents();
+   }
+
+   alga.Cleanup();
+
+   // close OpenGL window and terminate GLFW
+   glfwDestroyWindow(window);
+   glfwTerminate();
+
     return EXIT_SUCCESS;
 }

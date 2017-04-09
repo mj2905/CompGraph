@@ -12,7 +12,8 @@ copy_files_once(${TEXTURES})
 file(GLOB SHADERS
     perlin_noise/*.glsl
     grid/*.glsl
-    L-tree/*.glsl)
+    L-tree/*.glsl
+    quad/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})
