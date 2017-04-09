@@ -8,12 +8,15 @@
 
 // This code is based on L systems described here: http://www.naturewizard.at/tutorial04.html
 
+using namespace glm;
+
 class Algae {
 
     private:
        string tree;
        GLuint depth_;
-       vector<vec3> states;
+       vector<glm::vec3> states;
+       vector<char> branches;
 
     public:
        void Init(GLuint depth, vec3 origin){
@@ -56,7 +59,7 @@ class Algae {
            }
        }
 
-       void drawMethod(vec3 parentDepth, vec3 targetDepth, char parentType, char targetType){
+       vec3 drawMethod(vec3 targetDepth, char parentType, char targetType){
             /* Pour t'expliquer, il y a deux règles de grammaire comme tu l'auras lu plus haut
              * A -> AB et B->A. Dans le deuxième cas.
              * Pour le 2e cas, ça veut dire que parentType ='B' et targetType = 'A'
@@ -78,10 +81,37 @@ class Algae {
        }
 
        // This algae only has branches
-       void drawBranch(vec3 origin, vec3 destination){
-
+       vec3 drawBranch(vec3 origin, vec3 destination){
+            return origin;
        }
 
+       void drawAlgae(){
+           glm::vec3 so = states.back();
+           glm::vec3 s1;
+           char lo = 'n';
+           char l1 = 'n';
+           for(size_t i = 1; i < tree.length(); i++){
+               char str = tree.at(i);
+               if(str == ']'){
+                   states.pop_back();
+                   branches.pop_back();
+                   so = states.back();
+               } else if(str == 'A' || tree.at(i) == 'B'){
+                    lo = str;
+                    if(states.size() != 0 && branches.size() != 0){
+                        states.pop_back();
+                        s1 = states.back();
+                        l1 = branches.back();
+                        so = drawMethod(s1, lo, l1);
+                        states.push_back(so);
+                    }
+               } else if(str == '>'){
+                   branches.push_back(lo);
+                   states.push_back(so);
+               }
+           }
+
+       }
 
        void beginTree(){
            firstExpand();
