@@ -91,6 +91,7 @@ float OctavePerlin(float x, float y, int octaves, float persistence) {
 void main() {
   shuffle();
   height = OctavePerlin(uv.x, uv.y, 5, 0.5);
+  //height = 1000;
   //color = vec3(noise(vec2(uv.x, uv.y)));
 }
 

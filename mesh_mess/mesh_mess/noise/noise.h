@@ -34,8 +34,7 @@ class Noise {
 
     public:
 
-        void Init(float screenquad_width, float screenquad_height,
-                  GLuint texture, bool is_horizontal = true) {
+        void Init(float screenquad_width, float screenquad_height, bool is_horizontal = true) {
 
             is_horizontal_ = is_horizontal;
             // set screenquad size
@@ -98,8 +97,7 @@ class Noise {
                                       ZERO_BUFFER_OFFSET);
             }
 
-            // load/Assign texture
-            this->texture_id_ = texture;
+
             glBindTexture(GL_TEXTURE_2D, texture_id_);
             GLuint tex_id = glGetUniformLocation(program_id_, "tex");
             glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
@@ -131,18 +129,6 @@ class Noise {
         void Render() {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
-
-            // window size uniforms
-            glUniform1f(glGetUniformLocation(program_id_, "tex_width"),
-                        this->screenquad_width_);
-            glUniform1f(glGetUniformLocation(program_id_, "tex_height"),
-                        this->screenquad_height_);
-            glUniform1i(glGetUniformLocation(program_id_, "is_horizontal"),
-                        this->is_horizontal_);
-
-            glUniform1i(glGetUniformLocation(program_id_, "SIZE_OPT"),
-                        (this->G.size()-1)/2);
-            glUniform1fv(glGetUniformLocation(program_id_, "G"), G.size(), G.data());
 
 
             // draw

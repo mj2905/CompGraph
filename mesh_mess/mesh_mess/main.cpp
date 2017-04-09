@@ -129,9 +129,10 @@ mat4 OrthographicProjection(float left, float right, float bottom,
           quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
 
 
-        height_map_id = height_map.Init(window_width, window_height, true);
-        noise.Init(window_width, window_height, height_map_id);
+        height_map_id = height_map.Init(100, 100, true);
+        noise.Init(100, 100);
         height_map.Bind(GL_COLOR_ATTACHMENT0);
+
         noise.Render();
         height_map.Unbind();
         grid.Init(height_map_id);
@@ -145,6 +146,7 @@ mat4 OrthographicProjection(float left, float right, float bottom,
           // render to Window
           glViewport(0, 0, window_width, window_height);
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+          //noise.Render();
 
           const float time = glfwGetTime();
 

@@ -20,5 +20,5 @@ vec3 curr_point;
 void main() {
     //curr_point = vec3()
 
-    color = vec3(1.0,0.0,0.0);
+    color = vec3(1.0,0.6,0.0);
 }
