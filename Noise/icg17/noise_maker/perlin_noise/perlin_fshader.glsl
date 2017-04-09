@@ -9,14 +9,14 @@ in vec2 uv;
 
 uniform int permutation[256];
 
+uniform float H, lacunarity, offset, persistence, amplitude;
+uniform int octaves;
+
 out vec3 color;
 
 #define SQRT2 1.41421356237
 #define FREQ 2
 #define CUBE_NUMBER FREQ
-#define AMPLITUDE 1
-#define OCTAVES 8
-#define  PERSISTENCE 0.45
 
 float fade(float t){
     return t*t*t*(t*(t*6.0 -15.0) +10.0);
@@ -78,7 +78,7 @@ float perlinNoise(vec2 zx){
 float OctavePerlin(float x, float y, int octaves, float persistence) {
     float total = 0;
     float frequency = FREQ;
-    float amplitude = AMPLITUDE;
+    float amplitude = amplitude;
     float maxValue = 0;
     for(int i=0;i<octaves;i++) {
         total += perlinNoise(vec2(x*frequency,y*frequency))*amplitude;
@@ -90,10 +90,20 @@ float OctavePerlin(float x, float y, int octaves, float persistence) {
     return total/maxValue;
 }
 
-
+float multifrac(vec2 point, float H, float lacunarity, int octaves, float offset){
+    float value = 1.0;
+    for(int i = 0 ; i < octaves; ++i){
+        //value *= (OctavePerlin(point.x, point.y, octaves, persistence)+offset) * pow(lacunarity, -H*i);
+        value *= (perlinNoise(point)+offset)*pow(lacunarity, -H*i);
+        point *= lacunarity;
+    }
+    return value;
+}
 
 void main(void)
 {
-    float n = OctavePerlin(uv.x,uv.y, OCTAVES, PERSISTENCE); // 2nd parameter is directly related to the spike numbers
+    //float n = OctavePerlin(uv.x,uv.y, OCTAVES, PERSISTENCE); // 2nd parameter is directly related to the spike numbers
+   // float H = 0.65;
+    float n = multifrac(uv, H, lacunarity, octaves, offset);
     color = vec3(n,n,n);
 }

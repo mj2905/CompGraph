@@ -10,8 +10,31 @@ class Perlin_noise {
 
         float screenquad_width_;
         float screenquad_height_;
+        float H;
+        float lacunarity;  // lacunarity indicates the heterogeneous nature of the pattern
+        float offset;
+        float persistence;
+        float amplitude;
+        int octaves;
 
     public:
+
+        void updateH(float u){
+            H += u;
+            glUniform1f(glGetUniformLocation(program_id_, "H"), H);
+            cout << "H updated to: " << H << endl;
+        }
+
+        void updateLac(float u){
+            lacunarity += u;
+            glUniform1f(glGetUniformLocation(program_id_, "lacunarity"), lacunarity);
+        }
+
+        void updateOffset(float u){
+            offset += u;
+            glUniform1f(glGetUniformLocation(program_id_, "offset"), offset);
+        }
+
 
         void Init() {
 
@@ -87,10 +110,27 @@ class Perlin_noise {
             // to avoid the current object being polluted
             glUniform1iv(glGetUniformLocation(program_id_, "permutation"),256, permutation);
 
+            H = 0.25;
+            lacunarity = 2;
+            offset = 0.7;
+            persistence = 0.65; // not important
+            amplitude = 1.0; // not important
+            octaves = 8;
+
+            // submarine ground: 0.65,0.63,-0.23,0.65,1.0,5
+
+            glUniform1f(glGetUniformLocation(program_id_, "persistence"), persistence);
+            glUniform1f(glGetUniformLocation(program_id_, "amplitude"), amplitude);
+            glUniform1i(glGetUniformLocation(program_id_, "octaves"), octaves);
+
+            updateH(0.0);
+            updateLac(0.0);
+            updateOffset(0.0);
 
             glBindVertexArray(0);
             glUseProgram(0);
         }
+
 
         void Cleanup() {
             glBindVertexArray(0);

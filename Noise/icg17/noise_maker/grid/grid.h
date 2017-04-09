@@ -1,3 +1,4 @@
+
 #pragma once
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -19,7 +20,7 @@ struct Light {
         glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
 
-        glm::vec3 light_pos = glm::vec3(0.0f, 0.0f, 2.0f);
+        glm::vec3 light_pos = glm::vec3(0.0f, 0.0f, 4.0f);
 
         // pass light properties to the shader
         void Setup(GLuint program_id) {
@@ -161,6 +162,17 @@ class Grid: public Material, public Light {
             // to avoid the current object being polluted
             glBindVertexArray(0);
             glUseProgram(0);
+        }
+
+        void updateTexture(GLuint tex){
+            glDeleteTextures(1, &texture_id_);
+            this->texture_id_ = tex;
+            glBindTexture(GL_TEXTURE_2D, texture_id_);
+            GLuint tex_id = glGetUniformLocation(program_id_, "tex");
+
+            glUniform1f(tex_id, 0 /*GL_TEXTURE0*/);
+            glBindTexture(GL_TEXTURE_2D, 0);
+
         }
 
         void Cleanup() {

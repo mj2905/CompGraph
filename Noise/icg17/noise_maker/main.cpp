@@ -12,11 +12,13 @@
 #include "trackball.h"
 #include "framebuffer.h"
 #include "perlin_noise/perlin_noise.h"
+#include "L-tree/algae.h"
 
 FrameBuffer framebuffer;
 Perlin_noise perlin;
 Grid grid;
 Trackball trackball;
+Algae alga;
 
 int window_width = 800;
 int window_height = 600;
@@ -92,23 +94,25 @@ mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
     return look_at;
 }
 
+
 void Init() {
     // sets background color
     glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
     GLuint framebuffer_texture_id;
+
     framebuffer_texture_id= framebuffer.Init(window_width, window_height);
     grid.Init(framebuffer_texture_id);
+
+
 
     //Let's create the noise
     perlin.Init();
 
-    framebuffer.Clear();
     framebuffer.Bind();
     {
         perlin.Draw();
     }
     framebuffer.Unbind();
-    
 
     // enable depth test.
     glEnable(GL_DEPTH_TEST);
@@ -212,77 +216,13 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
+
 }
 
 
 int main(int argc, char *argv[]) {
-    // GLFW Initialization
-    if(!glfwInit()) {
-        fprintf(stderr, "Failed to initialize GLFW\n");
-        return EXIT_FAILURE;
-    }
-
-    glfwSetErrorCallback(ErrorCallback);
-
-    // hint GLFW that we would like an OpenGL 3 context (at least)
-    // http://www.glfw.org/faq.html#how-do-i-create-an-opengl-30-context
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // attempt to open the window: fails if required version unavailable
-    // note some Intel GPUs do not support OpenGL 3.2
-    // note update the driver of your graphic card
-    GLFWwindow* window = glfwCreateWindow(window_width, window_height,
-                                          "Trackball", NULL, NULL);
-    if(!window) {
-        glfwTerminate();
-        return EXIT_FAILURE;
-    }
-
-    // makes the OpenGL context of window current on the calling thread
-    glfwMakeContextCurrent(window);
-
-    // set the callback for escape key
-    glfwSetKeyCallback(window, KeyCallback);
-
-    // set the framebuffer resize callback
-    glfwSetFramebufferSizeCallback(window, SetupProjection);
-
-    // set the mouse press and position callback
-    glfwSetMouseButtonCallback(window, MouseButton);
-    glfwSetCursorPosCallback(window, MousePos);
-
-    // GLEW Initialization (must have a context)
-    // https://www.opengl.org/wiki/OpenGL_Loading_Library
-    glewExperimental = GL_TRUE; // fixes glew error (see above link)
-    if(glewInit() != GLEW_NO_ERROR) {
-        fprintf( stderr, "Failed to initialize GLEW\n");
-        return EXIT_FAILURE;
-    }
-
-    cout << "OpenGL" << glGetString(GL_VERSION) << endl;
-
-    // initialize our OpenGL program
-    Init();
-
-    // update the window size with the framebuffer size (on hidpi screens the
-    // framebuffer is bigger)
-    glfwGetFramebufferSize(window, &window_width, &window_height);
-    SetupProjection(window, window_width, window_height);
-
-    // render loop
-    while(!glfwWindowShouldClose(window)){
-        Display();
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    grid.Cleanup();
-    framebuffer.Cleanup();
-    // close OpenGL window and terminate GLFW
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    alga.Init(1, vec3(0.0f,0.0f,0.0f));
+    alga.beginTree();
+    alga.printTree();
     return EXIT_SUCCESS;
 }
