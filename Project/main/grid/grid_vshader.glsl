@@ -19,44 +19,46 @@ uniform sampler2D texUR;
 
 uniform vec2 offset;
 
-const float zoom = 1;
+const float zoom = 1; //constant to zoom in the textures
 
 #define MIDDLE_X 0
 #define MIDDLE_Y 0
+#define THRESHOLD_LINKS (2e-3)
+#define MULT_THRESHOLD_FACTOR (0.5/THRESHOLD_LINKS)
 
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
     uv /= zoom;
 
-    vec2 xy = vec2(mod(offset.x, 1.0f), mod(offset.y, 1.0f)) - 1; //bet -1 and 0
+    vec2 xy = vec2(mod(offset.x, 1.0f), mod(offset.y, 1.0f)) - 1; //allows to know how much we need to substract from uv, to facilitate computations
     vec2 pos = uv + xy;
 
-    if(abs(pos.x) <= 2e-3) {
-        if(pos.y < 0) {
-            height = mix(texture(texBL, vec2(1-2e-3, pos.y + 1)).r, texture(texBR, vec2(2e-3, pos.y + 1)).r, pos.x * 250 + 0.5);
+    if(abs(pos.x) <= THRESHOLD_LINKS) { //does the links between textures (otherwise, strange boundaries)
+        if(pos.y <= MIDDLE_Y) {
+            height = mix(texture(texBL, vec2(1 - THRESHOLD_LINKS, pos.y + 1)).r, texture(texBR, vec2(THRESHOLD_LINKS, pos.y + 1)).r, pos.x * MULT_THRESHOLD_FACTOR + 0.5);
         }
-        if(pos.y > 0) {
-            height = mix(texture(texUL, vec2(1-2e-3, pos.y)).r, texture(texUR, vec2(2e-3, pos.y)).r, pos.x * 250 + 0.5);
-        }
-    }
-    else if(abs(pos.y) <= 2e-3) {
-        if(pos.x < 0) {
-            height = mix(texture(texBL, vec2(pos.x + 1, 1-2e-3)).r, texture(texUL, vec2(pos.x + 1, 2e-3)).r, pos.y * 250 + 0.5);
-        }
-        if(pos.x > 0) {
-            height = mix(texture(texBR, vec2(pos.x, 1-2e-3)).r, texture(texUR, vec2(pos.x, 2e-3)).r, pos.y * 250 + 0.5);
+        if(pos.y > MIDDLE_Y) {
+            height = mix(texture(texUL, vec2(1 - THRESHOLD_LINKS, pos.y)).r, texture(texUR, vec2(THRESHOLD_LINKS, pos.y)).r, pos.x * MULT_THRESHOLD_FACTOR + 0.5);
         }
     }
-    else if(pos.x < MIDDLE_X && pos.y < MIDDLE_Y) {
+    else if(abs(pos.y) <= THRESHOLD_LINKS) { //does the links between textures (otherwise, strange boundaries)
+        if(pos.x <= MIDDLE_X) {
+            height = mix(texture(texBL, vec2(pos.x + 1, 1 - THRESHOLD_LINKS)).r, texture(texUL, vec2(pos.x + 1, THRESHOLD_LINKS)).r, pos.y * MULT_THRESHOLD_FACTOR + 0.5);
+        }
+        if(pos.x > MIDDLE_X) {
+            height = mix(texture(texBR, vec2(pos.x, 1 - THRESHOLD_LINKS)).r, texture(texUR, vec2(pos.x, THRESHOLD_LINKS)).r, pos.y * MULT_THRESHOLD_FACTOR + 0.5);
+        }
+    }
+    else if(pos.x < MIDDLE_X && pos.y < MIDDLE_Y) { //we seek the bottom left texture entries for corresponding points
         height = texture(texBL, pos + 1).r;
     }
-    else if(pos.x > MIDDLE_X && pos.y < MIDDLE_Y) {
+    else if(pos.x > MIDDLE_X && pos.y < MIDDLE_Y) { //we seek the bottom right texture entries for corresponding points
         height = texture(texBR, vec2(pos.x, pos.y + 1)).r;
     }
-    else if(pos.x < MIDDLE_X && pos.y > MIDDLE_Y) {
+    else if(pos.x < MIDDLE_X && pos.y > MIDDLE_Y) { //we seek the top left texture entries for corresponding points
         height = texture(texUL, vec2(pos.x + 1, pos.y)).r;
     }
-    else if(pos.x > MIDDLE_X && pos.y > MIDDLE_Y) {
+    else { //we seek the top right texture entries for corresponding points
         height = texture(texUR, pos).r;
     }
 

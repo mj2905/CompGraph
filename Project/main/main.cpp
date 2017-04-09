@@ -14,12 +14,11 @@
 
 #include "multitiles/multitiles.h"
 
-float offsetX = 10000.5;
-float offsetY = 10000.5;
-const float scale_offset = 0.002;
+const float OFFSET_X = 10000.5; // /!\ needs to end with 0.5, as the system is built this way (for the 4 tiles center)
+const float OFFSET_Y = 10000.5;
+const float INCREMENT_OFFSET = 0.005; // the increment step
 
-Grid grid;
-MultiTiles multitiles(grid, offsetX, offsetY, scale_offset);
+MultiTiles multitiles(OFFSET_X, OFFSET_Y, INCREMENT_OFFSET);
 
 int window_width = 800;
 int window_height = 600;
@@ -117,24 +116,25 @@ void Init() {
 
     trackball_matrix = glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
+    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, -3.2f));
 
-    grid.Init();
     multitiles.Init();
 
 }
 
+float old_time = sin(mod(glfwGetTime(), 2*M_PI));
+
 // gets called for every frame.
 void Display() {
 
-    offsetY = multitiles.incrementY();
+    multitiles.incrementY(); //to move with the camera
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
     mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
-    grid.Draw(offsetX, offsetY, trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
+    multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
 
 }
 
@@ -219,16 +219,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 
     if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetY = multitiles.incrementY();
+        multitiles.incrementY();
     }
     if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetY = multitiles.decrementY();
+        multitiles.decrementY();
     }
     if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetX = multitiles.decrementX();
+        multitiles.decrementX();
     }
     if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        offsetX = multitiles.incrementX();
+        multitiles.incrementX();
     }
 }
 

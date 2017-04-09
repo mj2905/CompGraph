@@ -9,8 +9,8 @@ in vec3 view_dir;
 in vec4 vpoint_mv;
 in float height;
 
-uniform vec3 La, Ld, Ls;
-uniform vec3 ka, kd, ks;
+uniform vec3 La, Ld;
+uniform vec3 ka, kd;
 uniform float alpha;
 
 uniform sampler1D colormap;
@@ -23,9 +23,5 @@ void main() {
 
     float nDotL = max(dot(normal_mv, light_dir), 0);
 
-    vec3 r = normalize(reflect(- light_dir, normal_mv));
-    float rDotV = max(dot(r, view_dir), 0);
-
-    color = texture(colormap, height).rgb * La + kd * nDotL * Ld
-                    + ks * pow(rDotV, alpha) * Ls;
+    color = texture(colormap, height).rgb * La + kd * nDotL * Ld; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 }

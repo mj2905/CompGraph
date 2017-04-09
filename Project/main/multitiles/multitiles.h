@@ -7,21 +7,30 @@
 #include <array>
 
 #define BL_TILE 0 //visible, bottom left tile
-#define BR_TILE 1
-#define TL_TILE 2
-#define TR_TILE 3
+#define BR_TILE 1 //visible, bottom right tile
+#define TL_TILE 2 //visible, top left tile
+#define TR_TILE 3 //visible, top right tile
 #define NV_LR_B 4 //not visible, left or right, bottom tile
-#define NV_LR_T 5
-#define NV_BT_R 6
-#define NV_BT_L 7
+#define NV_LR_T 5 //not visible, left or right, top tile
+#define NV_BT_R 6 //not visible, bottom or top, right tile
+#define NV_BT_L 7 //not visible, bottom or top, left tile
+
+/* the values are as follows
+ *
+ *   7 6
+ * 5 2 3 5
+ * 4 0 1 4
+ *   7 6
+ *
+ * */
 
 
 using namespace glm;
 
 class MultiTiles {
 public:
-    MultiTiles(Grid& grid, float x, float y, float increment) : grid(grid), x(x), y(y), x_visible(x), y_visible(y), increment(increment),
-    framebuffers_positions({BL_TILE, BR_TILE, TL_TILE, TR_TILE, NV_LR_B, NV_LR_T, NV_BT_R, NV_BT_L}){}
+    MultiTiles(float x, float y, float increment) : x(x), y(y), x_visible(x), y_visible(y), increment(increment),
+    framebuffers_positions({BL_TILE, BR_TILE, TL_TILE, TR_TILE, NV_LR_B, NV_LR_T, NV_BT_R, NV_BT_L}){} //we assign values to the array (initial order)
 
     void Init() {
 
@@ -29,19 +38,27 @@ public:
             framebuffers[i].Init(size_tile, size_tile, true);
         }
 
+        grid.Init();
         perlin.Init();
 
         for(int i = 0; i < 4; ++i) {
-            drawPerlin(framebuffers[i], x + (-0.5+ (i%2)), y + (-0.5 + i/2));
+            drawPerlin(framebuffers[i], x + (-0.5+ (i%2)), y + (-0.5 + i/2)); //we draw in the visible framebuffers, with values (-0.5, -0.5), (0.5, -0.5), (-0.5, 0.5), (0.5, 0.5)
         }
-        grid.changeTexture(getTexturesVisible());
+        grid.changeTexture(getTexturesVisible()); //we give it to the grid, so that it can be rendered
     }
 
-    float incrementX() {
+    void Draw(const mat4 &model = IDENTITY_MATRIX,
+              const mat4 &view = IDENTITY_MATRIX,
+              const mat4 &projection = IDENTITY_MATRIX) {
+        grid.Draw(x_visible, y_visible, model, view, projection);
+    }
+
+    void incrementX() {
+        //if we are moving a bit to the right from the center, we compute and store the right not visible tiles
         if(x_visible <= x and x_visible + increment > x) {
             drawRightTiles();
         }
-
+        //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
         if(x_visible + increment >= x + 0.5) {
 
             GLuint tmp_down = framebuffers_positions[NV_LR_B];
@@ -59,7 +76,7 @@ public:
             grid.changeTexture(getTexturesVisible());
 
 
-            //Aim ? To compute the corner in cas we shift first a bit to the top, then we go to the right so that we change tiles, ans then we go up
+            //we compute the corners if we need them, otherwise there would be some problems of bad computed textures.
             if(y_visible > y) {
                 GLuint tmp = framebuffers_positions[NV_BT_L];
                 framebuffers_positions[NV_BT_L] = framebuffers_positions[NV_BT_R];
@@ -75,14 +92,14 @@ public:
         }
 
         x_visible += increment;
-        return x_visible;
     }
 
-    float decrementX() {
+    void decrementX() {
+        //if we are moving a bit to the left from the center, we compute and store the left not visible tiles
         if(x_visible >= x and x_visible - increment < x) {
             drawLeftTiles();
         }
-
+        //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
         if(x_visible - increment <= x - 0.5) {
 
             GLuint tmp_down = framebuffers_positions[NV_LR_B];
@@ -99,6 +116,7 @@ public:
 
             grid.changeTexture(getTexturesVisible());
 
+            //we compute the corners if we need them, otherwise there would be some problems of bad computed textures.
             if(y_visible > y) {
                 GLuint tmp = framebuffers_positions[NV_BT_R];
                 framebuffers_positions[NV_BT_R] = framebuffers_positions[NV_BT_L];
@@ -114,14 +132,14 @@ public:
         }
 
         x_visible -= increment;
-        return x_visible;
     }
 
-    float incrementY() {
+    void incrementY() {
+        //if we are moving a bit to the top from the center, we compute and store the top not visible tiles
         if(y_visible <= y and y_visible + increment > y) {
             drawUpTiles();
         }
-
+        //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
         if(y_visible + increment >= y + 0.5) {
 
             GLuint tmp_right = framebuffers_positions[NV_BT_R];
@@ -138,6 +156,7 @@ public:
 
             grid.changeTexture(getTexturesVisible());
 
+            //we compute the corners if we need them, otherwise there would be some problems of bad computed textures.
             if(x_visible > x) {
                 GLuint tmp = framebuffers_positions[NV_LR_B];
                 framebuffers_positions[NV_LR_B] = framebuffers_positions[NV_LR_T];
@@ -153,14 +172,14 @@ public:
         }
 
         y_visible += increment;
-        return y_visible;
     }
 
-    float decrementY() {
+    void decrementY() {
+        //if we are moving a bit to the bottom from the center, we compute and store the bottom not visible tiles
         if(y_visible >= y and y_visible - increment < y) {
             drawDownTiles();
         }
-
+        //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
         if(y_visible - increment <= y - 0.5) {
 
             GLuint tmp_right = framebuffers_positions[NV_BT_R];
@@ -177,6 +196,7 @@ public:
 
             grid.changeTexture(getTexturesVisible());
 
+            //we compute the corners if we need them, otherwise there would be some problems of bad computed textures.
             if(x_visible > x) {
                 GLuint tmp = framebuffers_positions[NV_LR_T];
                 framebuffers_positions[NV_LR_T] = framebuffers_positions[NV_LR_B];
@@ -192,10 +212,10 @@ public:
         }
 
         y_visible -= increment;
-        return y_visible;
     }
 
     void Cleanup() {
+        grid.Cleanup();
         perlin.Cleanup();
         for(auto& framebuffer : framebuffers) {
             framebuffer.Cleanup();
@@ -206,12 +226,13 @@ private:
         const float increment;
         float x, y;
         float x_visible, y_visible;
-        Grid& grid;
+        Grid grid;
         PerlinNoise perlin;
         int size_tile = 512;
         array<FrameBuffer, 8> framebuffers;
-        array<size_t, 8> framebuffers_positions;
+        array<size_t, 8> framebuffers_positions; //array of indices of framebuffers
 
+        //method used to give to the grid the framebuffers we want to display
         array<GLuint, 4> getTexturesVisible() {
             return {framebuffers[framebuffers_positions[BL_TILE]].getTextureId(),
                         framebuffers[framebuffers_positions[BR_TILE]].getTextureId(),

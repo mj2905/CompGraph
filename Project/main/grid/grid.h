@@ -11,16 +11,16 @@ class Grid {
         GLuint vertex_buffer_object_index_;     // memory buffer for indices
         GLuint program_id_;                     // GLSL shader program ID
 
-        GLuint texture_id_BL_;                     // texture ID bottom left
-        GLuint texture_id_BR_;                     // texture ID bottom right
-        GLuint texture_id_UL_;                     // texture ID upper left
-        GLuint texture_id_UR_;                     // texture ID upper right
+        GLuint texture_id_BL_;                  // texture ID bottom left
+        GLuint texture_id_BR_;                  // texture ID bottom right
+        GLuint texture_id_UL_;                  // texture ID upper left
+        GLuint texture_id_UR_;                  // texture ID upper right
 
-        GLuint interpolation_id_;                     // texture ID
+        GLuint interpolation_id_;               // sampler for the height colors
         GLuint num_indices_;                    // number of vertices to render
-        GLuint M_id_;                         // model matrix ID
-        GLuint V_id_;                         // view matrix ID
-        GLuint P_id_;                         // proj matrix ID
+        GLuint M_id_;                           // model matrix ID
+        GLuint V_id_;                           // view matrix ID
+        GLuint P_id_;                           // proj matrix ID
 
     public:
         void Init() {
@@ -41,7 +41,7 @@ class Grid {
             {
                 std::vector<GLfloat> vertices;
                 std::vector<GLuint> indices;
-                // TODO 5: make a triangle grid with dimension 100x100.
+                // makes a triangle grid with dimension 100x100.
                 // always two subsequent entries in 'vertices' form a 2D vertex position.
                 int grid_dim = 1024;
 
@@ -119,37 +119,33 @@ class Grid {
                 glBindTexture(GL_TEXTURE_1D, 0);
             }
 
+            // lights and shading
+            {
+                glm::vec3 light_pos = glm::vec3(2.0f, 2.0f, 0.5f);
 
-            glm::vec3 light_pos = glm::vec3(2.0f, 2.0f, 0.5f);
+                glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
+                glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
 
-            glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
-            glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
-            glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
+                GLuint light_pos_id = glGetUniformLocation(program_id_, "light_pos");
 
-            GLuint light_pos_id = glGetUniformLocation(program_id_, "light_pos");
+                GLuint La_id = glGetUniformLocation(program_id_, "La");
+                GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
 
-            GLuint La_id = glGetUniformLocation(program_id_, "La");
-            GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
-            GLuint Ls_id = glGetUniformLocation(program_id_, "Ls");
+                glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
+                glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
+                float alpha = 60.0f;
 
-            glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
-            glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
-            glm::vec3 ks = glm::vec3(0.0f, 0.0f, 0.0f);
-            float alpha = 60.0f;
+                GLuint ka_id = glGetUniformLocation(program_id_, "ka");
+                GLuint kd_id = glGetUniformLocation(program_id_, "kd");
+                GLuint alpha_id = glGetUniformLocation(program_id_, "alpha");
 
-            GLuint ka_id = glGetUniformLocation(program_id_, "ka");
-            GLuint kd_id = glGetUniformLocation(program_id_, "kd");
-            GLuint ks_id = glGetUniformLocation(program_id_, "ks");
-            GLuint alpha_id = glGetUniformLocation(program_id_, "alpha");
-
-            glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
-            glUniform3fv(La_id, 1, glm::value_ptr(La));
-            glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
-            glUniform3fv(Ls_id, 1, glm::value_ptr(Ls));
-            glUniform3fv(ka_id, ONE, glm::value_ptr(ka));
-            glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
-            glUniform3fv(ks_id, ONE, glm::value_ptr(ks));
-            glUniform1f(alpha_id, alpha);
+                glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
+                glUniform3fv(La_id, 1, glm::value_ptr(La));
+                glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
+                glUniform3fv(ka_id, ONE, glm::value_ptr(ka));
+                glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
+                glUniform1f(alpha_id, alpha);
+            }
 
             // other uniforms
             M_id_ = glGetUniformLocation(program_id_, "model");
@@ -161,6 +157,7 @@ class Grid {
             glUseProgram(0);
         }
 
+        //method to automatically change the textures, after the multitiles has computed them
         void changeTexture(const array<GLuint, 4>& ids) {
             texture_id_BL_ = ids[0];
             texture_id_BR_ = ids[1];
@@ -179,6 +176,7 @@ class Grid {
             glDeleteTextures(1, &texture_id_BR_);
             glDeleteTextures(1, &texture_id_UL_);
             glDeleteTextures(1, &texture_id_UR_);
+            glDeleteTextures(1, &interpolation_id_);
         }
 
         void Draw(float offsetX, float offsetY,
