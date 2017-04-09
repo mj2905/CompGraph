@@ -121,8 +121,6 @@ void Init() {
 
 }
 
-float old_time = sin(mod(glfwGetTime(), 2*M_PI));
-
 // gets called for every frame.
 void Display() {
 
