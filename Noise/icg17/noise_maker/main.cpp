@@ -127,7 +127,7 @@ void Init() {
     // scaling matrix to scale the cube down to a reasonable size.
     quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
 
-    alga.Init(6,'B');
+    alga.Init(8,'B');
 }
 
 // gets called for every frame.

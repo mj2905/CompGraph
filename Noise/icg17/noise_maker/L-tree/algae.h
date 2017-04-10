@@ -26,9 +26,7 @@ class Algae {
             ss << c;
             ss >> tree;
             depth_ = depth;
-            cout << "boop" << endl;
-            states.push_back(vec3(0.0f,0.0f,0.0f));
-            cout << "beep" << endl;
+            states.push_back(vec3(0.0f,-1.0f,0.0f));
             initTree();
        }
 
@@ -39,8 +37,18 @@ class Algae {
 
        // Verified: Parsing
        string substituteString(char a){
+           srand(rand());
+           int r = rand()%110;
+           r = rand()%110;
+           r = rand()%110;
            if(a == 'A'){
-               return "[A->+AB]";
+               if(r < 40){
+                   return "[A->+AB]";
+               }else if(r < 80){
+                   return "[A->+B]";
+               } else{
+                   return "[A]";
+               }
            }
            else if(a == 'B'){
                return "[B->+A]";
@@ -51,6 +59,7 @@ class Algae {
                ss >> s;
                return s;
            }
+           srand(10);
        }
 
        // Verified: Parsing
@@ -72,56 +81,33 @@ class Algae {
        }
 
 
-       // Adding randomness choices to this rotation later on
-       mat4 rotationRule(char parentType, char targetType){
-           mat4 rotation;
-           if(parentType == 'A'){
-               if(targetType == 'B'){
-                    rotation = rotate(mat4(1.0f), (float)((45.0)*M_PI/180.0),vec3(0.0f,0.0f,1.0f));
-               } else{
-                   rotation = rotate(mat4(1.0f), (float)((-45.0)*3.14159/180.0),vec3(0.0f,0.0f,1.0f));
-               }
-           } else if(parentType == 'B'){
-               if(targetType == 'A'){
-                   rotation = IDENTITY_MATRIX;
-               }
-           }
-
-           return rotation;
-       }
-
-       mat4 translationRule(char parentType, char targetType){
-           mat4 translation;
+       mat4 transformationRule(char parentType, char targetType){
+           mat4 transformation;
            float xf = 0.08f;
-           float yf = 0.175f;
+           float yf = 0.15f;
 
            if(parentType == 'A'){
                if(targetType == 'B'){
-                    translation = translate(mat4(1.0f), vec3(-xf,yf,0.0f));
+                    transformation = translate(mat4(1.0f), vec3(-xf,yf,0.0f));
                } else{
-                   translation = translate(mat4(1.0f), vec3(xf,yf,0.0f));
+                   transformation = translate(mat4(1.0f), vec3(xf,yf,0.0f));
                }
            } else {
-                translation = translate(mat4(1.0f), vec3(0.0f,yf,0.0f));
+                transformation = translate(mat4(1.0f), vec3(0.0f,yf,0.0f));
            }
 
-           return translation;
+           return transformation;
        }
 
        vec3 generateQuads(vec3 originPoint, char parentType, char targetType){
            Quad tmp_quad;
-           mat4 rotation, translation;
-
-           rotation = IDENTITY_MATRIX;//rotationRule(parentType, targetType);
-           translation = translationRule(parentType, targetType);
-
-           vec4 dest = translation*rotation*vec4(originPoint,1.0f);
+           vec4 dest = transformationRule(parentType, targetType)*vec4(originPoint,1.0f);
            tmp_quad.Init(originPoint, vec3(dest),0.01f);
            quads.push_back(tmp_quad);
            return vec3(dest);
        }
 
-       // The algorithm on paper should work. Does it?
+       // The algorithm on paper should work.
        void generateAlgae(){
            vec3 so,s1;
            so= states.back();
@@ -152,7 +138,6 @@ class Algae {
 
        }
 
-       // Verified: Parses + Generate the quads & transfos
        void initTree(){
            firstExpand();
            for(size_t i = 0; i < depth_; ++i){
