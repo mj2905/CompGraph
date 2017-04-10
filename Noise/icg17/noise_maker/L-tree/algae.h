@@ -42,9 +42,9 @@ class Algae {
            r = rand()%110;
            r = rand()%110;
            if(a == 'A'){
-               if(r < 40){
+               if(r > 4){
                    return "[A->+AB]";
-               }else if(r < 80){
+               }else if(r < 40){
                    return "[A->+B]";
                } else{
                    return "[A]";
@@ -81,6 +81,10 @@ class Algae {
        }
 
 
+       /*
+        * TODO: Add a rand function to create 3D plants
+        *
+        * */
        mat4 transformationRule(char parentType, char targetType){
            mat4 transformation;
            float xf = 0.08f;
