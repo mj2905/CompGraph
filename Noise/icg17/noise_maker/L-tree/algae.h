@@ -18,8 +18,7 @@ class Algae {
        GLuint depth_;
        vector<char> branches;
        vector<Quad> quads;
-       vector<glm::mat4> transfos, rotations;
-       vector<int> indices, pointers;
+       vector<glm::vec3> states;
 
     public:
        void Init(GLuint depth, char c){
@@ -27,8 +26,9 @@ class Algae {
             ss << c;
             ss >> tree;
             depth_ = depth;
-            transfos.push_back(IDENTITY_MATRIX);
-            indices.push_back(0);
+            cout << "boop" << endl;
+            states.push_back(vec3(0.0f,0.0f,0.0f));
+            cout << "beep" << endl;
             initTree();
        }
 
@@ -85,90 +85,70 @@ class Algae {
                if(targetType == 'A'){
                    rotation = IDENTITY_MATRIX;
                }
-           } else {
-               rotation = rotate(mat4(1.0f), (float)((45.0)*M_PI/180.0),vec3(0.0f,0.0f,1.0f));
            }
+
            return rotation;
        }
 
-       mat4 translationRule(char parentType, char targetType, bool amplify){
+       mat4 translationRule(char parentType, char targetType){
            mat4 translation;
            float xf = 0.07f;
            float yf = 0.165f;
 
-           if(amplify){
-               xf *=2;
-           }
-
            if(parentType == 'A'){
                if(targetType == 'B'){
-                    translation = translate(mat4(1.0f), vec3(-xf,0.0f,0.0f));
+                    translation = translate(mat4(1.0f), vec3(-xf,yf,0.0f));
                } else{
-                   translation = translate(mat4(1.0f), vec3(xf,0.0f,0.0f));
+                   translation = translate(mat4(1.0f), vec3(xf,yf,0.0f));
                }
            } else {
-                translation = IDENTITY_MATRIX;
+                translation = translate(mat4(1.0f), vec3(0.0f,yf,0.0f));
            }
 
            return translation;
        }
 
-       /*
-        * Now the translation has a problem of chaining again
-        *
-        * */
-
-       /*
-        *
-        *
-        *
-        * */
-       int generateQuads(int transfoIndex, char parentType, char targetType){
+       vec3 generateQuads(vec3 originPoint, char parentType, char targetType){
            Quad tmp_quad;
-           mat4 rotation, translation, transup;
-           tmp_quad.Init();
-           quads.push_back(tmp_quad);
+           mat4 rotation, translation;
 
            rotation = rotationRule(parentType, targetType);
+           translation = translationRule(parentType, targetType);
 
-           transup = translate(mat4(1.0f), vec3(0.0f,0.165f, 0.0f));
-           mat4 m = transfos.at(transfoIndex);
-
-           rotations.push_back(rotation);
-           transfos.push_back(translation*m*transup);
-           int index = transfos.size()-1;
-           pointers.push_back(index);
-           return index;
+           vec4 dest = translation*rotation*vec4(originPoint,1.0f);
+           tmp_quad.Init(originPoint, vec3(dest),0.01f);
+           quads.push_back(tmp_quad);
+           return vec3(dest);
        }
 
        // The algorithm on paper should work. Does it?
-       void generateAlgae(){           
-           int so = indices.back();
-           int s1;
+       void generateAlgae(){
+           vec3 so,s1;
+           so= states.back();
            char lo = 'n';
            char l1 = 'n';
            for(size_t i = 1; i < tree.length(); i++){
                char str = tree.at(i);
                if(str == ']'){
-                   indices.pop_back();
+                   states.pop_back();
                    branches.pop_back();
-                   so = indices.back();
+                   so = states.back();
                } else if(str == 'A' || tree.at(i) == 'B'){
                     lo = str;
-                    if(indices.size() > 0 && branches.size() > 0){
-                        indices.pop_back();
-                        s1 = indices.back();
+                    if(states.size() > 0 && branches.size() > 0){
+                        states.pop_back();
+                        s1 = states.back();
                         l1 = branches.back();
                         so = generateQuads(s1, l1, lo);
-                        indices.push_back(so);
+                        states.push_back(so);
                     }
                } else if(str == '>'){
                    branches.push_back(lo);
-                   indices.push_back(so);
+                   states.push_back(so);
                }
            }
            branches.clear();
-           indices.clear();
+           states.clear();
 
        }
 
@@ -178,16 +158,13 @@ class Algae {
            for(size_t i = 0; i < depth_; ++i){
                 expand();
             }
-           printTree();
            generateAlgae();
        }
 
-       // Uses hypothesis that the transf. of a quad is at the same indice
+
        void Draw(){
-           mat4 t = IDENTITY_MATRIX;
            for(size_t i = 0; i < quads.size(); ++i){
-               int index = pointers.at(i);
-               quads.at(i).Draw(transfos.at(index)*rotations.at(i)*scale(mat4(1.0f), vec3(0.01f,0.1f,0)));
+               quads.at(i).Draw(IDENTITY_MATRIX);
            }
        }
 
@@ -195,10 +172,9 @@ class Algae {
            for(size_t i = 0; i < quads.size(); ++i){
                quads.at(i).Cleanup();
            }
-           indices.clear();
+           states.clear();
            branches.clear();
            quads.clear();
-           transfos.clear();
            tree.clear();
        }
 

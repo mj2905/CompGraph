@@ -13,6 +13,7 @@
 #include "framebuffer.h"
 #include "perlin_noise/perlin_noise.h"
 #include "L-tree/algae.h"
+#include "quad/quad.h"
 
 FrameBuffer framebuffer;
 Perlin_noise perlin;
@@ -107,7 +108,6 @@ void Init() {
 
     //Let's create the noise
    /* perlin.Init();
-
     framebuffer.Bind();
     {
         perlin.Draw();
@@ -143,7 +143,7 @@ void Display() {
 
     // draw a quad on the ground.
   //  grid.Draw(time, trackball_matrix * quad_model_matrix, view_matrix, projection_matrix);
-     alga.Draw();
+    alga.Draw();
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.
