@@ -92,8 +92,8 @@ class Algae {
 
        mat4 translationRule(char parentType, char targetType){
            mat4 translation;
-           float xf = 0.07f;
-           float yf = 0.165f;
+           float xf = 0.08f;
+           float yf = 0.175f;
 
            if(parentType == 'A'){
                if(targetType == 'B'){
@@ -112,7 +112,7 @@ class Algae {
            Quad tmp_quad;
            mat4 rotation, translation;
 
-           rotation = rotationRule(parentType, targetType);
+           rotation = IDENTITY_MATRIX;//rotationRule(parentType, targetType);
            translation = translationRule(parentType, targetType);
 
            vec4 dest = translation*rotation*vec4(originPoint,1.0f);
