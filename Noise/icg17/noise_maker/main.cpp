@@ -127,7 +127,7 @@ void Init() {
     // scaling matrix to scale the cube down to a reasonable size.
     quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
 
-    alga.Init(0,'A');
+    alga.Init(2,'B');
 }
 
 // gets called for every frame.
@@ -143,7 +143,7 @@ void Display() {
 
     // draw a quad on the ground.
   //  grid.Draw(time, trackball_matrix * quad_model_matrix, view_matrix, projection_matrix);
-    alga.Draw();
+     alga.Draw();
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.

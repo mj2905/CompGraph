@@ -14,7 +14,17 @@ class Quad {
         GLuint MVP_id_; // MVP matrix
 
     public:
-        void Init() {
+
+
+        vec3 vectorAdd(vec3 a, vec3 b, bool add){
+            if(add){
+                return vec3(a.x+b.x, a.y+b.y, a.z+b.z);
+            }else{
+                return vec3(a.x - b.x, a.y-b.y, a.z-b.z);
+            }
+        }
+
+        void Init(vec3 a, vec3 b, float width) {
             // compile the shaders
             program_id_ = icg_helper::LoadShaders("quad_vshader.glsl",
                                                   "quad_fshader.glsl");
@@ -31,10 +41,17 @@ class Quad {
 
             // vertex coordinates
             {
-                const GLfloat vertex_point[] = { /*V1*/ -1.0f, -1.0f, 0.0f,
-                                                 /*V2*/ +1.0f, -1.0f, 0.0f,
-                                                 /*V3*/ -1.0f, +1.0f, 0.0f,
-                                                 /*V4*/ +1.0f, +1.0f, 0.0f};
+                vec3 diag = vec3(b.x - a.x, b.y-a.y, b.z-a.z);
+                vec3 n = width*normalize(cross(diag, vec3(0.0f,0.0f,1.0f)));
+                vec3 p1,p2,p3,p4;
+                p1 = vectorAdd(a, n, false);
+                p2 = vectorAdd(a, n, true);
+                p3 = vectorAdd(b,n, false);
+                p4 = vectorAdd(b, n, true);
+                const GLfloat vertex_point[] = { p1.x, p1.y, p1.z,
+                                                 p2.x, p2.y, p2.z,
+                                                 p3.x, p3.y, p3.z,
+                                                 p4.x, p4.y, p4.z};
                 // buffer
                 glGenBuffers(1, &vertex_buffer_object_);
                 glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object_);
@@ -47,16 +64,8 @@ class Quad {
                 glVertexAttribPointer(vertex_point_id, 3, GL_FLOAT, DONT_NORMALIZE,
                                       ZERO_STRIDE, ZERO_BUFFER_OFFSET);
             }
-
-            // Model View Project uniform
-            {
-                MVP_id_ = glGetUniformLocation(program_id_, "MVP");
-            }
-
-            // to avoid the current object being polluted
-            glBindVertexArray(0);
-            glUseProgram(0);
         }
+
 
         void Cleanup() {
             glBindVertexArray(0);
