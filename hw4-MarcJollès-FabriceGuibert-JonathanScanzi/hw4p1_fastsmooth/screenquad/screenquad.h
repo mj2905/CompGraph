@@ -139,8 +139,10 @@ class ScreenQuad {
             glUniform1f(glGetUniformLocation(program_id_, "tex_height"),
                         this->screenquad_height_);
 
-            // The pass value is used in the fshader to choose whether to blur horizontally or vertically
-            glUniform1i(glGetUniformLocation(program_id_, "pass"), p);
+
+            glUniform1i(glGetUniformLocation(program_id_, "SIZE_OPT"),
+                        (this->G.size()-1)/2);
+            glUniform1fv(glGetUniformLocation(program_id_, "G"), G.size(), G.data());
 
             // Here, we bind both textures, so that they exist and can be read and written to.
             glActiveTexture(GL_TEXTURE0);

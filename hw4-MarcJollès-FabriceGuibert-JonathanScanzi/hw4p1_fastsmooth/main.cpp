@@ -18,6 +18,9 @@ Quad quad;
 int window_width = 800;
 int window_height = 600;
 
+vector<float> G;
+
+>>>>>>> master
 FrameBuffer framebuffer;
 ScreenQuad screenquad;
 
@@ -27,6 +30,19 @@ mat4 projection_matrix;
 mat4 view_matrix;
 mat4 cube_model_matrix;
 
+size_t MAX_SIZE = 400; // /!\ modify too in screenquad_fshader if modified
+float gaussian_std = 2.0;
+
+void regenerateG() {
+
+    int SIZE = 1 + 2 * 3 * int(ceil(gaussian_std));
+
+    G.clear();
+    //We choose these boundaries, as they are the same as for basic gaussian blur
+    for(int i = -SIZE; i <= SIZE; ++i) {
+        G.push_back(exp(-(i*i)/(2.0*gaussian_std*gaussian_std*gaussian_std*gaussian_std)));
+    }
+>>>>>>> master
 
 
 void Init(GLFWwindow* window) {
@@ -125,8 +141,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if(key == GLFW_KEY_Q && action == GLFW_PRESS){
         screenquad.update(-0.25);
     }
-    if(key == GLFW_KEY_W && action == GLFW_PRESS){
-        screenquad.update(0.25);
+
+    if(key == GLFW_KEY_W && action == GLFW_PRESS) {
+        if(gaussian_std < (MAX_SIZE-3)/12.0f - 1) {
+            gaussian_std += 0.25;
+            regenerateG();
+        }
     }
 }
 
