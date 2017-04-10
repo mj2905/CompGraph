@@ -24,19 +24,26 @@ class Algae {
        vector<glm::vec3> states;
        vector<char> branches;
        vector<Quad> quads;
-       vector<glm::mat4> transfos;
+       vector<glm::mat4> transfos, rotations;
+       vector<int> indices;
 
     public:
-       void Init(GLuint depth, vec3 origin){
-            tree = "A";
+       void Init(GLuint depth, char c){
+            stringstream ss;
+            ss << c;
+            ss >> tree;
             depth_ = depth;
-            states.push_back(origin);
-
+            transfos.push_back(IDENTITY_MATRIX);
+            indices.push_back(0);
             initTree();
        }
 
 
+       void printTree(){
+           cout << tree << endl;
+       }
 
+       // Verified: Parsing
        string substituteString(char a){
            if(a == 'A'){
                return "[A->+AB]";
@@ -52,12 +59,13 @@ class Algae {
            }
        }
 
+       // Verified: Parsing
        void firstExpand(){
            tree.replace(0,1, substituteString(tree.at(0)));
        }
 
+       // Verified: Parsing
        void expand(){
-
            for(size_t i = 1; i < tree.size(); ++i){
                char ch = tree.at(i);
                char chcontr = tree.at(i-1);
@@ -69,63 +77,76 @@ class Algae {
            }
        }
 
-       vec3 generateQuads(vec3 originDepth, char parentType, char targetType){
-           vec4 dest =  vec4(originDepth,1.0); // vec3(originDepth.x, originDepth.y, originDepth.z + 0.25)
-           mat4 t = scale(mat4(1.0f), vec3(0.01f,0.05f,0));
-           mat4 transf = t*IDENTITY_MATRIX;
+       // The drawing algorithm that chains transformations. Are they correctly ordered?
+       // Hypothesis: problem comes from chained rotations that should not occur
+       // Ex: Trans1*Rot1*Scale*Quad1
+       //     Trans2*Rot2*Trans1*Rot1*Scale*Quad2 if quad2 is child of Quad1
+       //  But what we might want here would actually be Trans2*Rot2*(-Rot1)*Trans1*Rot1*Scale*Quad2
+       int generateQuads(int transfoIndex, char parentType, char targetType){
+           Quad tmp_quad;
+           mat4 rotation, translation;
+           tmp_quad.Init();
+           translation = translate(mat4(1.0f), vec3(0.0f,0.165f,0.0f));
+           quads.push_back(tmp_quad);
+
+
            if(parentType == 'A'){
                if(targetType == 'B'){
-                    transf = rotate(mat4(1.0f),(float) (45.0*3.14159/180.0), vec3(0.0f,0.0f,1.0f))*transf;
-               } else if(targetType == 'A'){
-                    transf = rotate(mat4(1.0f), (float) ((-45.0)*3.14159/180.0), vec3(0.0f,0.0f,1.0f))*transf;
+                    rotation = rotate(mat4(1.0f), (float)((45.0)*M_PI/180.0),vec3(0.0f,0.0f,1.0f));
+                    translation = translate(mat4(1.0f), vec3(-0.07f,0.165f,0.0f));
+               } else{
+                   rotation = rotate(mat4(1.0f), (float)((-45.0)*3.14159/180.0),vec3(0.0f,0.0f,1.0f));
+                   translation = translate(mat4(1.0f), vec3(0.07f,0.165f,0.0f));
                }
-               // here we'll rotate our dear dest vector
-
            } else if(parentType == 'B'){
-               if(targetType == 'A'){ // only possible case for now
-                    // we do nothing
+               if(targetType == 'A'){
+                   rotation = rotate(mat4(1.0f), (float)((45.0)*M_PI/180.0),vec3(0.0f,0.0f,1.0f));
                }
+           } else {
+               rotation = rotate(mat4(1.0f), (float)((45.0)*M_PI/180.0),vec3(0.0f,0.0f,1.0f));
            }
-           transf = transf*translate(mat4(1.0f), vec3(0.25f,0.25f,0.0f));
-           Quad tmp_quad;
-           tmp_quad.Init();
-           quads.push_back(tmp_quad);
-           dest = transf*dest;
-           transfos.push_back(transf);
 
-           return vec3(dest);
+           rotations.push_back(rotation);
+           transfos.push_back(translation*transfos.at(transfoIndex));
+           int index = transfos.size()-1;
+           indices.push_back(index);
+           return index;
        }
 
-
-       void generateAlgae(){
-           glm::vec3 so = states.back();
-           glm::vec3 s1;
+       // The algorithm on paper should work. Does it?
+       void generateAlgae(){           
+           int so = indices.back();
+           int s1;
            char lo = 'n';
            char l1 = 'n';
-           cout << branches.size() << endl;
            for(size_t i = 1; i < tree.length(); i++){
                char str = tree.at(i);
                if(str == ']'){
-                   states.pop_back();
+                   indices.pop_back();
                    branches.pop_back();
-                   so = states.back();
+                   so = indices.back();
                } else if(str == 'A' || tree.at(i) == 'B'){
                     lo = str;
-                    if(states.size() > 0 && branches.size() > 0){
-                        states.pop_back();
-                        s1 = states.back();
+                    if(indices.size() > 0 && branches.size() > 0){
+                        indices.pop_back();
+                        s1 = indices.back();
                         l1 = branches.back();
-                        so = generateQuads(s1, lo, l1);
-                        states.push_back(so);
+                        cout << l1 << " - >" << lo << endl;
+                        so = generateQuads(s1, l1, lo);
+                        cout << so << endl;
+                        indices.push_back(so);
                     }
                } else if(str == '>'){
                    branches.push_back(lo);
-                   states.push_back(so);
+                   indices.push_back(so);
                }
            }
+           branches.clear();
+           indices.clear();
 
        }
 
+       // Verified: Parses + Generate the quads & transfos
        void initTree(){
            firstExpand();
            for(size_t i = 0; i < depth_; ++i){
@@ -134,31 +155,11 @@ class Algae {
            generateAlgae();
        }
 
-       void printTree(){
-           cout << tree << endl;
-       }
-
+       // Uses hypothesis that the transf. of a quad is at the same indice
        void Draw(){
-           /*vector<Quad> v;
-           Quad q1, q2, q3;
-           q1.Init();
-           q2.Init();
-           q3.Init();
-           v.push_back(q1);
-           v.push_back(q2);
-           vector<mat4> t;
-           t.push_back(rotate(mat4(1.0f),(float)(45.0*3.14159/180.0), vec3(0.0f,0.0f,1.0f))*scale(mat4(1.0f), vec3(0.01f,0.5f,0)));
-           t.push_back(rotate(mat4(1.0f),(float)((-45.0)*3.14159/180.0), vec3(0.0f,0.0f,1.0f))*scale(mat4(1.0f), vec3(0.01f,0.5f,0)));
-           v.at(0).Draw(t.at(0));
-           v.at(1).Draw(t.at(1));*/
-/*
-           for(size_t i =0; i < v.size(); ++i){
-               v.at(i).Draw(t.at(i));
-           }*/
-
-
+           mat4 t = IDENTITY_MATRIX;
            for(size_t i = 0; i < quads.size(); ++i){
-               quads.at(i).Draw(transfos.at(i));
+               quads.at(i).Draw(transfos.at(i)*rotations.at(i)*scale(mat4(1.0f), vec3(0.01f,0.1f,0)));
            }
        }
 
@@ -166,6 +167,11 @@ class Algae {
            for(size_t i = 0; i < quads.size(); ++i){
                quads.at(i).Cleanup();
            }
+           indices.clear();
+           branches.clear();
+           quads.clear();
+           transfos.clear();
+           tree.clear();
        }
 
 };
