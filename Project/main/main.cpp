@@ -7,17 +7,17 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "grid/grid.h"
-#include "perlin_noise/perlin.h"
-
 #include "trackball.h"
 
 #include "multitiles/multitiles.h"
+
+#include "water/water.h"
 
 const unsigned int OFFSET_X = 256;
 const unsigned int OFFSET_Y = 256;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
+Water water;
 
 int window_width = 800;
 int window_height = 600;
@@ -118,13 +118,13 @@ void Init() {
     quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, -3.2f));
 
     multitiles.Init();
-
+    water.Init();
 }
 
 // gets called for every frame.
 void Display() {
 
-    multitiles.incrementY(); //to move with the camera
+    //multitiles.incrementY(); //to move with the camera
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
@@ -132,6 +132,7 @@ void Display() {
     mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
     multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
+    //water.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
 
 }
 
@@ -295,6 +296,7 @@ int main(int argc, char *argv[]) {
     }
 
     multitiles.Cleanup();
+    water.Cleanup();
 
     // close OpenGL window and terminate GLFW
     glfwDestroyWindow(window);

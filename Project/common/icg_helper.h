@@ -215,14 +215,15 @@ inline GLuint CompileShaders(const char* vshader,
 }
 
 
-// compiles the vertex, geometry and fragment shaders using file path
-// TODO: add support for tessellation shaders
+// compiles the vertex, geometry, fragment and tesselation shaders using file path
 inline GLuint LoadShaders(const char * vertex_file_path,
                           const char * fragment_file_path,
-                          const char * geometry_file_path = NULL) {
+                          const char * geometry_file_path = NULL,
+                          const char * tess_con_file_path = NULL,
+                          const char * tess_eva_file_path = NULL) {
     const int SHADER_LOAD_FAILED = 0;
 
-    string vertex_shader_code, fragment_shader_code, geometry_shader_code;
+    string vertex_shader_code, fragment_shader_code, geometry_shader_code, tess_con_code, tess_eva_code;
     {
         // read the Vertex Shader code from the file
         ifstream vertex_shader_stream(vertex_file_path, ios::in);
@@ -258,19 +259,49 @@ inline GLuint LoadShaders(const char * vertex_file_path,
                 return SHADER_LOAD_FAILED;
             }
         }
+
+        // read the Tesselation Shader code from the file
+        if(tess_con_file_path != NULL) {
+            ifstream tess_con_shader_stream(tess_con_file_path, ios::in);
+            if(tess_con_shader_stream.is_open()) {
+                tess_con_code = string(istreambuf_iterator<char>(tess_con_shader_stream),
+                                              istreambuf_iterator<char>());
+                tess_con_shader_stream.close();
+            } else {
+                printf("Could not open file: %s\n", tess_con_file_path);
+                return SHADER_LOAD_FAILED;
+            }
+        }
+
+        // read the Tesselation Shader code from the file
+        if(tess_eva_file_path != NULL) {
+            ifstream tess_eva_shader_stream(tess_eva_file_path, ios::in);
+            if(tess_eva_shader_stream.is_open()) {
+                tess_eva_code = string(istreambuf_iterator<char>(tess_eva_shader_stream),
+                                              istreambuf_iterator<char>());
+                tess_eva_shader_stream.close();
+            } else {
+                printf("Could not open file: %s\n", tess_eva_file_path);
+                return SHADER_LOAD_FAILED;
+            }
+        }
     }
 
     // compile them
     char const *vertex_source_pointer = vertex_shader_code.c_str();
     char const *fragment_source_pointer = fragment_shader_code.c_str();
     char const *geometry_source_pointer = NULL;
+    char const *tesselation_con_source_pointer = NULL;
+    char const *tesselation_eva_source_pointer = NULL;
     if(geometry_file_path != NULL) geometry_source_pointer = geometry_shader_code.c_str();
+    if(tess_con_file_path != NULL) tesselation_con_source_pointer = tess_con_code.c_str();
+    if(tess_eva_file_path != NULL) tesselation_eva_source_pointer = tess_eva_code.c_str();
 
     int status = CompileShaders(vertex_source_pointer, fragment_source_pointer,
-                                geometry_source_pointer);
+                                geometry_source_pointer, tesselation_con_source_pointer, tesselation_eva_source_pointer);
     if(status == SHADER_LOAD_FAILED)
-        printf("Failed linking:\n  vshader: %s\n  fshader: %s\n  gshader: %s\n",
-               vertex_file_path, fragment_file_path, geometry_file_path);
+        printf("Failed linking:\n  vshader: %s\n  fshader: %s\n  gshader: %s\n tcshader: %s\n teshader: %s\n",
+               vertex_file_path, fragment_file_path, geometry_file_path, tess_con_file_path, tess_eva_file_path);
     return status;
 }
 }

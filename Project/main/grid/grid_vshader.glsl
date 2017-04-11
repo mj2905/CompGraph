@@ -1,8 +1,7 @@
-#version 330
+#version 410
 
 in vec2 position;
 
-out vec2 uv;
 out vec4 vpoint_mv;
 out vec3 light_dir, view_dir;
 out float height;
@@ -28,7 +27,7 @@ const float zoom = 1; //constant to zoom in the textures
 
 
 void main() {
-    uv = (position + vec2(1.0, 1.0)) * 0.5;
+    vec2 uv = (position + vec2(1.0, 1.0)) * 0.5;
     uv /= zoom;
 
     vec2 xy = vec2(mod(offset.x, 1.0f), mod(offset.y, 1.0f)) - 1; //allows to know how much we need to substract from uv, to facilitate computations

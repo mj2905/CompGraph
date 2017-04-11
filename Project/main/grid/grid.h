@@ -26,7 +26,10 @@ class Grid {
         void Init() {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("grid_vshader.glsl",
-                                                  "grid_fshader.glsl");
+                                                  "grid_fshader.glsl",
+                                                  NULL,
+                                                  "grid_tcs_shader.glsl",
+                                                  "grid_tev_shader.glsl");
             if(!program_id_) {
                 exit(EXIT_FAILURE);
             }
@@ -43,7 +46,7 @@ class Grid {
                 std::vector<GLuint> indices;
                 // makes a triangle grid with dimension 100x100.
                 // always two subsequent entries in 'vertices' form a 2D vertex position.
-                int grid_dim = 1024;
+                int grid_dim = 128;
 
                 // the given code below are the vertices for a simple quad.
                 // your grid should have the same dimension as that quad, i.e.,
@@ -222,8 +225,9 @@ class Grid {
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             // TODO 5: depending on how you set up your vertex index buffer, you
             // might have to change GL_TRIANGLE_STRIP to GL_TRIANGLES.
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            //glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_PATCHES, num_indices_, GL_UNSIGNED_INT, 0);
 
             glBindVertexArray(0);
             glUseProgram(0);
