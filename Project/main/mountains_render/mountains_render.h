@@ -3,7 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 
-class Mountains {
+class MountainsRender {
 
     private:
         GLuint vertex_array_id_;                // vertex array object
@@ -11,10 +11,7 @@ class Mountains {
         GLuint vertex_buffer_object_index_;     // memory buffer for indices
         GLuint program_id_;                     // GLSL shader program ID
 
-        GLuint texture_id_BL_;                  // texture ID bottom left
-        GLuint texture_id_BR_;                  // texture ID bottom right
-        GLuint texture_id_UL_;                  // texture ID upper left
-        GLuint texture_id_UR_;                  // texture ID upper right
+        GLuint texture_id_;
 
         GLuint interpolation_id_;               // sampler for the height colors
         GLuint num_indices_;                    // number of vertices to render
@@ -23,10 +20,10 @@ class Mountains {
         GLuint P_id_;                           // proj matrix ID
 
     public:
-        void Init() {
+        void Init(GLuint mountain_texture) {
             // compile the shaders.
-            program_id_ = icg_helper::LoadShaders("mountains_vshader.glsl",
-                                                  "mountains_fshader.glsl");
+            program_id_ = icg_helper::LoadShaders("mountains_r_vshader.glsl",
+                                                  "mountains_r_fshader.glsl");
             if(!program_id_) {
                 exit(EXIT_FAILURE);
             }
@@ -95,10 +92,8 @@ class Mountains {
 
             // load/Assign textures
             {
-                glUniform1i(glGetUniformLocation(program_id_, "texBL"), 0 /*GL_TEXTURE0*/);
-                glUniform1i(glGetUniformLocation(program_id_, "texBR"), 1 /*GL_TEXTURE1*/);
-                glUniform1i(glGetUniformLocation(program_id_, "texUL"), 2 /*GL_TEXTURE2*/);
-                glUniform1i(glGetUniformLocation(program_id_, "texUR"), 3 /*GL_TEXTURE3*/);
+                glUniform1i(glGetUniformLocation(program_id_, "tex"), 0 /*GL_TEXTURE0*/);
+                texture_id_ = mountain_texture;
             }
 
             // create 1D texture (colormap)
@@ -114,7 +109,7 @@ class Mountains {
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 GLuint tex_id = glGetUniformLocation(program_id_, "colormap");
-                glUniform1i(tex_id, 4 /*GL_TEXTURE4*/);
+                glUniform1i(tex_id, 1 /*GL_TEXTURE1*/);
 
                 glBindTexture(GL_TEXTURE_1D, 0);
             }
@@ -157,14 +152,6 @@ class Mountains {
             glUseProgram(0);
         }
 
-        //method to automatically change the textures, after the multitiles has computed them
-        void changeTexture(const array<GLuint, 4>& ids) {
-            texture_id_BL_ = ids[0];
-            texture_id_BR_ = ids[1];
-            texture_id_UL_ = ids[2];
-            texture_id_UR_ = ids[3];
-        }
-
         void Cleanup() {
             glBindVertexArray(0);
             glUseProgram(0);
@@ -172,15 +159,11 @@ class Mountains {
             glDeleteBuffers(1, &vertex_buffer_object_index_);
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteProgram(program_id_);
-            glDeleteTextures(1, &texture_id_BL_);
-            glDeleteTextures(1, &texture_id_BR_);
-            glDeleteTextures(1, &texture_id_UL_);
-            glDeleteTextures(1, &texture_id_UR_);
+            glDeleteTextures(1, &texture_id_);
             glDeleteTextures(1, &interpolation_id_);
         }
 
-        void Draw(float offsetX, float offsetY,
-                  const glm::mat4 &model = IDENTITY_MATRIX,
+        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
 
@@ -189,33 +172,16 @@ class Mountains {
 
             // bind textures
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture_id_BL_);
+            glBindTexture(GL_TEXTURE_2D, texture_id_);
 
             // bind textures
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, texture_id_BR_);
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, texture_id_UL_);
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D, texture_id_UR_);
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_1D, interpolation_id_);
 
             // setup MVP
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
-
-
-            glm::vec2 offset = glm::vec2(offsetX, offsetY);
-
-            glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.

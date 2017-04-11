@@ -3,7 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 
-class Mountains {
+class MountainsGenerator {
 
     private:
         GLuint vertex_array_id_;                // vertex array object
@@ -16,17 +16,13 @@ class Mountains {
         GLuint texture_id_UL_;                  // texture ID upper left
         GLuint texture_id_UR_;                  // texture ID upper right
 
-        GLuint interpolation_id_;               // sampler for the height colors
         GLuint num_indices_;                    // number of vertices to render
-        GLuint M_id_;                           // model matrix ID
-        GLuint V_id_;                           // view matrix ID
-        GLuint P_id_;                           // proj matrix ID
 
     public:
         void Init() {
             // compile the shaders.
-            program_id_ = icg_helper::LoadShaders("mountains_vshader.glsl",
-                                                  "mountains_fshader.glsl");
+            program_id_ = icg_helper::LoadShaders("mountains_g_vshader.glsl",
+                                                  "mountains_g_fshader.glsl");
             if(!program_id_) {
                 exit(EXIT_FAILURE);
             }
@@ -101,57 +97,6 @@ class Mountains {
                 glUniform1i(glGetUniformLocation(program_id_, "texUR"), 3 /*GL_TEXTURE3*/);
             }
 
-            // create 1D texture (colormap)
-            {
-                const int ColormapSize=3;
-                GLfloat tex[3*ColormapSize] = {/*yellow*/    0.3, 0.5, 0.0,
-                                               /*darkgreen*/ 0.0, 0.2, 0.0,
-                                              /*white*/  0.7, 0.7, 0.7};
-                glGenTextures(1, &interpolation_id_);
-                glBindTexture(GL_TEXTURE_1D, interpolation_id_);
-                glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
-                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                GLuint tex_id = glGetUniformLocation(program_id_, "colormap");
-                glUniform1i(tex_id, 4 /*GL_TEXTURE4*/);
-
-                glBindTexture(GL_TEXTURE_1D, 0);
-            }
-
-            // lights and shading
-            {
-                glm::vec3 light_pos = glm::vec3(2.0f, 2.0f, 0.5f);
-
-                glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
-                glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
-
-                GLuint light_pos_id = glGetUniformLocation(program_id_, "light_pos");
-
-                GLuint La_id = glGetUniformLocation(program_id_, "La");
-                GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
-
-                glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
-                glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
-                float alpha = 60.0f;
-
-                GLuint ka_id = glGetUniformLocation(program_id_, "ka");
-                GLuint kd_id = glGetUniformLocation(program_id_, "kd");
-                GLuint alpha_id = glGetUniformLocation(program_id_, "alpha");
-
-                glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
-                glUniform3fv(La_id, 1, glm::value_ptr(La));
-                glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
-                glUniform3fv(ka_id, ONE, glm::value_ptr(ka));
-                glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
-                glUniform1f(alpha_id, alpha);
-            }
-
-            // other uniforms
-            M_id_ = glGetUniformLocation(program_id_, "model");
-            V_id_ = glGetUniformLocation(program_id_, "view");
-            P_id_ = glGetUniformLocation(program_id_, "projection");
-
             // to avoid the current object being polluted
             glBindVertexArray(0);
             glUseProgram(0);
@@ -176,13 +121,9 @@ class Mountains {
             glDeleteTextures(1, &texture_id_BR_);
             glDeleteTextures(1, &texture_id_UL_);
             glDeleteTextures(1, &texture_id_UR_);
-            glDeleteTextures(1, &interpolation_id_);
         }
 
-        void Draw(float offsetX, float offsetY,
-                  const glm::mat4 &model = IDENTITY_MATRIX,
-                  const glm::mat4 &view = IDENTITY_MATRIX,
-                  const glm::mat4 &projection = IDENTITY_MATRIX) {
+        void Draw(float offsetX, float offsetY) {
 
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
@@ -202,15 +143,6 @@ class Mountains {
             // bind textures
             glActiveTexture(GL_TEXTURE3);
             glBindTexture(GL_TEXTURE_2D, texture_id_UR_);
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE4);
-            glBindTexture(GL_TEXTURE_1D, interpolation_id_);
-
-            // setup MVP
-            glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
-            glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
-            glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
 
             glm::vec2 offset = glm::vec2(offsetX, offsetY);

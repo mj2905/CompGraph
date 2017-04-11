@@ -29,12 +29,12 @@ using namespace glm;
 
 class MultiTiles {
 public:
-    MultiTiles(unsigned int x, unsigned int y) : x(x+0.5), y(y+0.5), x_visible(x+0.5), y_visible(y+0.5),
+    MultiTiles(unsigned int offset_x, unsigned int offset_y) : x(offset_x+0.5), y(offset_y+0.5), x_visible(offset_x+0.5), y_visible(offset_y+0.5),
     framebuffers_positions({BL_TILE, BR_TILE, TL_TILE, TR_TILE, NV_LR_B, NV_LR_T, NV_BT_R, NV_BT_L}){ //we assign values to the array (initial order)
 
     }
 
-    void Init() {
+    void Init(size_t width, size_t height) {
 
         assert(INCREMENT <= 0.5);
 
@@ -42,7 +42,7 @@ public:
             framebuffers[i].Init(size_tile, size_tile, true);
         }
 
-        terrain.Init();
+        terrain.Init(width, height);
         perlin.Init();
 
         for(int i = 0; i < 4; ++i) {
