@@ -121,6 +121,7 @@ void Init() {
 
     multitiles.Init();
     alga.Init(2, 'A', vec3(0.0f,1.0,0.0));
+    alga.printTree();
 
 }
 
