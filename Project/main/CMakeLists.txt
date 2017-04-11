@@ -7,7 +7,8 @@ file(GLOB_RECURSE HEADERS "*.h")
 # you build (ie, you want the shaders there)
 file(GLOB SHADERS
   perlin_noise/*.glsl
-  grid/*.glsl)
+  mountains/*.glsl
+  water/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})

@@ -3,7 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 
-class Grid {
+class Mountains {
 
     private:
         GLuint vertex_array_id_;                // vertex array object
@@ -25,8 +25,8 @@ class Grid {
     public:
         void Init() {
             // compile the shaders.
-            program_id_ = icg_helper::LoadShaders("grid_vshader.glsl",
-                                                  "grid_fshader.glsl");
+            program_id_ = icg_helper::LoadShaders("mountains_vshader.glsl",
+                                                  "mountains_fshader.glsl");
             if(!program_id_) {
                 exit(EXIT_FAILURE);
             }
@@ -183,6 +183,7 @@ class Grid {
                   const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
+
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
