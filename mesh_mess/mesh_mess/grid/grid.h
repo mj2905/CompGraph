@@ -161,7 +161,7 @@ class Grid {
         void Draw(float time, const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
-            glUseProgram(program_id_);
+
             glBindVertexArray(vertex_array_id_);
 
             // bind textures

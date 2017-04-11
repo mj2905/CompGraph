@@ -14,9 +14,11 @@
 #include "trackball.h"
 #include "framebuffer.h"
 #include "screenquad/screenquad.h"
+#include "skybox/skybox.h"
 
 Cube cube;
 Grid grid;
+Skybox skybox;
 
 int window_width = 800;
 int window_height = 600;
@@ -104,8 +106,7 @@ mat4 OrthographicProjection(float left, float right, float bottom,
         // sets background color
         glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
 
-
-
+        skybox.init("miramar");
 
         // enable depth test.
         glEnable(GL_DEPTH_TEST);
@@ -141,7 +142,7 @@ mat4 OrthographicProjection(float left, float right, float bottom,
 
         // gets called for every frame.
         void Display() {
-          // render to framebuffer
+
 
           // render to Window
           glViewport(0, 0, window_width, window_height);
@@ -151,16 +152,18 @@ mat4 OrthographicProjection(float left, float right, float bottom,
           const float time = glfwGetTime();
 
           mat4 cube_transf = rotate(mat4(1.0f), 2.0f * time, vec3(0.0f, 1.0f, 0.0f));
-          cube_transf = translate(cube_transf, vec3(0.75f, 0.0f, 0.0f));
-          cube_transf = rotate(cube_transf, 2.0f * time, vec3(0.0f, 1.0f, 0.0f));
+        //  cube_transf = translate(cube_transf, vec3(0.75f, 0.0f, 0.0f));
+        //  cube_transf = rotate(cube_transf, 2.0f * time, vec3(0.0f, 1.0f, 0.0f));
 
-          mat4 cube_model_matrix = cube_transf * cube_scale;
+      //    mat4 cube_model_matrix = cube_transf * cube_scale;
 
 
 
-          //cube.Draw(trackball_matrix * cube_model_matrix, view_matrix, projection_matrix);
+        //  skybox.draw(view_matrix, projection_matrix);
 
           // draw a quad on the ground.
+          // skybox
+
           grid.Draw(time, trackball_matrix * quad_model_matrix, view_matrix, projection_matrix);
         }
 

@@ -23,13 +23,12 @@ out vec3 normal_mv;
 out vec3 light_dir;
 out vec3 view_dir;
 
-
 void main() {
     //mostly from previous homeworks
     uv = (position + vec2(1.0, 1.0)) * 0.5;
 
-    float height = texture(height_map, uv).r / 1000;
-    height = 30.0;
+  //  float height = texture(height_map, uv).r / 1000;
+    float height = 0.0;
 
     mat4 MV = view * model;
 
