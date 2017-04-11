@@ -49,13 +49,13 @@ public:
             drawPerlin(framebuffers[i], x + (-0.5+ (i%2)), y + (-0.5 + i/2)); //we draw in the visible framebuffers, with values (-0.5, -0.5), (0.5, -0.5), (-0.5, 0.5), (0.5, 0.5)
         }
         terrain.changeTexture(getTexturesVisible()); //we give it to the terrain, so that it can be rendered
+        terrain.Moved(x_visible, y_visible);
     }
 
     void Draw(const mat4 &model = IDENTITY_MATRIX,
               const mat4 &view = IDENTITY_MATRIX,
               const mat4 &projection = IDENTITY_MATRIX) {
-        terrain.Draw(x_visible, y_visible, model, view, projection);
-        //perlin.Draw(x_visible, y_visible);
+        terrain.Draw(model, view, projection);
     }
 
     void incrementX() {
@@ -97,6 +97,7 @@ public:
         }
 
         x_visible += INCREMENT;
+        terrain.Moved(x_visible, y_visible);
     }
 
     void decrementX() {
@@ -137,6 +138,7 @@ public:
         }
 
         x_visible -= INCREMENT;
+        terrain.Moved(x_visible, y_visible);
     }
 
     void incrementY() {
@@ -177,6 +179,7 @@ public:
         }
 
         y_visible += INCREMENT;
+        terrain.Moved(x_visible, y_visible);
     }
 
     void decrementY() {
@@ -217,6 +220,7 @@ public:
         }
 
         y_visible -= INCREMENT;
+        terrain.Moved(x_visible, y_visible);
     }
 
     void Cleanup() {

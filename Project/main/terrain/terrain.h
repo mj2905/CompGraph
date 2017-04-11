@@ -27,15 +27,16 @@ class Terrain {
             mountainsCreator.changeTexture(textures);
         }
 
-        void Draw(float offsetX, float offsetY,
-                  const glm::mat4 &model,
-                  const glm::mat4 &view,
-                  const glm::mat4 &projection) {
+        void Moved(float offsetX, float offsetY) {
             framebuffer.ClearContent();
             framebuffer.Bind();
                 mountainsCreator.Draw(offsetX, offsetY);
             framebuffer.Unbind();
+        }
 
+        void Draw(const glm::mat4 &model,
+                  const glm::mat4 &view,
+                  const glm::mat4 &projection) {
             mountainsRender.Draw(model, view, projection);
             water.Draw(model, view, projection);
         }
