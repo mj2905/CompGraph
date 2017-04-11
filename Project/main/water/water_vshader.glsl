@@ -17,7 +17,7 @@ uniform vec2 offset;
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
 
-    height = 0.5;
+    height = 0.4;
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
 

@@ -20,7 +20,7 @@ class Terrain {
             mountainsCreator.Init();
             framebuffer.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
-            water.Init();
+            water.Init(framebuffer.getTextureId());
         }
 
         void changeTexture(const array<GLuint, 4>& textures) {

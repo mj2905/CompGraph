@@ -13,6 +13,8 @@ uniform vec3 La, Ld, Ls;
 uniform vec3 ka, kd, ks;
 uniform float alpha;
 
+uniform sampler2D tex;
+
 void main() {
 
     vec3 p = vpoint_mv.xyz;
@@ -25,5 +27,5 @@ void main() {
     float rDotV = max(dot(r, view_dir), 0);
 
     color.xyz = vec3(0.228125,  0.540625,  0.77109375) * La + kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
-    color.a = 0.6;
+    color.a = texture(tex, uv).r < height ? 0.6 : 0.0;
 }
