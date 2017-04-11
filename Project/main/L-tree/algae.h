@@ -11,6 +11,14 @@
 
 using namespace glm;
 
+/*
+ * TODO: Agrandir la largeur des algues -> y inclure la texture via perlin noise
+ * Rendre les coordonnées associées à un rand aléatoire elles aussi, tant qu'à faire
+ * Réduire la longueur de chaque branche
+ * Tout dessiner en une structure 3D? Ou plutôt en 2D?
+ *
+ * */
+
 class Algae {
 
     private:
@@ -20,6 +28,7 @@ class Algae {
        vector<Quad> quads;
        vector<glm::vec3> states;
        int rand_val;
+       float init_width = 0.02f;
 
     public:
        void Init(GLuint depth, char c, vec3 origin){
@@ -27,6 +36,7 @@ class Algae {
             ss << c;
             ss >> tree;
             depth_ = depth;
+            srand(110);
             states.push_back(origin);
             initTree();
        }
@@ -36,15 +46,20 @@ class Algae {
            cout << tree << endl;
        }
 
-       // Verified: Parsing
-       string substituteString(char a){
-           srand(110);
+       void callRand(){
+           srand(rand_val);
            rand_val = rand()%110;
-           rand_val = rand()%210;
-           rand_val = rand()%210;
-           rand_val = rand()%210;
-           rand_val = rand()%210;
+           rand_val = rand();
+           cout << rand_val << endl;
+           //rand_val = rand()%210;
+           //rand_val = rand()%210;
+           //rand_val = rand()%210;
+           //rand_val = rand()%210;
+       }
 
+       // Verified: Parsing
+       string substituteString(char a){           
+           callRand();
            cout << rand_val << endl;
            int r = rand_val;
            if(a == 'A'){
@@ -127,7 +142,7 @@ class Algae {
        vec3 generateQuads(vec3 originPoint, char parentType, char targetType){
            Quad tmp_quad;
            vec4 dest = transformationRule(parentType, targetType)*vec4(originPoint,1.0f);
-           tmp_quad.Init(originPoint, vec3(dest),0.01f);
+           tmp_quad.Init(originPoint, vec3(dest),init_width);
            quads.push_back(tmp_quad);
            return vec3(dest);
        }
@@ -141,12 +156,14 @@ class Algae {
            for(size_t i = 1; i < tree.length(); i++){
                char str = tree.at(i);
                if(str == ']'){
+                   init_width *=1.1;
                    states.pop_back();
                    branches.pop_back();
                    so = states.back();
                } else if(str == 'A' || str == 'B' || str == 'C'){
                     lo = str;
                     if(states.size() > 0 && branches.size() > 0){
+                        init_width *= 0.9;
                         states.pop_back();
                         s1 = states.back();
                         l1 = branches.back();
