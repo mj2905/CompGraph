@@ -45,7 +45,7 @@ public:
 
         grid.Init();
         perlin.Init();
-        alga.Init(0, 'A', vec3(0.0f,1.0,1.0));
+        alga.Init(0, 'A', vec3(0.0f,1.0,0.0));
         alga.printTree();
 
 
@@ -58,7 +58,7 @@ public:
     void Draw(const mat4 &model = IDENTITY_MATRIX,
               const mat4 &view = IDENTITY_MATRIX,
               const mat4 &projection = IDENTITY_MATRIX) {
-        grid.Draw(x_visible, y_visible, model, view, projection);
+        //grid.Draw(x_visible, y_visible, model, view, projection);
         alga.Draw(model, view, projection);
         //perlin.Draw(x_visible, y_visible);
     }

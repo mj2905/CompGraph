@@ -14,7 +14,7 @@ class Quad {
         GLuint MVP_id_; // MVP matrix
     public:
 
-        void Init(vec3 a, vec3 b, float width) {
+        void Init() {
             // compile the shaders
             program_id_ = icg_helper::LoadShaders("quad_vshader.glsl",
                                                   "quad_fshader.glsl");
@@ -31,18 +31,10 @@ class Quad {
 
             // vertex coordinates
             {
-                vec3 diag = b-a;
-                float semiwidth = (1.0*width/2.0);
-                vec3 n = semiwidth*normalize(cross(diag, vec3(0.0f,0.0f,1.0f)));
-                vec3 p1,p2,p3,p4;
-                p1 = a-n;
-                p2 = a+n;
-                p3 = b-n;
-                p4 = b+n;
-                const GLfloat vertex_point[] = { p1.x, p1.y, p1.z,
-                                                 p2.x, p2.y, p2.z,
-                                                 p3.x, p3.y, p3.z,
-                                                 p4.x, p4.y, p4.z};
+                const GLfloat vertex_point[] = { -1.0, -1.0, 0.0,
+                                                  1.0, -1.0, 0.0,
+                                                 -1.0,  1.0, 0.0,
+                                                  1.0,  1.0, 0.0};
                 // buffer
                 glGenBuffers(1, &vertex_buffer_object_);
                 glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object_);

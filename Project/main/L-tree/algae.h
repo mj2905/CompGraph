@@ -10,6 +10,7 @@
 #include "../quad/quad.h"
 #include "flexigrid.h"
 
+
 // This code is based on L systems described here: http://www.naturewizard.at/tutorial04.html
 
 using namespace glm;
@@ -134,7 +135,7 @@ class Algae {
             rotation*= M_PI/180.0;
             newDir = vec3(glm::toMat4(quat(rotation))*vec4(direction,1.0f));
             newDir = normalize(newDir);
-            newDir /= 20.0;
+           /* newDir /= 5.0;*/
             return newDir;
        }
 
@@ -175,9 +176,9 @@ class Algae {
 
        void updateIndicesAndIndexes(vec3 dlpoint, vec3 drpoint, vec3 ulpoint, vec3 urpoint,
                                     int dlid, int drid, int ulid, int urid){
-           pushToVertices(dlpoint);
+           //pushToVertices(dlpoint);
            pushToVertices(ulpoint);
-           pushToVertices(drpoint);
+           //111pushToVertices(drpoint);
            pushToVertices(urpoint);
 
            indices.push_back(dlid);
@@ -212,7 +213,7 @@ class Algae {
 
            char lo = 'n';
            char l1 = 'n';
-           for(size_t i = 1; i < tree.length(); i++){
+           for(size_t i = 0; i < tree.length(); i++){
                char str = tree.at(i);
                if(str == ']'){
                    dir0 = popDirection();
@@ -222,24 +223,25 @@ class Algae {
                    righti0 = popRightIndex();
                } else if(str == 'A' || tree.at(i) == 'B'){
                     lo = str;
-                    if(direction.size() > 0 && branches.size() > 0 && leftPoint.size() > 0
-                            && rightPoint.size() > 0 && leftIndex.size()>0 && rightIndex.size()>0){
+                    if(direction.size() > 0 && branches.size() > 0 && leftPoint.size() > 0 && rightPoint.size() > 0 && leftIndex.size()>0 && rightIndex.size()>0){
                         l1 = branches.back();
 
                         dir1 = popDirection();
                         dir0 = updateDirection(dir1, lo, l1);
 
+                        direction.push_back(dir0);
                         leftp1 = popLeftPoint();
                         leftp0 = updateLeftPoint(dir0, leftp1);
-
+                        leftPoint.push_back(leftp0);
                         rightp1 =  popRightPoint();
                         rightp0 = updateRightPoint(dir0, rightp1);
-
+                        rightPoint.push_back(rightp0);
                         lefti1 = popLeftIndex();
-                        lefti0 = index_ ++;
-
+                        lefti0 = ++index_ ;
+                        leftIndex.push_back(lefti0);
                         righti1 = popRightIndex();
-                        righti0 = index_ ++;
+                        righti0 = ++index_ ;
+                        rightIndex.push_back(righti0);
                         updateIndicesAndIndexes(leftp1, rightp1, leftp0, rightp0, lefti1, lefti0, righti1, righti0);
 
                     }
@@ -274,7 +276,10 @@ class Algae {
        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                  const glm::mat4 &view = IDENTITY_MATRIX,
                  const glm::mat4 &projection = IDENTITY_MATRIX){
-           grid.Draw(0.0f,0.0f,model, view, projection);
+           grid.Draw(model, view, projection);
+           Quad q;
+           q.Init();
+           //q.Draw(model, view, projection);
            // DRAW THE GRID
        }
 
