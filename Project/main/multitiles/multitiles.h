@@ -45,7 +45,8 @@ public:
 
         grid.Init();
         perlin.Init();
-        alga.Init(8, 'A', vec3(0.0f,1.0,0.0));
+        alga.Init(0, 'A', vec3(0.0f,1.0,1.0));
+        alga.printTree();
 
 
         for(int i = 0; i < 4; ++i) {

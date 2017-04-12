@@ -8,7 +8,8 @@ file(GLOB_RECURSE HEADERS "*.h")
 file(GLOB SHADERS
   perlin_noise/*.glsl
   grid/*.glsl
-  quad/*.glsl)
+  quad/*.glsl
+  L-tree/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})

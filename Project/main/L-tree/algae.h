@@ -2,43 +2,72 @@
 #include "icg_helper.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <string.h>
 #include <sstream>
 #include "../quad/quad.h"
+#include "flexigrid.h"
 
 // This code is based on L systems described here: http://www.naturewizard.at/tutorial04.html
 
 using namespace glm;
 
-/*
- * TODO: Agrandir la largeur des algues -> y inclure la texture via perlin noise
- * Rendre les coordonnées associées à un rand aléatoire elles aussi, tant qu'à faire
- * Réduire la longueur de chaque branche
- * Tout dessiner en une structure 3D? Ou plutôt en 2D?
- *
- * */
 
 class Algae {
 
     private:
+    /*
+     * CHANGE TO THE FOLLOWING:
+     * CREATE 4 POINTS
+     * ADD THEM TO THE BUFFER & INDICES
+     * THE 2 UPPER POINTS SERVE AS BASIS FOR NEXT DRAW (must be stacked!)
+     * THE WIDTH & HEIGHT ARE ALSO A PARAMETER CONTROLLED THROUGH THE RECURSION
+     * IDEA: UNIT VECTOR THAT SHOWS DIRECTION (also stacked!)
+     * AFFECTED THROUGH ROTATION
+     * NO TRANSLATION AS SUCH; WE TRANSLATE BY THIS VECTOR*HEIGHT VECTOR FOR THE POINTS
+     * */
+
+       Flexigrid grid;
        string tree;
        GLuint depth_;
+       vector<GLuint> leftIndex, rightIndex, indices;
+       vector<vec3> leftPoint, rightPoint, direction;
+       vector<GLfloat> vertices;
        vector<char> branches;
-       vector<Quad> quads;
-       vector<glm::vec3> states;
-       int rand_val;
-       float init_width = 0.02f;
+       int index_ = 0;
+       float init_width = 0.1f;
+       char axiom;
 
     public:
        void Init(GLuint depth, char c, vec3 origin){
+            axiom = c;
             stringstream ss;
             ss << c;
             ss >> tree;
             depth_ = depth;
-            srand(110);
-            states.push_back(origin);
+            vec3 originLeft = vec3(origin.x - init_width, origin.y, origin.z);
+            vec3 originRight = vec3(origin.x + init_width, origin.y, origin.z);
+
+            leftPoint.push_back(originLeft);
+            rightPoint.push_back(originRight);
+
+            pushToVertices(originRight);
+            pushToVertices(originLeft);
+
+            direction.push_back(vec3(0.0f,1.0f,0.0f));
+            leftIndex.push_back(index_);
+            index_++;
+            rightIndex.push_back(index_);
             initTree();
+            grid.Init(vertices, indices);
+       }
+
+       void pushToVertices(vec3 point){
+           vertices.push_back(point.x);
+           vertices.push_back(point.y);
+           vertices.push_back(point.z);
        }
 
 
@@ -46,37 +75,15 @@ class Algae {
            cout << tree << endl;
        }
 
-       void callRand(){
-           srand(rand_val);
-           rand_val = rand()%110;
-           rand_val = rand();
-           cout << rand_val << endl;
-           //rand_val = rand()%210;
-           //rand_val = rand()%210;
-           //rand_val = rand()%210;
-           //rand_val = rand()%210;
-       }
-
        // Verified: Parsing
-       string substituteString(char a){           
-           callRand();
-           cout << rand_val << endl;
-           int r = rand_val;
+       string substituteString(char a){
            if(a == 'A'){
-               if(r > 90){ // r c (90,94]
-                   return "[A->+ABC]";
-               }else if(r <= 90 && r >40){ // r c (40,90]
-                   return "[A->+AB]";
-               } else if(r <=40 && r > 20){ // r c (20,  40]
-                   return "[A->+B]";
-               } else{ // r c [0, 20]
-                   return "[A]";
-               }
+               return "A[AB]";
            }
            else if(a == 'B'){
-               return "[B->+A]";
+               return "B[A]";
            }else if(a == 'C'){
-               return "[C->+BA]";
+               return "C[ABC]";
            }else {
                stringstream ss;
                ss << a;
@@ -84,7 +91,6 @@ class Algae {
                ss >> s;
                return s;
            }
-           srand(10);
        }
 
        // Verified: Parsing
@@ -94,10 +100,11 @@ class Algae {
 
        // Verified: Parsing
        void expand(){
-           for(size_t i = 1; i < tree.size(); ++i){
+           for(size_t i = 1; i < tree.size()-1; ++i){
                char ch = tree.at(i);
                char chcontr = tree.at(i-1);
-               if(chcontr == '+' || chcontr == ']'){ // 1st cond expands A->AB as A->[A->AB]B. 2nd takes care of ]B
+               char chmor = tree.at(i+1);
+               if(chmor != '['){
                    string s = substituteString(ch);
                    tree.replace(i, 1, s);
                    i+= s.size()-1;
@@ -106,77 +113,152 @@ class Algae {
        }
 
 
-       /*
-        * TODO: Add a rand function to create 3D plants
-        *
-        * */
-       mat4 transformationRule(char parentType, char targetType){
-           mat4 transformation;
-           float xf = 0.08f;
-           float yf = 0.15f;
+/*
+ * CHANGE WITH GLOBAL TURTLE
+ * SHOULD MAKE THINGS SIMPLER AND SHOULD ALLOW IT TO WORK u_u
+ *
+ *
+ * */
 
-           if(parentType == 'A'){
-               if(targetType == 'B'){
-                    transformation = translate(mat4(1.0f), vec3(-xf,yf,0.0f));
-               } else if(targetType == 'C'){
-                   transformation = translate(mat4(1.0f), vec3(-xf,yf,-xf));
-               }
-
-               else{
-                   transformation = translate(mat4(1.0f), vec3(xf,yf,0.0f));
-               }
-           } else if(parentType == 'C'){
-               if(targetType == 'A'){
-                   transformation = translate(mat4(1.0f), vec3(0.0f, yf, xf));
-               } else {
-                   transformation = translate(mat4(1.0f), vec3(xf, yf, -xf));
-               }
-
-           }else{
-                transformation = translate(mat4(1.0f), vec3(0.0f,yf,0.0f));
-           }
-
-           return transformation;
+       vec3 updateDirection(vec3 direction, char parentType, char targetType){
+            vec3 rotation, newDir;
+            if(parentType == 'A'){
+                if(targetType == 'B'){
+                    rotation = vec3(0.0f,0.0f,25.0f);
+                } else {
+                    rotation = vec3(0.0f,0.0f,-25.0f);
+                }
+            } else {
+                rotation = vec3(0.0f,0.0f,0.0f);
+            }
+            rotation*= M_PI/180.0;
+            newDir = vec3(glm::toMat4(quat(rotation))*vec4(direction,1.0f));
+            newDir = normalize(newDir);
+            newDir /= 20.0;
+            return newDir;
        }
 
-       vec3 generateQuads(vec3 originPoint, char parentType, char targetType){
-           Quad tmp_quad;
-           vec4 dest = transformationRule(parentType, targetType)*vec4(originPoint,1.0f);
-           tmp_quad.Init(originPoint, vec3(dest),init_width);
-           quads.push_back(tmp_quad);
-           return vec3(dest);
+       vec3 updateLeftPoint(vec3 direction, vec3 originalPoint){
+           return direction+originalPoint;
        }
 
-       // The algorithm on paper should work.
+
+       vec3 updateRightPoint(vec3 direction, vec3 originalPoint){
+           return direction+originalPoint;
+       }
+
+
+       vec3 popDirection(){
+           direction.pop_back();
+           return direction.back();
+       }
+
+       vec3 popLeftPoint(){
+           leftPoint.pop_back();
+           return leftPoint.back();
+       }
+
+       vec3 popRightPoint(){
+           rightPoint.pop_back();
+           return rightPoint.back();
+       }
+
+       int popLeftIndex(){
+           leftIndex.pop_back();
+           return leftIndex.back();
+       }
+
+       int popRightIndex(){
+           rightIndex.pop_back();
+           return rightIndex.back();
+       }
+
+       void updateIndicesAndIndexes(vec3 dlpoint, vec3 drpoint, vec3 ulpoint, vec3 urpoint,
+                                    int dlid, int drid, int ulid, int urid){
+           pushToVertices(dlpoint);
+           pushToVertices(ulpoint);
+           pushToVertices(drpoint);
+           pushToVertices(urpoint);
+
+           indices.push_back(dlid);
+           indices.push_back(ulid);
+           indices.push_back(drid);
+           indices.push_back(ulid);
+           indices.push_back(drid);
+           indices.push_back(urid);
+       }
+
+
+       // Must stack: - left point & right point (@ leftPoint, rightPoint)
+       //             - left index & right index (@ leftIndex, rightIndex)
+       //             - direction (@direction)
+       //             - parent (@ branches)
+       // Must update: - indices
+       //              - vertices
        void generateAlgae(){
-           vec3 so,s1;
-           so= states.back();
+           vec3 dir0,dir1;
+           dir0 = direction.back();
+
+           vec3 leftp0, leftp1;
+           leftp0 = leftPoint.back();
+           vec3 rightp0, rightp1;
+           rightp0 = rightPoint.back();
+
+           int lefti0, lefti1;
+           lefti0 = leftIndex.back();
+
+           int righti0, righti1;
+           righti0 = rightIndex.back();
+
            char lo = 'n';
            char l1 = 'n';
            for(size_t i = 1; i < tree.length(); i++){
                char str = tree.at(i);
                if(str == ']'){
-                   init_width *=1.1;
-                   states.pop_back();
-                   branches.pop_back();
-                   so = states.back();
-               } else if(str == 'A' || str == 'B' || str == 'C'){
+                   dir0 = popDirection();
+                   leftp0 = popLeftPoint();
+                   rightp0 = popRightPoint();
+                   lefti0 = popLeftIndex();
+                   righti0 = popRightIndex();
+               } else if(str == 'A' || tree.at(i) == 'B'){
                     lo = str;
-                    if(states.size() > 0 && branches.size() > 0){
-                        init_width *= 0.9;
-                        states.pop_back();
-                        s1 = states.back();
+                    if(direction.size() > 0 && branches.size() > 0 && leftPoint.size() > 0
+                            && rightPoint.size() > 0 && leftIndex.size()>0 && rightIndex.size()>0){
                         l1 = branches.back();
-                        so = generateQuads(s1, l1, lo);
-                        states.push_back(so);
+
+                        dir1 = popDirection();
+                        dir0 = updateDirection(dir1, lo, l1);
+
+                        leftp1 = popLeftPoint();
+                        leftp0 = updateLeftPoint(dir0, leftp1);
+
+                        rightp1 =  popRightPoint();
+                        rightp0 = updateRightPoint(dir0, rightp1);
+
+                        lefti1 = popLeftIndex();
+                        lefti0 = index_ ++;
+
+                        righti1 = popRightIndex();
+                        righti0 = index_ ++;
+                        updateIndicesAndIndexes(leftp1, rightp1, leftp0, rightp0, lefti1, lefti0, righti1, righti0);
+
                     }
-               } else if(str == '>'){
+               } else if(str == '['){
+                   direction.push_back(dir0);
+                   leftPoint.push_back(leftp0);
+                   rightPoint.push_back(rightp0);
+                   leftIndex.push_back(lefti0);
+                   rightIndex.push_back(righti0);
                    branches.push_back(lo);
-                   states.push_back(so);
                }
            }
+
+           leftPoint.clear();
+           rightPoint.clear();
+           leftIndex.clear();
+           rightIndex.clear();
+           direction.clear();
            branches.clear();
-           states.clear();
 
        }
 
@@ -192,18 +274,18 @@ class Algae {
        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                  const glm::mat4 &view = IDENTITY_MATRIX,
                  const glm::mat4 &projection = IDENTITY_MATRIX){
-           for(size_t i = 0; i < quads.size(); ++i){
-               quads.at(i).Draw(model,view,projection);
-           }
+           grid.Draw(0.0f,0.0f,model, view, projection);
+           // DRAW THE GRID
        }
 
        void Cleanup(){
-           for(size_t i = 0; i < quads.size(); ++i){
-               quads.at(i).Cleanup();
-           }
-           states.clear();
+           leftPoint.clear();
+           rightPoint.clear();
+           leftIndex.clear();
+           rightIndex.clear();
+           direction.clear();
            branches.clear();
-           quads.clear();
+           grid.Cleanup();
            tree.clear();
        }
 
