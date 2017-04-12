@@ -14,10 +14,12 @@ uniform vec3 light_pos;
 
 uniform vec2 offset;
 
+uniform sampler2D tex;
+
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
 
-    height = 0.4;
+    height = 0.4 + (texture(tex, uv*10 + offset).r -0.5)/50;
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
 

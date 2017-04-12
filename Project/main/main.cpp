@@ -123,7 +123,7 @@ void Init() {
 // gets called for every frame.
 void Display() {
 
-    multitiles.incrementY(); //to move with the camera
+    //multitiles.incrementY(); //to move with the camera
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);

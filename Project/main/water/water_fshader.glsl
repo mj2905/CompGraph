@@ -14,6 +14,7 @@ uniform vec3 ka, kd, ks;
 uniform float alpha;
 
 uniform sampler2D tex;
+uniform sampler1D colormap;
 
 void main() {
 
@@ -26,6 +27,8 @@ void main() {
     vec3 r = normalize(reflect(- light_dir, normal_mv));
     float rDotV = max(dot(r, view_dir), 0);
 
-    color.xyz = vec3(0.228125,  0.540625,  0.77109375) * La + kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
+    vec3 c = texture(colormap, (height - 0.4)*10).rgb;
+
+    color.xyz = c * La + kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
     color.a = texture(tex, uv).r < height ? 0.6 : 0.0;
 }

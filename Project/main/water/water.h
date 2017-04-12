@@ -12,6 +12,7 @@ class Water {
         GLuint program_id_;                     // GLSL shader program ID
 
         GLuint texture_id_;
+        GLuint interpolation_id_;
 
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                         // model matrix ID
@@ -39,7 +40,7 @@ class Water {
                 std::vector<GLuint> indices;
                 // TODO 5: make a triangle grid with dimension 100x100.
                 // always two subsequent entries in 'vertices' form a 2D vertex position.
-                int grid_dim = 512;
+                int grid_dim = 2048;
 
                 // the given code below are the vertices for a simple quad.
                 // your grid should have the same dimension as that quad, i.e.,
@@ -93,6 +94,23 @@ class Water {
             {
                 glUniform1i(glGetUniformLocation(program_id_, "tex"), 0 /*GL_TEXTURE0*/);
                 texture_id_ = terrain_texture;
+            }
+
+            // create 1D texture (colormap)
+            {
+                const int ColormapSize=2;
+                GLfloat tex[3*ColormapSize] = {/*yellow*/    0.3, 0.3, 0.7,
+                                               /*darkgreen*/ 1, 1, 1};
+                glGenTextures(1, &interpolation_id_);
+                glBindTexture(GL_TEXTURE_1D, interpolation_id_);
+                glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                GLuint tex_id = glGetUniformLocation(program_id_, "colormap");
+                glUniform1i(tex_id, 1 /*GL_TEXTURE1*/);
+
+                glBindTexture(GL_TEXTURE_1D, 0);
             }
 
             glm::vec3 light_pos = glm::vec3(2.0f, 2.0f, 0.5f);
@@ -156,15 +174,21 @@ class Water {
 
             // bind textures
             glActiveTexture(GL_TEXTURE0);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
             glBindTexture(GL_TEXTURE_2D, texture_id_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_1D, interpolation_id_);
 
             // setup MVP
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
-
-            glm::vec2 offset = glm::vec2(0, 0);
+            float velocity = (sin(fmod(glfwGetTime()/20, M_PI*2))* 0.01 + 1) * 50;
+            glm::vec2 offset = glm::vec2(fmod(glfwGetTime()/velocity, 2.0), fmod(glfwGetTime()/velocity, 2.0));
 
             glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
 
