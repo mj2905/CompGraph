@@ -211,7 +211,6 @@ class Grid {
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
-
             glm::vec2 offset = glm::vec2(offsetX, offsetY);
 
             glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));

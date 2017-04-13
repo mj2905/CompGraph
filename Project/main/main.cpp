@@ -12,12 +12,16 @@
 
 #include "trackball.h"
 
+#include "skybox/skybox.h"
+
 #include "multitiles/multitiles.h"
 
 const unsigned int OFFSET_X = 256;
 const unsigned int OFFSET_Y = 256;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
+
+Skybox skybox;
 
 int window_width = 800;
 int window_height = 600;
@@ -103,6 +107,7 @@ void Init() {
 
     // enable depth test.
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     // TODO 3: once you use the trackball, you should use a view matrix that
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
@@ -119,6 +124,9 @@ void Init() {
 
     multitiles.Init();
 
+    skybox.init("miramar");
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 }
 
 // gets called for every frame.
@@ -127,11 +135,15 @@ void Display() {
     multitiles.incrementY(); //to move with the camera
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glViewport(0, 0, window_width, window_height);
+
+    skybox.draw(trackball_matrix * view_matrix, projection_matrix);
 
     mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
     multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
+
 
 }
 
