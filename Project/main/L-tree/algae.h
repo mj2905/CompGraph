@@ -54,8 +54,12 @@ class Algae {
             leftPoint.push_back(originLeft);
             rightPoint.push_back(originRight);
 
-            pushToVertices(originRight);
+
+
             pushToVertices(originLeft);
+            pushToVertices(originRight);
+
+
 
             direction.push_back(vec3(0.0f,1.0f,0.0f));
             leftIndex.push_back(index_);
@@ -222,7 +226,7 @@ class Algae {
                         l1 = branches.back();
 
                         dir1 = popDirection();
-                        dir0 = updateDirection(dir1, lo, l1);
+                        dir0 = updateDirection(dir1, l1, lo);
 
                         direction.push_back(dir0);
                         leftp1 = popLeftPoint();
@@ -237,7 +241,7 @@ class Algae {
                         righti1 = popRightIndex();
                         righti0 = ++index_ ;
                         rightIndex.push_back(righti0);
-                        updateIndicesAndIndexes(leftp1, rightp1, leftp0, rightp0, lefti1, lefti0, righti1, righti0);
+                        updateIndicesAndIndexes(leftp1, rightp1, leftp0, rightp0, lefti1, righti1,lefti0, righti0);
 
                     }
                } else if(str == '['){
@@ -272,9 +276,6 @@ class Algae {
                  const glm::mat4 &view = IDENTITY_MATRIX,
                  const glm::mat4 &projection = IDENTITY_MATRIX){
            grid.Draw(model, view, projection);
-           Quad q;
-           q.Init();
-           //q.Draw(model, view, projection);
            // DRAW THE GRID
        }
 
