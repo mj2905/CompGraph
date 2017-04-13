@@ -12,7 +12,8 @@ file(GLOB SHADERS
   grid/*.glsl
   quad/*.glsl
   L-tree/*.glsl
-  grid/*.glsl)
+  grid/*.glsl
+  water/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})
