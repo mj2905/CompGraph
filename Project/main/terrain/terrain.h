@@ -25,7 +25,7 @@ class Terrain {
             framebuffer.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
             water.Init(framebuffer.getTextureId());
-            algae.Init(1, 'A', vec3(0,0.1,0));
+            algae.Init(8, 'A', vec3(0,0.1,0));
             algae.printTree();
         }
 

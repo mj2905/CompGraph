@@ -38,7 +38,8 @@ class Algae {
        vector<GLfloat> vertices;
        vector<char> branches;
        int index_ = 0;
-       float init_width = 0.2f;
+       float init_width = 0.02f;
+       float init_length = 10*init_width;
        char axiom;
 
     public:
@@ -139,7 +140,7 @@ class Algae {
             rotation*= M_PI/180.0;
             newDir = vec3(glm::toMat4(quat(rotation))*vec4(direction,1.0f));
             newDir = normalize(newDir);
-            newDir *= 0.9;
+            newDir *= init_length;
             return newDir;
        }
 

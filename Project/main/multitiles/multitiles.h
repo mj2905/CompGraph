@@ -1,9 +1,8 @@
 #pragma once
 #include "icg_helper.h"
 #include "../framebuffer.h"
-#include "../grid/grid.h"
+#include "../terrain/terrain.h"
 #include "../perlin_noise/perlin.h"
-#include "../L-tree/algae.h"
 
 #include <array>
 
@@ -30,12 +29,12 @@ using namespace glm;
 
 class MultiTiles {
 public:
-    MultiTiles(unsigned int x, unsigned int y) : x(x+0.5), y(y+0.5), x_visible(x+0.5), y_visible(y+0.5),
+    MultiTiles(unsigned int offset_x, unsigned int offset_y) : x(offset_x+0.5), y(offset_y+0.5), x_visible(offset_x+0.5), y_visible(offset_y+0.5),
     framebuffers_positions({BL_TILE, BR_TILE, TL_TILE, TR_TILE, NV_LR_B, NV_LR_T, NV_BT_R, NV_BT_L}){ //we assign values to the array (initial order)
 
     }
 
-    void Init() {
+    void Init(size_t width, size_t height) {
 
         assert(INCREMENT <= 0.5);
 
@@ -43,24 +42,21 @@ public:
             framebuffers[i].Init(size_tile, size_tile, true);
         }
 
-        grid.Init();
+        terrain.Init(width, height);
         perlin.Init();
-        alga.Init(0, 'A', vec3(0.0f,1.0,0.0));
-        alga.printTree();
-
 
         for(int i = 0; i < 4; ++i) {
             drawPerlin(framebuffers[i], x + (-0.5+ (i%2)), y + (-0.5 + i/2)); //we draw in the visible framebuffers, with values (-0.5, -0.5), (0.5, -0.5), (-0.5, 0.5), (0.5, 0.5)
         }
-        grid.changeTexture(getTexturesVisible()); //we give it to the grid, so that it can be rendered
+        terrain.changeTexture(getTexturesVisible()); //we give it to the terrain, so that it can be rendered
+        terrain.Moved(x_visible, y_visible);
     }
 
     void Draw(const mat4 &model = IDENTITY_MATRIX,
               const mat4 &view = IDENTITY_MATRIX,
               const mat4 &projection = IDENTITY_MATRIX) {
-        //grid.Draw(x_visible, y_visible, model, view, projection);
-        alga.Draw(model, view, projection);
-        //perlin.Draw(x_visible, y_visible);
+
+        terrain.Draw(model, view, projection);
     }
 
     void incrementX() {
@@ -83,7 +79,7 @@ public:
 
             ++x;
 
-            grid.changeTexture(getTexturesVisible());
+            terrain.changeTexture(getTexturesVisible());
 
 
             //we compute the corners if we need them, otherwise there would be some problems of bad computed textures.
@@ -102,6 +98,7 @@ public:
         }
 
         x_visible += INCREMENT;
+        terrain.Moved(x_visible, y_visible);
     }
 
     void decrementX() {
@@ -124,7 +121,7 @@ public:
 
             --x;
 
-            grid.changeTexture(getTexturesVisible());
+            terrain.changeTexture(getTexturesVisible());
 
             //we compute the corners if we need them, otherwise there would be some problems of bad computed textures.
             if(y_visible > y) {
@@ -142,6 +139,7 @@ public:
         }
 
         x_visible -= INCREMENT;
+        terrain.Moved(x_visible, y_visible);
     }
 
     void incrementY() {
@@ -164,7 +162,7 @@ public:
 
             ++y;
 
-            grid.changeTexture(getTexturesVisible());
+            terrain.changeTexture(getTexturesVisible());
 
             //we compute the corners if we need them, otherwise there would be some problems of bad computed textures.
             if(x_visible > x) {
@@ -182,6 +180,7 @@ public:
         }
 
         y_visible += INCREMENT;
+        terrain.Moved(x_visible, y_visible);
     }
 
     void decrementY() {
@@ -204,7 +203,7 @@ public:
 
             --y;
 
-            grid.changeTexture(getTexturesVisible());
+            terrain.changeTexture(getTexturesVisible());
 
             //we compute the corners if we need them, otherwise there would be some problems of bad computed textures.
             if(x_visible > x) {
@@ -222,12 +221,12 @@ public:
         }
 
         y_visible -= INCREMENT;
+        terrain.Moved(x_visible, y_visible);
     }
 
     void Cleanup() {
-        grid.Cleanup();
+        terrain.Cleanup();
         perlin.Cleanup();
-        alga.Cleanup();
         for(auto& framebuffer : framebuffers) {
             framebuffer.Cleanup();
         }
@@ -237,14 +236,13 @@ private:
         const float INCREMENT = 0.005; // the increment step, must be <= 0.5
         float x, y;
         float x_visible, y_visible;
-        Grid grid;
+        Terrain terrain;
         PerlinNoise perlin;
-        Algae alga;
-        int size_tile = 512;
+        size_t size_tile = 512;
         array<FrameBuffer, 8> framebuffers;
         array<size_t, 8> framebuffers_positions; //array of indices of framebuffers
 
-        //method used to give to the grid the framebuffers we want to display
+        //method used to give to the terrain the framebuffers we want to display
         array<GLuint, 4> getTexturesVisible() {
             return {framebuffers[framebuffers_positions[BL_TILE]].getTextureId(),
                         framebuffers[framebuffers_positions[BR_TILE]].getTextureId(),
