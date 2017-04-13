@@ -5,7 +5,10 @@
 #include "../framebuffer.h"
 #include "../water/water.h"
 #include "../perlin_noise/perlin.h"
+#include "../L-tree/algae.h"
 #include <array>
+
+using namespace glm;
 
 class Terrain {
 
@@ -14,6 +17,7 @@ class Terrain {
         MountainsRender mountainsRender;
         FrameBuffer framebuffer;
         Water water;
+        Algae algae;
 
     public:
         void Init(size_t width, size_t height) {
@@ -21,6 +25,8 @@ class Terrain {
             framebuffer.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
             water.Init(framebuffer.getTextureId());
+            algae.Init(0, 'A', vec3(0,1,0));
+            algae.printTree();
         }
 
         void changeTexture(const array<GLuint, 4>& textures) {
@@ -37,8 +43,9 @@ class Terrain {
         void Draw(const glm::mat4 &model,
                   const glm::mat4 &view,
                   const glm::mat4 &projection) {
-            mountainsRender.Draw(model, view, projection);
-            water.Draw(model, view, projection);
+            //mountainsRender.Draw(model, view, projection);
+            //water.Draw(model, view, projection);
+            algae.Draw(model, view, projection);
         }
 
         void Cleanup() {
@@ -46,6 +53,7 @@ class Terrain {
             mountainsRender.Cleanup();
             water.Cleanup();
             framebuffer.Cleanup();
+            algae.Cleanup();
         }
 
 };

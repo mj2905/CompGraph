@@ -46,7 +46,7 @@ class Flexigrid {
                              &indices.at(0), GL_STATIC_DRAW);
 
                 // position shader attribute
-                GLuint loc_position = glGetAttribLocation(program_id_, "vtexcoord");
+                GLuint loc_position = glGetAttribLocation(program_id_, "position");
                 glEnableVertexAttribArray(loc_position);
                 glVertexAttribPointer(loc_position, 2, GL_FLOAT, DONT_NORMALIZE,
                                       ZERO_STRIDE, ZERO_BUFFER_OFFSET);
