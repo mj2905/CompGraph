@@ -55,13 +55,8 @@ public:
     void Draw(const mat4 &model = IDENTITY_MATRIX,
               const mat4 &view = IDENTITY_MATRIX,
               const mat4 &projection = IDENTITY_MATRIX) {
-<<<<<<< HEAD
 
-        grid.Draw(x_visible, y_visible, model, view, projection);
-        //perlin.Draw(x_visible, y_visible);
-=======
         terrain.Draw(model, view, projection);
->>>>>>> MJ
     }
 
     void incrementX() {
