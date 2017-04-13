@@ -187,10 +187,7 @@ class Water {
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
-            float velocity = (sin(fmod(glfwGetTime()/20, M_PI*2))* 0.01 + 1) * 50;
-            glm::vec2 offset = glm::vec2(fmod(glfwGetTime()/velocity, 2.0), fmod(glfwGetTime()/velocity, 2.0));
-
-            glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
+            glUniform1f(glGetUniformLocation(program_id_, "time"), fmod(glfwGetTime()/5.0f, 2*M_PI));
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.

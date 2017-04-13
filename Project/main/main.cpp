@@ -119,7 +119,7 @@ void Init() {
 
     trackball_matrix = glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
+    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, -3.2));
 
     multitiles.Init(window_width, window_height);
 
@@ -137,9 +137,9 @@ void Display() {
 
     glViewport(0, 0, window_width, window_height);
 
-    skybox.draw(trackball_matrix * view_matrix, projection_matrix);
+    skybox.Draw(trackball_matrix * view_matrix, projection_matrix);
 
-    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(1,0.5, 1));
+    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
     multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
 

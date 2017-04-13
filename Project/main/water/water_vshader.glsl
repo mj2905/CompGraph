@@ -12,14 +12,14 @@ uniform mat4 model;
 uniform mat4 view;
 uniform vec3 light_pos;
 
-uniform vec2 offset;
+uniform float time;
 
-uniform sampler2D tex;
+const float M_PI = 3.1415926535897932384626433832795;
 
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
 
-    height = 0.4 + (texture(tex, uv*10 + offset).r -0.5)/50;
+    height = 0.4 + sin(2 * M_PI * 25 * (0.5*uv.x + 0.5*uv.y) + time)/800 + sin(2 * M_PI * 25 * (uv.x * uv.y) + 2*time)/800 + sin(2 * M_PI * 25 * (0.5*uv.x - uv.y) + 4*time)/800;
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
 

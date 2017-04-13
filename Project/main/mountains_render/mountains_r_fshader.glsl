@@ -4,13 +4,47 @@ out vec3 color;
 
 in vec3 light_dir;
 in vec4 vpoint_mv;
+in vec2 uv;
 in float height;
 
-uniform vec3 La, Ld;
-uniform vec3 ka, kd;
+uniform vec3 Ld;
+uniform vec3 kd;
 uniform float alpha;
 
+uniform sampler2D grass;
+uniform sampler2D rock;
+uniform sampler2D snow;
+uniform sampler2D sand;
+
 uniform sampler1D colormap;
+
+float grass_distrib(float height) {
+    if(height >= 0.42 && height <= 0.7) {
+        return 0.5;
+    }
+    return 0;
+}
+
+float rock_distrib(float height) {
+    if(height >= 0.6 && height <= 0.9) {
+        return 0.5;
+    }
+    return 0;
+}
+
+float snow_distrib(float height) {
+    if(height >= 0.8) {
+        return 0.5;
+    }
+    return 0;
+}
+
+float sand_distrib(float height) {
+    if(height <= 0.45) {
+        return 0.5;
+    }
+    return 0;
+}
 
 void main() {
 
@@ -20,5 +54,14 @@ void main() {
 
     float nDotL = max(dot(normal_mv, light_dir), 0);
 
-    color = texture(colormap, height).rgb * La + kd * nDotL * Ld; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
+    float alpha1=grass_distrib(height),
+          alpha2=rock_distrib(height),
+          alpha3=snow_distrib(height),
+          alpha4 =sand_distrib(height);
+
+    color = alpha1 * texture(grass, uv*10).rgb
+            + alpha2 * texture(rock, uv*10).rgb
+            + alpha3 * texture(snow, uv*30).rgb
+            + alpha4 * texture(sand, uv*60).rgb
+            + kd * nDotL * Ld; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 }

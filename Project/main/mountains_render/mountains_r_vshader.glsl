@@ -5,6 +5,7 @@ in vec2 position;
 out vec4 vpoint_mv;
 out vec3 light_dir;
 out float height;
+out vec2 uv;
 
 uniform mat4 projection;
 uniform mat4 model;
@@ -15,7 +16,7 @@ uniform sampler2D tex;
 
 
 void main() {
-    vec2 uv = (position + vec2(1.0, 1.0)) * 0.5;
+    uv = (position + vec2(1.0, 1.0)) * 0.5;
 
     height = texture(tex, uv).r;
     vec3 pos_3d = vec3(position.x, height, -position.y);
