@@ -37,16 +37,16 @@ class Flexigrid {
                 glGenBuffers(1, &vertex_buffer_object_position_);
                 glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object_position_);
                 glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat),
-                             &vertices[0], GL_STATIC_DRAW);
+                             &vertices.at(0), GL_STATIC_DRAW);
 
                 // vertex indices
                 glGenBuffers(1, &vertex_buffer_object_index_);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_buffer_object_index_);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint),
-                             &indices[0], GL_STATIC_DRAW);
+                             &indices.at(0), GL_STATIC_DRAW);
 
                 // position shader attribute
-                GLuint loc_position = glGetAttribLocation(program_id_, "position");
+                GLuint loc_position = glGetAttribLocation(program_id_, "vtexcoord");
                 glEnableVertexAttribArray(loc_position);
                 glVertexAttribPointer(loc_position, 2, GL_FLOAT, DONT_NORMALIZE,
                                       ZERO_STRIDE, ZERO_BUFFER_OFFSET);

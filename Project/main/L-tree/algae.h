@@ -38,7 +38,7 @@ class Algae {
        vector<GLfloat> vertices;
        vector<char> branches;
        int index_ = 0;
-       float init_width = 0.1f;
+       float init_width = 1.0f;
        char axiom;
 
     public:
@@ -135,16 +135,12 @@ class Algae {
             rotation*= M_PI/180.0;
             newDir = vec3(glm::toMat4(quat(rotation))*vec4(direction,1.0f));
             newDir = normalize(newDir);
-           /* newDir /= 5.0;*/
+            newDir *= 5.0;
             return newDir;
        }
 
-       vec3 updateLeftPoint(vec3 direction, vec3 originalPoint){
-           return direction+originalPoint;
-       }
 
-
-       vec3 updateRightPoint(vec3 direction, vec3 originalPoint){
+       vec3 updatePoint(vec3 direction, vec3 originalPoint){
            return direction+originalPoint;
        }
 
@@ -176,14 +172,13 @@ class Algae {
 
        void updateIndicesAndIndexes(vec3 dlpoint, vec3 drpoint, vec3 ulpoint, vec3 urpoint,
                                     int dlid, int drid, int ulid, int urid){
-           //pushToVertices(dlpoint);
+
            pushToVertices(ulpoint);
-           //111pushToVertices(drpoint);
            pushToVertices(urpoint);
 
            indices.push_back(dlid);
-           indices.push_back(ulid);
            indices.push_back(drid);
+           indices.push_back(ulid);
            indices.push_back(ulid);
            indices.push_back(drid);
            indices.push_back(urid);
@@ -231,10 +226,10 @@ class Algae {
 
                         direction.push_back(dir0);
                         leftp1 = popLeftPoint();
-                        leftp0 = updateLeftPoint(dir0, leftp1);
+                        leftp0 = updatePoint(dir0, leftp1);
                         leftPoint.push_back(leftp0);
                         rightp1 =  popRightPoint();
-                        rightp0 = updateRightPoint(dir0, rightp1);
+                        rightp0 = updatePoint(dir0, rightp1);
                         rightPoint.push_back(rightp0);
                         lefti1 = popLeftIndex();
                         lefti0 = ++index_ ;
