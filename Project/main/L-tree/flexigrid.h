@@ -1,7 +1,7 @@
 #pragma once
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
-#include <array>
+#include <vector>
 
 class Flexigrid {
 
@@ -30,6 +30,7 @@ class Flexigrid {
 
             // vertex coordinates and indices
             {
+
                 num_indices_ = indices.size();
 
                 // position buffer

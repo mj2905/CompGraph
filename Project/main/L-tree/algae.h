@@ -135,7 +135,7 @@ class Algae {
             rotation*= M_PI/180.0;
             newDir = vec3(glm::toMat4(quat(rotation))*vec4(direction,1.0f));
             newDir = normalize(newDir);
-            newDir *= 5.0;
+            newDir *= 0.9;
             return newDir;
        }
 
