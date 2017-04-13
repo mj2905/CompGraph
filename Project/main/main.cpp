@@ -11,7 +11,6 @@
 #include "perlin_noise/perlin.h"
 
 #include "trackball.h"
-#include "L-tree/algae.h"
 
 #include "multitiles/multitiles.h"
 
@@ -34,7 +33,6 @@ mat4 quad_model_matrix;
 double old_y;
 
 Trackball trackball;
-Algae alga;
 
 float distance_camera = -2.5;
 
@@ -126,7 +124,11 @@ void Init() {
 // gets called for every frame.
 void Display() {
 
+<<<<<<< HEAD
     //multitiles.incrementY(); //to move with the camera
+=======
+    multitiles.incrementY(); //to move with the camera
+>>>>>>> master
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);

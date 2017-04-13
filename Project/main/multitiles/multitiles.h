@@ -3,7 +3,6 @@
 #include "../framebuffer.h"
 #include "../grid/grid.h"
 #include "../perlin_noise/perlin.h"
-#include "../L-tree/algae.h"
 
 #include <array>
 
@@ -45,9 +44,6 @@ public:
 
         grid.Init();
         perlin.Init();
-        alga.Init(0, 'A', vec3(0.0f,1.0,0.0));
-        alga.printTree();
-
 
         for(int i = 0; i < 4; ++i) {
             drawPerlin(framebuffers[i], x + (-0.5+ (i%2)), y + (-0.5 + i/2)); //we draw in the visible framebuffers, with values (-0.5, -0.5), (0.5, -0.5), (-0.5, 0.5), (0.5, 0.5)
@@ -58,8 +54,8 @@ public:
     void Draw(const mat4 &model = IDENTITY_MATRIX,
               const mat4 &view = IDENTITY_MATRIX,
               const mat4 &projection = IDENTITY_MATRIX) {
-        //grid.Draw(x_visible, y_visible, model, view, projection);
-        alga.Draw(model, view, projection);
+
+        grid.Draw(x_visible, y_visible, model, view, projection);
         //perlin.Draw(x_visible, y_visible);
     }
 
@@ -227,7 +223,6 @@ public:
     void Cleanup() {
         grid.Cleanup();
         perlin.Cleanup();
-        alga.Cleanup();
         for(auto& framebuffer : framebuffers) {
             framebuffer.Cleanup();
         }
@@ -239,7 +234,6 @@ private:
         float x_visible, y_visible;
         Grid grid;
         PerlinNoise perlin;
-        Algae alga;
         int size_tile = 512;
         array<FrameBuffer, 8> framebuffers;
         array<size_t, 8> framebuffers_positions; //array of indices of framebuffers

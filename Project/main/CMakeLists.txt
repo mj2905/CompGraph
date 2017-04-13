@@ -6,10 +6,13 @@ file(GLOB_RECURSE HEADERS "*.h")
 # list all the files you want to copy everytime
 # you build (ie, you want the shaders there)
 file(GLOB SHADERS
+  mountains_render/*.glsl
+  mountains_create/*.glsl
   perlin_noise/*.glsl
   grid/*.glsl
   quad/*.glsl
-  L-tree/*.glsl)
+  L-tree/*.glsl
+  grid/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})
