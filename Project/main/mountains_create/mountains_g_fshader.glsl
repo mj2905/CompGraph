@@ -1,16 +1,8 @@
 #version 330
 
-in vec2 position;
+out float heightmap;
 
-out vec2 uv;
-out vec4 vpoint_mv;
-out vec3 light_dir, view_dir;
-out float height;
-
-uniform mat4 projection;
-uniform mat4 model;
-uniform mat4 view;
-uniform vec3 light_pos;
+in vec2 uv;
 
 uniform sampler2D texBL;
 uniform sampler2D texBR;
@@ -19,20 +11,16 @@ uniform sampler2D texUR;
 
 uniform vec2 offset;
 
-const float zoom = 1; //constant to zoom in the textures
-
 #define MIDDLE_X 0
 #define MIDDLE_Y 0
 #define THRESHOLD_LINKS (2e-3)
 #define MULT_THRESHOLD_FACTOR (0.5/THRESHOLD_LINKS)
 
-
 void main() {
-    uv = (position + vec2(1.0, 1.0)) * 0.5;
-    uv /= zoom;
 
     vec2 xy = vec2(mod(offset.x, 1.0f), mod(offset.y, 1.0f)) - 1; //allows to know how much we need to substract from uv, to facilitate computations
     vec2 pos = uv + xy;
+    float height = 0;
 
     if(abs(pos.x) <= THRESHOLD_LINKS) { //does the links between textures (otherwise, strange boundaries)
         if(pos.y <= MIDDLE_Y) {
@@ -63,12 +51,5 @@ void main() {
         height = texture(texUR, pos).r;
     }
 
-    vec3 pos_3d = vec3(position.x, height, -position.y);
-
-    vpoint_mv = view * model * vec4(pos_3d, 1.0);
-    gl_Position = projection * vpoint_mv;
-    light_dir = normalize(light_pos - vec3(vpoint_mv));
-    view_dir = normalize(- vec3(vpoint_mv));
-
+    heightmap = height;
 }
-

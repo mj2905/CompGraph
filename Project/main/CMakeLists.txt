@@ -14,7 +14,10 @@ copy_files_once(${TEXTURES})
 file(GLOB SHADERS
   perlin_noise/*.glsl
   grid/*.glsl
-  skybox/*.glsl)
+  skybox/*.glsl
+  mountains_render/*.glsl
+  mountains_create/*.glsl
+  water/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})

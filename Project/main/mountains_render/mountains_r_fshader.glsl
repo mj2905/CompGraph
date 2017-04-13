@@ -1,11 +1,8 @@
 #version 330
 
-in vec2 uv;
-
 out vec3 color;
 
 in vec3 light_dir;
-in vec3 view_dir;
 in vec4 vpoint_mv;
 in float height;
 
