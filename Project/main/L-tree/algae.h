@@ -38,7 +38,7 @@ class Algae {
        vector<GLfloat> vertices;
        vector<char> branches;
        int index_ = 0;
-       float init_width = 1.0f;
+       float init_width = 0.2f;
        char axiom;
 
     public:

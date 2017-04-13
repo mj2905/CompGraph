@@ -16,8 +16,8 @@ class Flexigrid {
     public:
         void Init(vector<GLfloat> vertices, vector<GLuint> indices) {
             // compile the shaders.
-            program_id_ = icg_helper::LoadShaders("grid_vshader.glsl",
-                                                  "grid_fshader.glsl");
+            program_id_ = icg_helper::LoadShaders("flexigrid_vshader.glsl",
+                                                  "flexigrid_fshader.glsl");
             if(!program_id_) {
                 exit(EXIT_FAILURE);
             }
@@ -30,25 +30,24 @@ class Flexigrid {
 
             // vertex coordinates and indices
             {
-
                 num_indices_ = indices.size();
 
                 // position buffer
                 glGenBuffers(1, &vertex_buffer_object_position_);
                 glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object_position_);
                 glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat),
-                             &vertices.at(0), GL_STATIC_DRAW);
+                             &vertices[0], GL_STATIC_DRAW);
 
                 // vertex indices
                 glGenBuffers(1, &vertex_buffer_object_index_);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_buffer_object_index_);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint),
-                             &indices.at(0), GL_STATIC_DRAW);
+                             &indices[0], GL_STATIC_DRAW);
 
                 // position shader attribute
                 GLuint loc_position = glGetAttribLocation(program_id_, "position");
                 glEnableVertexAttribArray(loc_position);
-                glVertexAttribPointer(loc_position, 2, GL_FLOAT, DONT_NORMALIZE,
+                glVertexAttribPointer(loc_position, 3, GL_FLOAT, DONT_NORMALIZE,
                                       ZERO_STRIDE, ZERO_BUFFER_OFFSET);
             }
 

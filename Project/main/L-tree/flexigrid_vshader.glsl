@@ -1,6 +1,6 @@
 #version 330
 
-in vec2 position;
+in vec3 position;
 
 out vec2 uv;
 //out vec4 vpoint_mv;
@@ -16,8 +16,8 @@ out vec2 uv;
 //uniform float time;
 
 void main() {
-    uv = (position + vec2(1.0, 1.0)) * 0.5;
-    gl_Position = vec4(position, 0, 1.0);
+    uv = (position.xy + vec2(1.0, 1.0)) * 0.5;
+    gl_Position = vec4(position, 1.0);
     // convert the 2D position into 3D positions that all lay in a horizontal
     // plane.
 }
