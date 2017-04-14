@@ -18,15 +18,18 @@ class Terrain {
         FrameBuffer framebuffer;
         Water water;
         Algae algae;
+        PerlinNoise perlin;
 
     public:
         void Init(size_t width, size_t height) {
             mountainsCreator.Init();
-            framebuffer.Init(width, height, true);
+            GLuint i = framebuffer.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
             water.Init(framebuffer.getTextureId());
-            algae.Init(8, 'A', vec3(0,0.1,0));
+            algae.Init(8, 'A', vec3(0,0.1,0), i);
             algae.printTree();
+            perlin.Init();
+
         }
 
         void changeTexture(const array<GLuint, 4>& textures) {
@@ -45,6 +48,11 @@ class Terrain {
                   const glm::mat4 &projection) {
             //mountainsRender.Draw(model, view, projection);
             //water.Draw(model, view, projection);
+            framebuffer.Bind();
+            {
+                perlin.Draw(0.0,0.0);
+            }
+            framebuffer.Unbind();
             algae.Draw(model, view, projection);
         }
 

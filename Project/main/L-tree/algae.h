@@ -43,7 +43,7 @@ class Algae {
        char axiom;
 
     public:
-       void Init(GLuint depth, char c, vec3 origin){
+       void Init(GLuint depth, char c, vec3 origin, GLuint texture_id){
             axiom = c;
             stringstream ss;
             ss << c;
@@ -63,7 +63,7 @@ class Algae {
             index_++;
             rightIndex.push_back(index_);
             initTree();
-            grid.Init(vertices, indices);
+            grid.Init(vertices, indices, texture_id);
        }
 
        void pushToVertices(vec3 point){
@@ -128,13 +128,10 @@ class Algae {
        }
 
 
-/*
- * CHANGE WITH GLOBAL TURTLE
- * SHOULD MAKE THINGS SIMPLER AND SHOULD ALLOW IT TO WORK u_u
- *
- *
- * */
-
+       /*
+        * This is where the update of the direction is done, depending on the rules defined for the turtle
+        *
+        * */
        vec3 updateDirection(vec3 direction, char parentType, char targetType){
             vec3 rotation, newDir;
             if(parentType == 'A'){
@@ -319,7 +316,7 @@ class Algae {
        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                  const glm::mat4 &view = IDENTITY_MATRIX,
                  const glm::mat4 &projection = IDENTITY_MATRIX){
-           grid.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
+           grid.Draw(model, view, projection);
            // DRAW THE GRID
        }
 

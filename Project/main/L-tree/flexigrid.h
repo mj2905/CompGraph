@@ -12,9 +12,10 @@ class Flexigrid {
         GLuint program_id_;                     // GLSL shader program ID
         GLuint num_indices_;                    // number of vertices to render
         GLuint MVP_id_;                         // model, view, proj matrix ID
+        GLuint texture_id_;
 
     public:
-        void Init(vector<GLfloat> vertices, vector<GLuint> indices) {
+        void Init(vector<GLfloat> vertices, vector<GLuint> indices, GLuint texture) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("flexigrid_vshader.glsl",
                                                   "flexigrid_fshader.glsl");
@@ -27,6 +28,8 @@ class Flexigrid {
             // vertex one vertex array
             glGenVertexArrays(1, &vertex_array_id_);
             glBindVertexArray(vertex_array_id_);
+
+            texture_id_ = texture;
 
             // vertex coordinates and indices
             {
@@ -55,6 +58,11 @@ class Flexigrid {
             // other uniforms
             MVP_id_ = glGetUniformLocation(program_id_, "MVP");
 
+
+            glBindTexture(GL_TEXTURE_2D, texture_id_);
+            GLuint tex_id = glGetUniformLocation(program_id_, "tex");
+            glUniform1i(tex_id, 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
             // to avoid the current object being polluted
             glBindVertexArray(0);
             glUseProgram(0);
@@ -66,6 +74,7 @@ class Flexigrid {
             glDeleteBuffers(1, &vertex_buffer_object_position_);
             glDeleteBuffers(1, &vertex_buffer_object_index_);
             glDeleteVertexArrays(1, &vertex_array_id_);
+            glDeleteTextures(1, &texture_id_);
             glDeleteProgram(program_id_);
         }
 
@@ -80,12 +89,9 @@ class Flexigrid {
             glUniformMatrix4fv(MVP_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(MVP));
 
 
-            // draw
-            // TODO 5: for debugging it can be helpful to draw only the wireframe.
-            // You can do that by uncommenting the next line.
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            // TODO 5: depending on how you set up your vertex index buffer, you
-            // might have to change GL_TRIANGLE_STRIP to GL_TRIANGLES.
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture_id_);
+
             glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
 
             glBindVertexArray(0);
