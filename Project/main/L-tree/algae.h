@@ -55,12 +55,8 @@ class Algae {
             leftPoint.push_back(originLeft);
             rightPoint.push_back(originRight);
 
-
-
             pushToVertices(originLeft);
             pushToVertices(originRight);
-
-
 
             direction.push_back(vec3(0.0f,1.0f,0.0f));
             leftIndex.push_back(index_);
@@ -74,6 +70,19 @@ class Algae {
            vertices.push_back(point.x);
            vertices.push_back(point.y);
            vertices.push_back(point.z);
+       }
+
+       float sqr(float x){
+           return x*x;
+       }
+
+       bool smallerThanWidth(vec3 dir, vec3 p1, vec3 p2){
+           vec3 p2top1 = p1 - p2;
+           float norm = sqrt(sqr(p2top1.x) + sqr(p2top1.y) + sqr(p2top1.z));
+           float angle = acos(normalize(dot(p2top1, dir)));
+           float width = sin(angle)*norm;
+           return width <= init_width;
+
        }
 
 
@@ -175,18 +184,27 @@ class Algae {
            return rightIndex.back();
        }
 
-       void updateIndicesAndIndexes(vec3 dlpoint, vec3 drpoint, vec3 ulpoint, vec3 urpoint,
-                                    int dlid, int drid, int ulid, int urid){
-
-           pushToVertices(ulpoint);
-           pushToVertices(urpoint);
-
+       void updateTriangleIndicesAndIndexes(vec3 newPoint, int dlid, int drid, int upid){
+           pushToVertices(newPoint);
            indices.push_back(dlid);
            indices.push_back(drid);
-           indices.push_back(ulid);
-           indices.push_back(ulid);
-           indices.push_back(drid);
-           indices.push_back(urid);
+           indices.push_back(upid);
+       }
+
+       void updateIndicesAndIndexes(vec3 ulpoint, vec3 urpoint,
+                                    int dlid, int drid, int ulid, int urid){
+
+               pushToVertices(ulpoint);
+               pushToVertices(urpoint);
+
+               indices.push_back(dlid);
+               indices.push_back(drid);
+               indices.push_back(ulid);
+               indices.push_back(ulid);
+               indices.push_back(drid);
+               indices.push_back(urid);
+
+
        }
 
 
@@ -231,18 +249,43 @@ class Algae {
 
                         direction.push_back(dir0);
                         leftp1 = popLeftPoint();
-                        leftp0 = updatePoint(dir0, leftp1);
-                        leftPoint.push_back(leftp0);
                         rightp1 =  popRightPoint();
-                        rightp0 = updatePoint(dir0, rightp1);
-                        rightPoint.push_back(rightp0);
-                        lefti1 = popLeftIndex();
-                        lefti0 = ++index_ ;
-                        leftIndex.push_back(lefti0);
-                        righti1 = popRightIndex();
-                        righti0 = ++index_ ;
-                        rightIndex.push_back(righti0);
-                        updateIndicesAndIndexes(leftp1, rightp1, leftp0, rightp0, lefti1, righti1,lefti0, righti0);
+                        if(!smallerThanWidth(dir0, leftp1, rightp1)){
+                            leftp0 = updatePoint(dir0, leftp1);
+                            leftPoint.push_back(leftp0);
+
+                            rightp0 = updatePoint(dir0, rightp1);
+                            rightPoint.push_back(rightp0);
+                            lefti1 = popLeftIndex();
+                            lefti0 = ++index_ ;
+                            leftIndex.push_back(lefti0);
+                            righti1 = popRightIndex();
+                            righti0 = ++index_ ;
+                            rightIndex.push_back(righti0);
+                            updateIndicesAndIndexes(leftp0, rightp0, lefti1, righti1,lefti0, righti0);
+
+                        } else {
+                            vec3 dirbase = leftp1 - rightp1;
+                            vec3 axis = normalize(cross(dir0, dirbase));
+                            vec3 transdir = init_width*normalize(cross(axis,dir0));
+                            vec3 newLeftPoint = updatePoint(rightp1,transdir);
+                            int leftId = ++index_;
+                            lefti1 = popLeftIndex();
+                            righti1 = popRightIndex();
+                            updateTriangleIndicesAndIndexes(newLeftPoint, lefti1, righti1, leftId);
+                            lefti0 = ++ index_;
+                            righti0 = ++ index_;
+                            leftIndex.push_back(lefti0);
+                            rightIndex.push_back(righti0);
+                            leftp0 = updatePoint(dir0, newLeftPoint);
+                            rightp0 = updatePoint(dir0, rightp1);
+                            leftPoint.push_back(leftp0);
+                            rightPoint.push_back(rightp0);
+                            updateIndicesAndIndexes(leftp0, rightp0, lefti1, righti1, lefti0, righti0);
+
+                            /* the code above creates a new point with correct width */
+                            /* the code under still needs to be corrected*/
+                        }
 
                     }
                } else if(str == '['){
@@ -276,7 +319,7 @@ class Algae {
        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                  const glm::mat4 &view = IDENTITY_MATRIX,
                  const glm::mat4 &projection = IDENTITY_MATRIX){
-           grid.Draw(model, view, projection);
+           grid.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
            // DRAW THE GRID
        }
 
