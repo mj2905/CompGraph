@@ -26,7 +26,7 @@ class Terrain {
             GLuint i = framebuffer.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
             water.Init(framebuffer.getTextureId());
-            algae.Init(4, 'A', vec3(0,0.1,0), i);
+            algae.Init(4, 'A', vec3(0,-1.0,0), i);
             algae.printTree();
             perlin.Init();
 

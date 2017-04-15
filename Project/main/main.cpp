@@ -300,5 +300,7 @@ int main(int argc, char *argv[]) {
     // close OpenGL window and terminate GLFW
     glfwDestroyWindow(window);
     glfwTerminate();
+
+
     return EXIT_SUCCESS;
 }

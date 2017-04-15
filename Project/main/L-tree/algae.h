@@ -7,27 +7,16 @@
 #include <string.h>
 #include <sstream>
 #include "flexigrid.h"
-
-
-// This code is based on L systems described here: http://www.naturewizard.at/tutorial04.html
+#include "rng.h"
 
 using namespace glm;
 
-
+/**
+ * @brief The Algae class
+ */
 class Algae {
 
     private:
-    /*
-     * CHANGE TO THE FOLLOWING:
-     * CREATE 4 POINTS
-     * ADD THEM TO THE BUFFER & INDICES
-     * THE 2 UPPER POINTS SERVE AS BASIS FOR NEXT DRAW (must be stacked!)
-     * THE WIDTH & HEIGHT ARE ALSO A PARAMETER CONTROLLED THROUGH THE RECURSION
-     * IDEA: UNIT VECTOR THAT SHOWS DIRECTION (also stacked!)
-     * AFFECTED THROUGH ROTATION
-     * NO TRANSLATION AS SUCH; WE TRANSLATE BY THIS VECTOR*HEIGHT VECTOR FOR THE POINTS
-     * */
-
        Flexigrid grid;
        string tree;
        GLuint depth_;
@@ -39,13 +28,26 @@ class Algae {
        float init_width = 0.08f;
        float init_length = 5*init_width;
        char axiom;
+       RNG generator;
+       int rand;
 
     public:
-       void Init(GLuint depth, char c, vec3 origin, GLuint texture_id){
-            axiom = c;
+       /**
+        * @brief Init
+        * @param depth The maximum depth of the tree
+        * @param axiom The original axiom (ie: starting letter) of the tree, between A and B
+        * @param origin The starting point of the tree
+        * @param texture_id The id of the texture
+        */
+       void Init(GLuint depth, char axiom, vec3 origin, GLuint texture_id){
+            generator.Seed(1);
+            rand = generator.rand();
+
+            axiom = axiom;
             stringstream ss;
-            ss << c;
+            ss << axiom;
             ss >> tree;
+
             depth_ = depth;
             vec3 originLeft = vec3(origin.x - init_width, origin.y, origin.z);
             vec3 originRight = vec3(origin.x + init_width, origin.y, origin.z);
@@ -64,6 +66,10 @@ class Algae {
             grid.Init(vertices, indices, texture_id);
        }
 
+       /**
+        * @brief pushToVertices
+        * @param point
+        */
        void pushToVertices(vec3 point){
            vertices.push_back(point.x);
            vertices.push_back(point.y);
@@ -74,6 +80,13 @@ class Algae {
            return x*x;
        }
 
+       /**
+        * @brief smallerThanWidth, returns true if the width of the parrallelepiped is smaller than the current width
+        * @param dir The direction of the next points (orthogonal to the width of parrallelepiped)
+        * @param p1 The left point
+        * @param p2 The right point
+        * @return true if width of parallelepiped <= width of parent branch
+        */
        bool smallerThanWidth(vec3 dir, vec3 p1, vec3 p2){
            vec3 p2top1 = p1 - p2;
            float norm = sqrt(sqr(p2top1.x) + sqr(p2top1.y) + sqr(p2top1.z));
@@ -87,7 +100,11 @@ class Algae {
            cout << tree << endl;
        }
 
-       // Verified: Parsing
+       /**
+        * @brief substituteString, according to a set of rules replaces a character with its children
+        * @param a the character to substitute
+        * @return the substituted string
+        */
        string substituteString(char a){
            if(a == 'A'){
                return "A[AB]";
@@ -105,12 +122,16 @@ class Algae {
            }
        }
 
-       // Verified: Parsing
+       /**
+        * @brief firstExpand, it is the first expansion of the tree, done this way to avoid some bugs with the usual expansion
+        */
        void firstExpand(){
            tree.replace(0,1, substituteString(tree.at(0)));
        }
 
-       // Verified: Parsing
+       /**
+        * @brief expand, rest of the expansion of the tree
+        */
        void expand(){
            for(size_t i = 1; i < tree.size()-1; ++i){
                char ch = tree.at(i);
@@ -124,17 +145,30 @@ class Algae {
            }
        }
 
-       /*
-        * This is where the update of the direction is done, depending on the rules defined for the turtle
-        *
-        * */
+       /**
+        * @brief updateDirection, from a direction and two letters update the direction depending on a set of rules
+        * @param direction The original direction
+        * @param parentType Parent letter
+        * @param targetType Child letter
+        * @return The updated direction as a vec3
+        */
        vec3 updateDirection(vec3 direction, char parentType, char targetType){
             vec3 rotation, newDir;
+            rand = generator.rand();
+
             if(parentType == 'A'){
                 if(targetType == 'B'){
-                    rotation = vec3(0.0f,0.0f,25.0f);
+                    if(rand < 50){
+                        rotation = vec3(0.0f,0.0f,rand);
+                    }else{
+                        rotation = vec3(0.0f,-rand*2.0/3, rand*1.0/3);
+                    }
                 } else if(targetType == 'A') {
-                    rotation = vec3(0.0f,0.0f,-25.0f);
+                    if(rand < 50){
+                        rotation = vec3(0.0f, 0.0f,-rand);
+                    }else{
+                        rotation = vec3(0.0f,rand*1.0/4,-rand*3.0/4);
+                    }
                 }
             } else {
                 rotation = vec3(0.0f,0.0f,0.0f);
@@ -150,11 +184,19 @@ class Algae {
            return direction+originalPoint;
        }
 
+       /**
+        * @brief popDirection, pop the stack of direction and returns its last element
+        * @return Last element of direction after a pop
+        */
        vec3 popDirection(){
            direction.pop_back();
            return direction.back();
        }
 
+       /**
+        * @brief popLeftPoint, pop the stack of leftPoint and returns its last element
+        * @return Last element of leftPoint after a pop
+        */
        vec3 popLeftPoint(){
            leftPoint.pop_back();
            return leftPoint.back();
@@ -175,6 +217,13 @@ class Algae {
            return rightIndex.back();
        }
 
+       /**
+        * @brief updateTriangleIndicesAndIndexes, updates the vertices and indices with a new point
+        * @param newPoint, the up point
+        * @param dlid, down left point-id
+        * @param drid, down right point-id
+        * @param upid, up point id
+        */
        void updateTriangleIndicesAndIndexes(vec3 newPoint, int dlid, int drid, int upid){
            pushToVertices(newPoint);
            indices.push_back(dlid);
@@ -182,6 +231,15 @@ class Algae {
            indices.push_back(upid);
        }
 
+       /**
+        * @brief updateIndicesAndIndexes
+        * @param ulpoint
+        * @param urpoint
+        * @param dlid
+        * @param drid
+        * @param ulid
+        * @param urid
+        */
        void updateIndicesAndIndexes(vec3 ulpoint, vec3 urpoint,
                                     int dlid, int drid, int ulid, int urid){
 
@@ -195,13 +253,12 @@ class Algae {
                indices.push_back(urid);
        }
 
-
-       // Must stack: - left point & right point (@ leftPoint, rightPoint)
-       //             - left index & right index (@ leftIndex, rightIndex)
-       //             - direction (@direction)
-       //             - parent (@ branches)
-       // Must update: - indices
-       //              - vertices
+       /**
+        * @brief generateAlgae
+        * The method parses the tree that is a string.
+        * It is purely iterative, and manages a stack to keep the states of the branches from one iteration to another.
+        * Its role is to update the indices and vertices vectors, to create the algae.
+        */
        void generateAlgae(){
            vec3 dir0,dir1;
            dir0 = direction.back();
@@ -222,7 +279,7 @@ class Algae {
            for(size_t i = 0; i < tree.length(); i++){
                char str = tree.at(i);
                if(str == ']'){
-                   init_length *= 1.43;
+                   init_length *= 1.25;
                    dir0 = popDirection();
                    leftp0 = popLeftPoint();
                    rightp0 = popRightPoint();
@@ -273,13 +330,11 @@ class Algae {
                             rightPoint.push_back(rightp0);
                             updateIndicesAndIndexes(leftp0, rightp0, lefti1, righti1, lefti0, righti0);
 
-                            /* the code above creates a new point with correct width */
-                            /* the code under still needs to be corrected*/
                         }
 
                     }
                } else if(str == '['){
-                   init_length *=.7;
+                   init_length *=.8;
                    direction.push_back(dir0);
                    leftPoint.push_back(leftp0);
                    rightPoint.push_back(rightp0);
@@ -298,6 +353,11 @@ class Algae {
 
        }
 
+
+       /**
+        * @brief initTree
+        * Puts everything together: expands the tree from the axiom and then generates the algae
+        */
        void initTree(){
            firstExpand();
            for(size_t i = 0; i < depth_; ++i){
@@ -306,12 +366,10 @@ class Algae {
            generateAlgae();
        }
 
-
        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                  const glm::mat4 &view = IDENTITY_MATRIX,
                  const glm::mat4 &projection = IDENTITY_MATRIX){
            grid.Draw(model, view, projection);
-           // DRAW THE GRID
        }
 
        void Cleanup(){

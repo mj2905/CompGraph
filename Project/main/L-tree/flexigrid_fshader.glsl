@@ -66,7 +66,7 @@ float octavePerlin(vec2 xy, vec2 offset) {
 void main() {
     float x = uv.x;
     float y = uv.y;
-    float t = sin((y*y - x*x)*octavePerlin(uv,vec2(0,0)));
+    float t = sin(x+ octavePerlin(uv,vec2(0,0)));
     float a = (1.0/y - 0.3);
     color = vec4(t,0,0, a);//*mix(vec3(0,0,0),mix(texture(tex, uv).rgb,vec3(1,1,1), uv.y/5.0), uv.y);
 }
