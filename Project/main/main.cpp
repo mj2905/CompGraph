@@ -103,6 +103,9 @@ void Init() {
     // enable depth test.
     glEnable(GL_DEPTH_TEST);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // TODO 3: once you use the trackball, you should use a view matrix that
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
     // applied in a rotated coordinate frame.

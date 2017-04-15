@@ -10,7 +10,6 @@ file(GLOB SHADERS
   mountains_create/*.glsl
   perlin_noise/*.glsl
   grid/*.glsl
-  quad/*.glsl
   L-tree/*.glsl
   grid/*.glsl
   water/*.glsl)

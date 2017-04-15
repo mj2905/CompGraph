@@ -7,7 +7,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <string.h>
 #include <sstream>
-#include "../quad/quad.h"
 #include "flexigrid.h"
 
 
@@ -38,8 +37,8 @@ class Algae {
        vector<GLfloat> vertices;
        vector<char> branches;
        int index_ = 0;
-       float init_width = 0.02f;
-       float init_length = 10*init_width;
+       float init_width = 0.08f;
+       float init_length = 5*init_width;
        char axiom;
 
     public:
@@ -85,7 +84,6 @@ class Algae {
 
        }
 
-
        void printTree(){
            cout << tree << endl;
        }
@@ -127,7 +125,6 @@ class Algae {
            }
        }
 
-
        /*
         * This is where the update of the direction is done, depending on the rules defined for the turtle
         *
@@ -137,7 +134,7 @@ class Algae {
             if(parentType == 'A'){
                 if(targetType == 'B'){
                     rotation = vec3(0.0f,0.0f,25.0f);
-                } else {
+                } else if(targetType == 'A') {
                     rotation = vec3(0.0f,0.0f,-25.0f);
                 }
             } else {
@@ -150,11 +147,9 @@ class Algae {
             return newDir;
        }
 
-
        vec3 updatePoint(vec3 direction, vec3 originalPoint){
            return direction+originalPoint;
        }
-
 
        vec3 popDirection(){
            direction.pop_back();
@@ -193,15 +188,12 @@ class Algae {
 
                pushToVertices(ulpoint);
                pushToVertices(urpoint);
-
                indices.push_back(dlid);
                indices.push_back(drid);
                indices.push_back(ulid);
                indices.push_back(ulid);
                indices.push_back(drid);
                indices.push_back(urid);
-
-
        }
 
 
@@ -231,11 +223,13 @@ class Algae {
            for(size_t i = 0; i < tree.length(); i++){
                char str = tree.at(i);
                if(str == ']'){
+                   init_length *= 1.43;
                    dir0 = popDirection();
                    leftp0 = popLeftPoint();
                    rightp0 = popRightPoint();
                    lefti0 = popLeftIndex();
                    righti0 = popRightIndex();
+                   branches.pop_back();
                } else if(str == 'A' || tree.at(i) == 'B'){
                     lo = str;
                     if(direction.size() > 0 && branches.size() > 0 && leftPoint.size() > 0 && rightPoint.size() > 0 && leftIndex.size()>0 && rightIndex.size()>0){
@@ -286,6 +280,7 @@ class Algae {
 
                     }
                } else if(str == '['){
+                   init_length *=.7;
                    direction.push_back(dir0);
                    leftPoint.push_back(leftp0);
                    rightPoint.push_back(rightp0);

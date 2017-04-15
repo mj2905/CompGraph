@@ -26,7 +26,7 @@ class Terrain {
             GLuint i = framebuffer.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
             water.Init(framebuffer.getTextureId());
-            algae.Init(8, 'A', vec3(0,0.1,0), i);
+            algae.Init(4, 'A', vec3(0,0.1,0), i);
             algae.printTree();
             perlin.Init();
 
@@ -48,6 +48,7 @@ class Terrain {
                   const glm::mat4 &projection) {
             //mountainsRender.Draw(model, view, projection);
             //water.Draw(model, view, projection);
+            framebuffer.ClearContent();
             framebuffer.Bind();
             {
                 perlin.Draw(0.0,0.0);
