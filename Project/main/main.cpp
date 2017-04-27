@@ -228,6 +228,23 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         multitiles.incrementX();
     }
+
+    if(key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+        view_matrix = translate(view_matrix, vec3(0.0, 0.1f, 0.0f));
+    }
+
+    if(key == GLFW_KEY_K && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+        view_matrix = translate(view_matrix, vec3(0.0, -0.1f, 0.0f));
+    }
+
+
+    if(key == GLFW_KEY_J && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+        view_matrix = translate(view_matrix, vec3(0.1f, 0.0f, 0.0f));
+    }
+
+    if(key == GLFW_KEY_L && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+        view_matrix = translate(view_matrix, vec3(-0.1f, 0.0f, 0.0f));
+    }
 }
 
 

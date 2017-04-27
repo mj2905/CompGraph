@@ -159,15 +159,15 @@ class Algae {
             if(parentType == 'A'){
                 if(targetType == 'B'){
                     if(rand < 50){
-                        rotation = vec3(0.0f,0.0f,rand);
+                        rotation = vec3(0.0f,0.0f,25.0f);
                     }else{
-                        rotation = vec3(0.0f,-rand*2.0/3, rand*1.0/3);
+                        rotation = vec3(0.0f,-15.0f, 20.0f);
                     }
                 } else if(targetType == 'A') {
                     if(rand < 50){
-                        rotation = vec3(0.0f, 0.0f,-rand);
+                        rotation = vec3(0.0f, 0.0f,-25.0f);
                     }else{
-                        rotation = vec3(0.0f,rand*1.0/4,-rand*3.0/4);
+                        rotation = vec3(0.0f,10.0f,-20.0f);
                     }
                 }
             } else {
@@ -180,9 +180,62 @@ class Algae {
             return newDir;
        }
 
+       float square(float x){
+           return x*x;
+       }
+
+       float norm(vec3 a, vec3 b){
+           return sqrt(square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z));
+       }
+
+
        vec3 updatePoint(vec3 direction, vec3 originalPoint){
            return direction+originalPoint;
        }
+
+       void createCubeVolume(vec3 leftBasePoint, vec3 rightBasePoint, vec3 leftUpPoint,
+                             int leftBaseID, int rightBaseID, int leftUpID, int rightUpID){
+
+            vec3 b, d, o, newBasePoint, newUpPoint;
+            b = leftBasePoint - rightBasePoint;
+            newBasePoint = leftBasePoint;
+            newUpPoint = leftUpPoint;
+            float length = norm(leftBasePoint, rightBasePoint);
+            o = leftUpPoint - leftBasePoint;
+            d = length*normalize(cross(b, o));
+
+            int newBaseIndex, newUpIndex, currLeftIndex, currUpIndex;
+            currLeftIndex = leftBaseID;
+            currUpIndex = leftUpID;
+
+            for(int i =0; i < 2; ++i){
+                newBasePoint = newBasePoint+d;
+                newUpPoint = newUpPoint +d;
+                newBaseIndex = ++index_ ;
+                newUpIndex = ++index_ ;
+                pushToVertices(newBasePoint);
+                pushToVertices(newUpPoint);
+                indices.push_back(newBaseIndex);
+                indices.push_back(currLeftIndex);
+                indices.push_back(currUpIndex);
+                indices.push_back(currUpIndex);
+                indices.push_back(newBaseIndex);
+                indices.push_back(newUpIndex);
+                currLeftIndex = newBaseIndex;
+                currUpIndex = newUpIndex;
+                d = length*normalize(cross(d, o));
+
+            }
+
+            indices.push_back(rightBaseID);
+            indices.push_back(currLeftIndex);
+            indices.push_back(currUpIndex);
+            indices.push_back(currUpIndex);
+            indices.push_back(rightBaseID);
+            indices.push_back(rightUpID);
+
+       }
+
 
        /**
         * @brief popDirection, pop the stack of direction and returns its last element
@@ -253,6 +306,7 @@ class Algae {
                indices.push_back(urid);
        }
 
+
        /**
         * @brief generateAlgae
         * The method parses the tree that is a string.
@@ -279,7 +333,7 @@ class Algae {
            for(size_t i = 0; i < tree.length(); i++){
                char str = tree.at(i);
                if(str == ']'){
-                   init_length *= 1.25;
+                   //init_length *= 1.25;
                    dir0 = popDirection();
                    leftp0 = popLeftPoint();
                    rightp0 = popRightPoint();
@@ -310,6 +364,7 @@ class Algae {
                             righti0 = ++index_ ;
                             rightIndex.push_back(righti0);
                             updateIndicesAndIndexes(leftp0, rightp0, lefti1, righti1,lefti0, righti0);
+                            createCubeVolume(leftp1, rightp1, leftp0, lefti1, righti1, lefti0, righti0);
 
                         } else {
                             vec3 dirbase = leftp1 - rightp1;
@@ -329,12 +384,12 @@ class Algae {
                             leftPoint.push_back(leftp0);
                             rightPoint.push_back(rightp0);
                             updateIndicesAndIndexes(leftp0, rightp0, lefti1, righti1, lefti0, righti0);
-
+                            createCubeVolume(leftp1, rightp1, leftp0, lefti1, righti1, lefti0, righti0);
                         }
 
                     }
                } else if(str == '['){
-                   init_length *=.8;
+                   //init_length *=.8;
                    direction.push_back(dir0);
                    leftPoint.push_back(leftp0);
                    rightPoint.push_back(rightp0);
@@ -381,6 +436,8 @@ class Algae {
            branches.clear();
            grid.Cleanup();
            tree.clear();
+           indices.clear();
+           vertices.clear();
        }
 
 };
