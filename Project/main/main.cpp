@@ -15,6 +15,7 @@
 
 #include "multitiles/multitiles.h"
 
+
 const unsigned int OFFSET_X = 256;
 const unsigned int OFFSET_Y = 256;
 
@@ -131,8 +132,6 @@ void Init() {
 // gets called for every frame.
 void Display() {
 
-    //multitiles.incrementY(); //to move with the camera
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glViewport(0, 0, window_width, window_height);
@@ -143,6 +142,10 @@ void Display() {
 
     multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
 
+}
+
+void Update() {
+    multitiles.incrementY(); //to move with the camera
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.
@@ -260,7 +263,7 @@ int main(int argc, char *argv[]) {
     // note some Intel GPUs do not support OpenGL 3.2
     // note update the driver of your graphic card
     GLFWwindow* window = glfwCreateWindow(window_width, window_height,
-                                          "Trackball", NULL, NULL);
+                                          "Mountains", NULL, NULL);
     if(!window) {
         glfwTerminate();
         return EXIT_FAILURE;
@@ -297,10 +300,19 @@ int main(int argc, char *argv[]) {
     glfwGetFramebufferSize(window, &window_width, &window_height);
     SetupProjection(window, window_width, window_height);
 
+    constexpr double limitSPF = 1.0/30.0;
+    double lastTime = 0, time = 0;
+
     // render loop
     while(!glfwWindowShouldClose(window)){
-        Display();
-        glfwSwapBuffers(window);
+
+        time = glfwGetTime();
+        if(time - lastTime >= limitSPF) {
+            Display();
+            Update();
+            lastTime = time;
+            glfwSwapBuffers(window);
+        }
         glfwPollEvents();
     }
 

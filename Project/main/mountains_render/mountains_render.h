@@ -172,10 +172,14 @@ class MountainsRender {
 
                 glGenTextures(1, &id);
                 glBindTexture(GL_TEXTURE_2D, id);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, -1);
+
+
 
                 if(nb_component == 3) {
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
@@ -184,6 +188,8 @@ class MountainsRender {
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
                                  GL_RGBA, GL_UNSIGNED_BYTE, image);
                 }
+
+                glGenerateMipmap(GL_TEXTURE_2D);
 
                 GLuint tex_id = glGetUniformLocation(program_id_, uniformName.c_str());
                 glUniform1i(tex_id, textureNb);
@@ -205,7 +211,8 @@ class MountainsRender {
             glDeleteTextures(1, &interpolation_id_);
         }
 
-        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
+        void Draw(float offsetX, float offsetY,
+                  const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
 
@@ -235,6 +242,10 @@ class MountainsRender {
             // bind textures
             glActiveTexture(GL_TEXTURE5);
             glBindTexture(GL_TEXTURE_2D, sand_id_);
+
+            glm::vec2 offset = glm::vec2(offsetX, offsetY);
+
+            glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
 
             // setup MVP
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));

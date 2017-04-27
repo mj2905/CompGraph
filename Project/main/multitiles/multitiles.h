@@ -52,10 +52,11 @@ public:
         terrain.Moved(x_visible, y_visible);
     }
 
-    void Draw(const mat4 &model = IDENTITY_MATRIX,
+    void Draw(
+              const mat4 &model = IDENTITY_MATRIX,
               const mat4 &view = IDENTITY_MATRIX,
               const mat4 &projection = IDENTITY_MATRIX) {
-        terrain.Draw(model, view, projection);
+        terrain.Draw(x_visible, y_visible, model, view, projection);
     }
 
     void incrementX() {

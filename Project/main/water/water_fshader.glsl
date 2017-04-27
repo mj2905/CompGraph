@@ -30,5 +30,10 @@ void main() {
     vec3 c = texture(colormap, (height - 0.4)*10).rgb;
 
     color.xyz = c * La + kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
-    color.a = texture(tex, uv).r < height ? 0.6 : 0.0;
+    if(texture(tex, uv).r < height) {
+        color.a = 0.6;
+    }
+    else {
+        discard;
+    }
 }
