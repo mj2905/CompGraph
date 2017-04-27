@@ -28,8 +28,8 @@ float grass_distrib(float height) {
 }
 
 float rock_distrib(float height) {
-    if(height >= 0.6 && height <= 0.8) {
-        return (-abs(height - 0.7) + 0.1)*10;
+    if(height >= 0.6 && height <= 0.9) {
+        return (-abs(height - 0.75) + 0.15)*6;
     }
     return 0;
 }
