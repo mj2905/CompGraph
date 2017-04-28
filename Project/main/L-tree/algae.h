@@ -120,9 +120,9 @@ class Algae {
             if(parentType == 'A'){
                 if(targetType == 'B'){
                     if(rand < 50){
-                        rotation = vec3(0.0f,0.0f,25.0f);
+                        rotation = vec3(5.0f,50.0f,25.0f);
                     }else{
-                        rotation = vec3(0.0f,-15.0f, 20.0f);
+                        rotation = vec3(5.4f,-50.0f, 20.0f);
                     }
                 } else if(targetType == 'A') {
                     if(rand < 50){
@@ -379,10 +379,19 @@ class Algae {
                // would be by computing their respective angles first and then
                // using a weighted sum.
                vec3 normalf = vec3(0.0f,0.0f,0.0f);
+               float total = 0.0f;
+               float angle = 0.0f;
                for(size_t normal = 0; normal < vertexNormal.size(); ++normal){
-                   normalf += vertexNormal.at(normal);
+                   for(size_t k = normal+1; k < vertexNormal.size() && k != normal; ++k ){
+                       vec3 v1 = vertexNormal.at(normal);
+                       vec3 v2 = vertexNormal.at(k);
+                       angle = acos(dot(v1, v2));
+                       normalf += angle*(v1+v2);
+                       total += angle;
+
+                   }
                }
-               normalf = normalize(normalf);
+               normalf = normalf/total;
                triangleNormals.push_back(normalf);// by hypothesis the normals should be pushed in the same order as the points
                vertexNormal.clear();
            }

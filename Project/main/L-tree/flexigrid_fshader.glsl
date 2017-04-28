@@ -10,10 +10,30 @@ uniform vec3 ka, kd, ks;
 uniform float alpha;
 
 void main() {
+
+    //>>>>>>>>>> TODO >>>>>>>>>>>
+    // TODO 1.2: Phong shading.
+    // 1) compute ambient term.
+    // 2) compute diffuse term.
+    // 3) compute specular term.
+    // To avoid GPU bug, remove
+    // the code above after
+    // implementing Phong shading.
+    //<<<<<<<<<< TODO <<<<<<<<<<<*/
+
+    float nDotL = max(dot(normal_mv, light_dir), 0);
+
+    vec3 r = normalize(reflect(- light_dir, normal_mv));
+    float rDotV = max(dot(r, view_dir), 0);
+
+    vec3 c = ka * La + kd * nDotL * Ld
+                    + ks * pow(rDotV, alpha) * Ls;
+
+
     float x = uv.x;
     float y = uv.y;
     float a = (1.0/y - 0.3);
-    color = vec4(1.0f,0,0, a);
+    color = vec4(c.x,c.y,c.z, a);
 }
 
 /*
