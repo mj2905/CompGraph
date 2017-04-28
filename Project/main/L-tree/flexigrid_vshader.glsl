@@ -1,23 +1,30 @@
 #version 330
 
-in vec3 position;
+uniform mat4 projection;
+uniform mat4 model;
+uniform mat4 view;
+uniform vec3 light_pos;
 
-out vec2 uv;
-//out vec4 vpoint_mv;
+in vec3 vpoint;
+in vec3 vnormal;
 
-//out vec3 light_dir, view_dir;
-
-//uniform mat4 projection;
-//uniform mat4 model;
-//uniform mat4 view;
-//uniform vec3 light_pos;
-
-uniform mat4 MVP;
-//uniform float time;
+out vec3 normal_mv;
+out vec3 light_dir;
+out vec3 view_dir;
 
 void main() {
-    uv = (position.xy + vec2(1.0, 1.0)) * 0.5;
-    gl_Position = MVP * vec4(position, 1.0);
-    // convert the 2D position into 3D positions that all lay in a horizontal
-    // plane.
+    mat4 MV = view * model;
+    vec4 vpoint_mv = MV * vec4(vpoint, 1.0);
+    gl_Position = projection * vpoint_mv;
+    ///>>>>>>>>>> TODO >>>>>>>>>>>
+    /// TODO 1.1: Phong shading.
+    /// 1) compute normal_mv using the model_view matrix.
+    /// 2) compute the light direction light_dir.
+    /// 3) compute the view direction view_dir.
+    ///<<<<<<<<<< TODO <<<<<<<<<<<
+
+    normal_mv = normalize(vec3(inverse(transpose(MV)) * vec4(vnormal, 1.0)));
+    light_dir = normalize(light_pos - vec3(vpoint_mv));
+    view_dir = normalize(- vec3(vpoint_mv));
 }
+
