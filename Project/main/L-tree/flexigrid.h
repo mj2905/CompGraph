@@ -9,6 +9,7 @@ class Flexigrid {
         GLuint vertex_array_id_;                // vertex array object
         GLuint vertex_buffer_object_position_;  // memory buffer for positions
         GLuint vertex_buffer_object_index_;     // memory buffer for indices
+        GLuint vertex_normal_buffer_object_;    // memory buffer for normals
         GLuint program_id_;                     // GLSL shader program ID
         GLuint num_indices_;                    // number of vertices to render
         GLuint MVP_id_;                         // model, view, proj matrix ID
@@ -44,7 +45,7 @@ class Flexigrid {
 
 
     public:
-        void Init(vector<GLfloat> vertices, vector<GLuint> indices, GLuint texture) {
+        void Init(vector<GLfloat> vertices, vector<GLuint> indices, vector<GLfloat> normals, GLuint texture) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("flexigrid_vshader.glsl",
                                                   "flexigrid_fshader.glsl");
@@ -71,7 +72,17 @@ class Flexigrid {
                 glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat),
                              &vertices[0], GL_STATIC_DRAW);
 
-                // vertex indices
+                // normal buffer
+                glGenBuffers(ONE, &vertex_normal_buffer_object_);
+                glBindBuffer(GL_ARRAY_BUFFER, vertex_normal_buffer_object_);
+                glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(GLfloat),
+                             &normals[0], GL_STATIC_DRAW);
+
+                cout << vertices.size() << endl;
+                cout << normals.size() << endl;
+
+
+                // vertex indices/*
                 glGenBuffers(1, &vertex_buffer_object_index_);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_buffer_object_index_);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint),
@@ -105,6 +116,7 @@ class Flexigrid {
             glUseProgram(0);
             glDeleteBuffers(1, &vertex_buffer_object_position_);
             glDeleteBuffers(1, &vertex_buffer_object_index_);
+            glDeleteBuffers(1, &vertex_normal_buffer_object_);
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteTextures(1, &texture_id_);
             glDeleteProgram(program_id_);

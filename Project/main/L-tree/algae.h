@@ -8,6 +8,7 @@
 #include <sstream>
 #include "flexigrid.h"
 #include "rng.h"
+#include "turtle.h"
 
 using namespace glm;
 
@@ -18,16 +19,14 @@ class Algae {
 
     private:
        Flexigrid grid;
-       string tree;
-       GLuint depth_;
+       Turtle turtle;
        vector<GLuint> leftIndex, rightIndex, indices;
-       vector<vec3> leftPoint, rightPoint, direction;
-       vector<GLfloat> vertices;
+       vector<vec3> leftPoint, rightPoint, direction,triangleNormals;
+       vector<GLfloat> vertices, normals;
        vector<char> branches;
        int index_ = 0;
        float init_width = 0.08f;
        float init_length = 5*init_width;
-       char axiom;
        RNG generator;
        int rand;
 
@@ -43,12 +42,7 @@ class Algae {
             generator.Seed(1);
             rand = generator.rand();
 
-            axiom = axiom;
-            stringstream ss;
-            ss << axiom;
-            ss >> tree;
 
-            depth_ = depth;
             vec3 originLeft = vec3(origin.x - init_width, origin.y, origin.z);
             vec3 originRight = vec3(origin.x + init_width, origin.y, origin.z);
 
@@ -62,8 +56,26 @@ class Algae {
             leftIndex.push_back(index_);
             index_++;
             rightIndex.push_back(index_);
-            initTree();
-            grid.Init(vertices, indices, texture_id);
+
+
+            turtle.Init(depth, axiom);
+            generateAlgae();
+
+            createNormals();
+
+            if(3*triangleNormals.size()!= vertices.size()){
+                cout << "Sizes different. Normals should be: " << vertices.size() << " but was " << triangleNormals.size() << endl;
+            }
+
+            vector<GLfloat> n;
+            for(size_t i =0; i < triangleNormals.size(); ++i){
+                n.push_back(triangleNormals.at(i).x);
+                n.push_back(triangleNormals.at(i).y);
+                n.push_back(triangleNormals.at(i).z);
+            }
+
+            grid.Init(vertices, indices, n, texture_id);
+
        }
 
        /**
@@ -76,9 +88,6 @@ class Algae {
            vertices.push_back(point.z);
        }
 
-       float sqr(float x){
-           return x*x;
-       }
 
        /**
         * @brief smallerThanWidth, returns true if the width of the parrallelepiped is smaller than the current width
@@ -89,61 +98,13 @@ class Algae {
         */
        bool smallerThanWidth(vec3 dir, vec3 p1, vec3 p2){
            vec3 p2top1 = p1 - p2;
-           float norm = sqrt(sqr(p2top1.x) + sqr(p2top1.y) + sqr(p2top1.z));
+           float norm = turtle.norm(p2top1, vec3(0.0f,0.0f,0.0f));
            float angle = acos(normalize(dot(p2top1, dir)));
            float width = sin(angle)*norm;
            return width <= init_width;
 
        }
 
-       void printTree(){
-           cout << tree << endl;
-       }
-
-       /**
-        * @brief substituteString, according to a set of rules replaces a character with its children
-        * @param a the character to substitute
-        * @return the substituted string
-        */
-       string substituteString(char a){
-           if(a == 'A'){
-               return "A[AB]";
-           }
-           else if(a == 'B'){
-               return "B[A]";
-           }else if(a == 'C'){
-               return "C[ABC]";
-           }else {
-               stringstream ss;
-               ss << a;
-               string s;
-               ss >> s;
-               return s;
-           }
-       }
-
-       /**
-        * @brief firstExpand, it is the first expansion of the tree, done this way to avoid some bugs with the usual expansion
-        */
-       void firstExpand(){
-           tree.replace(0,1, substituteString(tree.at(0)));
-       }
-
-       /**
-        * @brief expand, rest of the expansion of the tree
-        */
-       void expand(){
-           for(size_t i = 1; i < tree.size()-1; ++i){
-               char ch = tree.at(i);
-               char chcontr = tree.at(i-1);
-               char chmor = tree.at(i+1);
-               if(chmor != '['){
-                   string s = substituteString(ch);
-                   tree.replace(i, 1, s);
-                   i+= s.size()-1;
-               }
-           }
-       }
 
        /**
         * @brief updateDirection, from a direction and two letters update the direction depending on a set of rules
@@ -180,17 +141,19 @@ class Algae {
             return newDir;
        }
 
-       float square(float x){
-           return x*x;
-       }
-
-       float norm(vec3 a, vec3 b){
-           return sqrt(square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z));
-       }
-
-
        vec3 updatePoint(vec3 direction, vec3 originalPoint){
            return direction+originalPoint;
+       }
+
+
+       void normalAndPushIDs(int id1, int id2, int id3){
+           indices.push_back(id1);
+           indices.push_back(id2);
+           indices.push_back(id3);
+       }
+
+       void printTurtle(){
+           turtle.printTree();
        }
 
        void createCubeVolume(vec3 leftBasePoint, vec3 rightBasePoint, vec3 leftUpPoint,
@@ -200,7 +163,7 @@ class Algae {
             b = leftBasePoint - rightBasePoint;
             newBasePoint = leftBasePoint;
             newUpPoint = leftUpPoint;
-            float length = norm(leftBasePoint, rightBasePoint);
+            float length = turtle.norm(leftBasePoint, rightBasePoint);
             o = leftUpPoint - leftBasePoint;
             d = length*normalize(cross(b, o));
 
@@ -215,25 +178,15 @@ class Algae {
                 newUpIndex = ++index_ ;
                 pushToVertices(newBasePoint);
                 pushToVertices(newUpPoint);
-                indices.push_back(newBaseIndex);
-                indices.push_back(currLeftIndex);
-                indices.push_back(currUpIndex);
-                indices.push_back(currUpIndex);
-                indices.push_back(newBaseIndex);
-                indices.push_back(newUpIndex);
+                normalAndPushIDs(newBaseIndex, currLeftIndex, currUpIndex);
+                normalAndPushIDs(currUpIndex, newBaseIndex, newUpIndex);
                 currLeftIndex = newBaseIndex;
                 currUpIndex = newUpIndex;
                 d = length*normalize(cross(d, o));
-
             }
 
-            indices.push_back(rightBaseID);
-            indices.push_back(currLeftIndex);
-            indices.push_back(currUpIndex);
-            indices.push_back(currUpIndex);
-            indices.push_back(rightBaseID);
-            indices.push_back(rightUpID);
-
+            normalAndPushIDs(rightBaseID, currLeftIndex, currUpIndex);
+            normalAndPushIDs(currUpIndex, rightBaseID, rightUpID);
        }
 
 
@@ -279,9 +232,7 @@ class Algae {
         */
        void updateTriangleIndicesAndIndexes(vec3 newPoint, int dlid, int drid, int upid){
            pushToVertices(newPoint);
-           indices.push_back(dlid);
-           indices.push_back(drid);
-           indices.push_back(upid);
+           normalAndPushIDs(dlid, drid, upid);
        }
 
        /**
@@ -295,15 +246,10 @@ class Algae {
         */
        void updateIndicesAndIndexes(vec3 ulpoint, vec3 urpoint,
                                     int dlid, int drid, int ulid, int urid){
-
                pushToVertices(ulpoint);
                pushToVertices(urpoint);
-               indices.push_back(dlid);
-               indices.push_back(drid);
-               indices.push_back(ulid);
-               indices.push_back(ulid);
-               indices.push_back(drid);
-               indices.push_back(urid);
+               normalAndPushIDs(dlid,drid,ulid);
+               normalAndPushIDs(ulid, drid, urid);
        }
 
 
@@ -330,17 +276,16 @@ class Algae {
 
            char lo = 'n';
            char l1 = 'n';
-           for(size_t i = 0; i < tree.length(); i++){
-               char str = tree.at(i);
+           for(size_t i = 0; i < turtle.treeLength(); i++){
+               char str = turtle.charAt(i);
                if(str == ']'){
-                   //init_length *= 1.25;
                    dir0 = popDirection();
                    leftp0 = popLeftPoint();
                    rightp0 = popRightPoint();
                    lefti0 = popLeftIndex();
                    righti0 = popRightIndex();
                    branches.pop_back();
-               } else if(str == 'A' || tree.at(i) == 'B'){
+               } else if(str == 'A' || str == 'B'){
                     lo = str;
                     if(direction.size() > 0 && branches.size() > 0 && leftPoint.size() > 0 && rightPoint.size() > 0 && leftIndex.size()>0 && rightIndex.size()>0){
                         l1 = branches.back();
@@ -389,7 +334,6 @@ class Algae {
 
                     }
                } else if(str == '['){
-                   //init_length *=.8;
                    direction.push_back(dir0);
                    leftPoint.push_back(leftp0);
                    rightPoint.push_back(rightp0);
@@ -408,18 +352,42 @@ class Algae {
 
        }
 
-
-       /**
-        * @brief initTree
-        * Puts everything together: expands the tree from the axiom and then generates the algae
-        */
-       void initTree(){
-           firstExpand();
-           for(size_t i = 0; i < depth_; ++i){
-                expand();
-            }
-           generateAlgae();
+       vec3 getPointFromID(int id){
+           return vec3(vertices.at(id*3), vertices.at(id*3+1), vertices.at(id*3+2));
        }
+
+       void createNormals(){
+           for(size_t vertex = 0; vertex < vertices.size()/3; ++vertex){
+               vector<vec3> vertexNormal; // accumulates all the normals for one vertex
+               for(size_t triangle = 0; triangle < indices.size(); triangle+=3){
+                   int i1 = indices.at(triangle);
+                   int i2 = indices.at(triangle +1);
+                   int i3 = indices.at(triangle +2);
+                   if(vertex == i1 || vertex == i2 || vertex == i3){
+                       // bingo! compute the normal of this triangle and add
+                       // it to the array of normals for this vertex
+                       vec3 p1 = getPointFromID(i1);
+                       vec3 p2 = getPointFromID(i2);
+                       vec3 p3 = getPointFromID(i3);
+                       vec3 n = cross(p1-p3, p1-p2);
+                       vertexNormal.push_back(n);
+                   }
+               }
+
+               // Once all normals have been computed, we will simply sum
+               // them up for now and normalize. Note that the correct approach
+               // would be by computing their respective angles first and then
+               // using a weighted sum.
+               vec3 normalf = vec3(0.0f,0.0f,0.0f);
+               for(size_t normal = 0; normal < vertexNormal.size(); ++normal){
+                   normalf += vertexNormal.at(normal);
+               }
+               normalf = normalize(normalf);
+               triangleNormals.push_back(normalf);// by hypothesis the normals should be pushed in the same order as the points
+               vertexNormal.clear();
+           }
+       }
+
 
        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                  const glm::mat4 &view = IDENTITY_MATRIX,
@@ -429,15 +397,17 @@ class Algae {
 
        void Cleanup(){
            leftPoint.clear();
+           turtle.Cleanup();
            rightPoint.clear();
            leftIndex.clear();
            rightIndex.clear();
            direction.clear();
            branches.clear();
            grid.Cleanup();
-           tree.clear();
            indices.clear();
            vertices.clear();
+           triangleNormals.clear();
+
        }
 
 };
