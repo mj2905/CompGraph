@@ -189,4 +189,13 @@ public:
         //glDepthFunc(GL_LESS);
       }
 
+    void Cleanup() {
+        glBindVertexArray(0);
+        glUseProgram(0);
+        glDeleteBuffers(1, &skyboxVBO);
+        glDeleteVertexArrays(1, &skyboxVAO);
+        glDeleteProgram(program_id_);
+        glDeleteTextures(1, &tex_id);
+    }
+
     };

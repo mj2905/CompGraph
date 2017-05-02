@@ -51,7 +51,7 @@ class FrameBuffer {
                 // create texture for the color attachment
                 // see Table.2 on
                 // khronos.org/opengles/sdk/docs/man3/docbook4/xhtml/glTexImage2D.xml
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width_, height_, 0,
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width_, height_, 0,
                              GL_RED, GL_FLOAT, NULL);
             }
 

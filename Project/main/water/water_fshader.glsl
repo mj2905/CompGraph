@@ -34,7 +34,7 @@ void main() {
     if(texture(tex, uv).r < height) {
         ivec2 window_dim = textureSize(ref, 0);
         vec2 window_rel = vec2(gl_FragCoord.x / window_dim.x, gl_FragCoord.y / window_dim.y);
-        color.xyz = mix(color.xyz, texture(ref, window_rel).rgb, 0.2);
+        color.xyz = mix(color.xyz, texture(ref, window_rel).rgb, 0.5);
         color.a = 0.6;
     }
     else {
