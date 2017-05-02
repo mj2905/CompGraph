@@ -140,7 +140,7 @@ void Display() {
 
     skybox.Draw(trackball_matrix * view_matrix, projection_matrix);
 
-    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(5,5, 5));
+    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
     multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
 
@@ -311,7 +311,7 @@ int main(int argc, char *argv[]) {
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
             Display();
-            //Update();
+            Update();
             lastTime = time;
             glfwSwapBuffers(window);
         }

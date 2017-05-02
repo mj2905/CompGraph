@@ -47,8 +47,8 @@ class Terrain {
             water.Draw(offsetX, offsetY, model, view, projection);
             framebuffer2.ClearContent();
             framebuffer2.Bind();
-                mat4 scale = glm::translate(glm::scale(IDENTITY_MATRIX, vec3(1, -1, 1)), vec3(0, -0.8, 0));
-                mountainsRender.Draw(offsetX, offsetY, true, model * scale, view, projection);
+                mat4 rot = glm::translate(glm::rotate(IDENTITY_MATRIX, (float)M_PI, vec3(1,0,0)), vec3(0, -0.8, 0));
+                mountainsRender.Draw(offsetX, offsetY, true, model * rot, view, projection);
             framebuffer2.Unbind();
         }
 

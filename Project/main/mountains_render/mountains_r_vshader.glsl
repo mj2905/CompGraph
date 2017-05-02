@@ -15,12 +15,14 @@ uniform vec3 light_pos;
 
 uniform sampler2D tex;
 
+uniform bool clip;
+
 
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
 
     height = texture(tex, uv).r;
-    vpoint = vec3(position.x, height, -position.y);
+    vpoint = vec3(position.x, height, clip ? position.y : -position.y);//-position.y);
 
     vpoint_mv = view * model * vec4(vpoint, 1.0);
     gl_Position = projection * vpoint_mv;
