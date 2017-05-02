@@ -211,7 +211,7 @@ class MountainsRender {
             glDeleteTextures(1, &interpolation_id_);
         }
 
-        void Draw(float offsetX, float offsetY,
+        void Draw(float offsetX, float offsetY, bool underwaterclip,
                   const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
@@ -246,6 +246,7 @@ class MountainsRender {
             glm::vec2 offset = glm::vec2(offsetX, offsetY);
 
             glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
+            glUniform1i(glGetUniformLocation(program_id_, "clip"), underwaterclip);
 
             // setup MVP
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));

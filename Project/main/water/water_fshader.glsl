@@ -14,6 +14,7 @@ uniform vec3 ka, kd, ks;
 uniform float alpha;
 
 uniform sampler2D tex;
+uniform sampler2D ref;
 uniform sampler1D colormap;
 
 void main() {
@@ -31,6 +32,9 @@ void main() {
 
     color.xyz = c * La + kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
     if(texture(tex, uv).r < height) {
+        ivec2 window_dim = textureSize(ref, 0);
+        vec2 window_rel = vec2(gl_FragCoord.x / window_dim.x, gl_FragCoord.y / window_dim.y);
+        color.xyz = mix(color.xyz, texture(ref, window_rel).rgb, 1);
         color.a = 0.6;
     }
     else {
