@@ -23,8 +23,6 @@ const unsigned int OFFSET_Y = 257;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 
-//Skybox skybox;
-
 int window_width = 800;
 int window_height = 600;
 
@@ -120,7 +118,6 @@ void Init() {
 
     multitiles.Init(window_width, window_height);
 
-    //skybox.init("miramar");
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 }
@@ -131,8 +128,6 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glViewport(0, 0, window_width, window_height);
-
-    //skybox.Draw(view_matrix, projection_matrix);
 
     multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
 
@@ -296,7 +291,7 @@ int main(int argc, char *argv[]) {
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
             Display();
-            Update();
+            //Update();
             lastTime = time;
             glfwSwapBuffers(window);
         }

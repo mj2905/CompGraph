@@ -13,7 +13,7 @@ class Water {
 
         GLuint texture_id_;
         GLuint reflect_id_;
-        GLuint interpolation_id_;
+        GLuint normal_id_;
 
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                         // model matrix ID
@@ -21,6 +21,51 @@ class Water {
         GLuint P_id_;                         // proj matrix ID
 
     public:
+
+        void loadImage(string filename, string uniformName, int textureNb, GLuint& id) {
+            // load texture
+            {
+                int width;
+                int height;
+                int nb_component;
+                // set stb_image to have the same coordinates as OpenGL
+                stbi_set_flip_vertically_on_load(1);
+                unsigned char* image = stbi_load(filename.c_str(), &width,
+                                                 &height, &nb_component, 0);
+
+                if(image == nullptr) {
+                    throw(string("Failed to load texture " + filename));
+                }
+
+                glGenTextures(1, &id);
+                glBindTexture(GL_TEXTURE_2D, id);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, -1);
+
+
+                if(nb_component == 3) {
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+                                 GL_RGB, GL_UNSIGNED_BYTE, image);
+                } else if(nb_component == 4) {
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                                 GL_RGBA, GL_UNSIGNED_BYTE, image);
+                }
+
+                glGenerateMipmap(GL_TEXTURE_2D);
+
+                GLuint tex_id = glGetUniformLocation(program_id_, uniformName.c_str());
+                glUniform1i(tex_id, textureNb);
+
+                // cleanup
+                glBindTexture(GL_TEXTURE_2D, 0);
+                stbi_image_free(image);
+            }
+        }
+
         void Init(GLuint terrain_texture, GLuint reflect_texture) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("water_vshader.glsl",
@@ -103,24 +148,12 @@ class Water {
                 reflect_id_ = reflect_texture;
             }
 
-            // create 1D texture (colormap)
+            // load/Assign textures
             {
-                const int ColormapSize=2;
-                GLfloat tex[3*ColormapSize] = {/*yellow*/    0.3, 0.3, 0.7,
-                                               /*darkgreen*/ 1, 1, 1};
-                glGenTextures(1, &interpolation_id_);
-                glBindTexture(GL_TEXTURE_1D, interpolation_id_);
-                glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
-                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                GLuint tex_id = glGetUniformLocation(program_id_, "colormap");
-                glUniform1i(tex_id, 2 /*GL_TEXTURE2*/);
-
-                glBindTexture(GL_TEXTURE_1D, 0);
+                loadImage("normalmap.jpg", "normal_map", 2, normal_id_);
             }
 
-            glm::vec3 light_pos = glm::vec3(0.0f, -4, 0.0f);
+            glm::vec3 light_pos = glm::vec3(2.5f, 3, 0.0f);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
             glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -134,7 +167,7 @@ class Water {
 
             glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
             glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
-            glm::vec3 ks = glm::vec3(0.2f, 0.2f, 0.2f);
+            glm::vec3 ks = glm::vec3(0.7, 0.7, 0.7);
             float alpha = 60.0f;
 
             GLuint ka_id = glGetUniformLocation(program_id_, "ka");
@@ -167,6 +200,9 @@ class Water {
             glDeleteBuffers(1, &vertex_buffer_object_position_);
             glDeleteBuffers(1, &vertex_buffer_object_index_);
             glDeleteVertexArrays(1, &vertex_array_id_);
+            glDeleteTextures(1, &texture_id_);
+            glDeleteTextures(1, &normal_id_);
+            glDeleteTextures(1, &reflect_id_);
             glDeleteProgram(program_id_);
         }
 
@@ -192,9 +228,11 @@ class Water {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
             glBindTexture(GL_TEXTURE_2D, reflect_id_);
 
+
             // bind textures
             glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_1D, interpolation_id_);
+            glBindTexture(GL_TEXTURE_2D, normal_id_);
+
 
             glm::vec2 offset = glm::vec2(offsetX, offsetY);
 
@@ -205,7 +243,7 @@ class Water {
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
-            glUniform1f(glGetUniformLocation(program_id_, "time"), fmod(glfwGetTime()/5.0f, 2*M_PI));
+            glUniform1f(glGetUniformLocation(program_id_, "time"), glfwGetTime());
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.

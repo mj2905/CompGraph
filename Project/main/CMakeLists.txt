@@ -10,7 +10,8 @@ file(GLOB TEXTURES
     mountains_render/grass.jpg
 mountains_render/rock.jpg
 mountains_render/snow.jpg
-mountains_render/sand.jpg)
+mountains_render/sand.jpg
+water/*.jpg)
 copy_files_once(${TEXTURES})
 
 # list all the files you want to copy everytime

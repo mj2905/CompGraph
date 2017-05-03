@@ -61,6 +61,9 @@ void main() {
 
     vec3 normal_mv = normalize(cross(dFdx(p), dFdy(p)));
     vec3 normal = normalize(cross(dFdx(vpoint), dFdy(vpoint)));
+    if(normal.y < 0) {
+        normal = -normal;
+    }
 
     float nDotL = max(dot(normal_mv, light_dir), 0);
 

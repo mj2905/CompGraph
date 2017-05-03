@@ -21,6 +21,8 @@ class Terrain {
         Water water;
         Skybox skybox;
 
+        const string skyboxTexture = "miramar";
+
     public:
         void Init(size_t width, size_t height) {
             mountainsCreator.Init();
@@ -28,7 +30,7 @@ class Terrain {
             framebuffer2.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
             water.Init(framebuffer.getTextureId(), framebuffer2.getTextureId());
-            skybox.init("miramar");
+            skybox.init(skyboxTexture);
         }
 
         void changeTexture(const array<GLuint, 4>& textures) {
