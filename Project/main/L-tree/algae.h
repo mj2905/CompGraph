@@ -20,8 +20,8 @@ class Algae {
 private:
     Flexigrid grid;
     Turtle turtle;
-    vector<GLuint> leftIndex, rightIndex, indices, botLeftIndex, botRightIndex;
-    vector<vec3> leftPoint, rightPoint, direction,triangleNormals, botleftPoint, botRightPoint;
+    vector<GLuint> leftIndex, rightIndex, indices, bLeftIndex, bRightIndex;
+    vector<vec3> leftPoint, rightPoint, direction,triangleNormals, bLeftPoint, bRightPoint;
     vector<GLfloat> vertices, normals;
     vector<char> branches;
     int index_ = 0;
@@ -45,25 +45,24 @@ public:
 
         vec3 originLeft = vec3(origin.x - init_width, origin.y, origin.z);
         vec3 originRight = vec3(origin.x + init_width, origin.y, origin.z);
-        vec3 originBotLeft = vec3(origin.x - init_width, origin.y, origin.z - init_width);
-        vec3 originBotRight = vec3(origin.x + init_width, origin.y, origin.z - init_width);
+        vec3 originBLeft = vec3(origin.x - init_width, origin.y, origin.z - init_width);
+        vec3 originBRight = vec3(origin.x + init_width, origin.y, origin.z - init_width);
 
         leftPoint.push_back(originLeft);
         rightPoint.push_back(originRight);
-        botleftPoint.push_back(originBotLeft);
-        botRightPoint.push_back(originBotRight);
+        bLeftPoint.push_back(originBLeft);
+        bRightPoint.push_back(originBRight);
 
         pushToVertices(originLeft);
-        pushToVertices(originBotLeft);
-        pushToVertices(originBotRight);
+        pushToVertices(originBLeft);
+        pushToVertices(originBRight);
         pushToVertices(originRight);
 
-
-        // left, bleft, bright, right
         direction.push_back(vec3(0.0f,1.0f,0.0f));
         leftIndex.push_back(index_);
-        botLeftIndex.push_back(++index_);
-        botRightIndex.push_back(++index_);
+        //index_++;
+        bLeftIndex.push_back(++index_);
+        bRightIndex.push_back(++index_);
         rightIndex.push_back(++index_);
 
 
@@ -97,6 +96,22 @@ public:
         vertices.push_back(point.z);
     }
 
+
+    /**
+        * @brief smallerThanWidth, returns true if the width of the parrallelepiped is smaller than the current width
+        * @param dir The direction of the next points (orthogonal to the width of parrallelepiped)
+        * @param p1 The left point
+        * @param p2 The right point
+        * @return true if width of parallelepiped <= width of parent branch
+        */
+    bool smallerThanWidth(vec3 dir, vec3 p1, vec3 p2){
+        vec3 p2top1 = p1 - p2;
+        float norm = turtle.norm(p2top1, vec3(0.0f,0.0f,0.0f));
+        float angle = acos(normalize(dot(p2top1, dir)));
+        float width = sin(angle)*norm;
+        return width <= init_width;
+
+    }
 
 
     /**
@@ -149,65 +164,40 @@ public:
         turtle.printTree();
     }
 
+    void createCubeVolume(vec3 leftBasePoint, vec3 rightBasePoint, vec3 leftUpPoint,
+                          int leftBaseID, int rightBaseID, int leftUpID, int rightUpID){
 
-    vec3 popVec3(vector<vec3> *v){
-        (*v).pop_back();
-        return (*v).back();
+        vec3 b, d, o, newBasePoint, newUpPoint;
+        b = leftBasePoint - rightBasePoint;
+        newBasePoint = leftBasePoint;
+        newUpPoint = leftUpPoint;
+        float length = turtle.norm(leftBasePoint, rightBasePoint);
+        o = leftUpPoint - leftBasePoint;
+        d = length*normalize(cross(b, o));
+
+        int newBaseIndex, newUpIndex, currLeftIndex, currUpIndex;
+        currLeftIndex = leftBaseID;
+        currUpIndex = leftUpID;
+
+        for(int i =0; i < 2; ++i){
+            newBasePoint = newBasePoint+d;
+            newUpPoint = newUpPoint +d;
+            newBaseIndex = ++index_ ;
+            newUpIndex = ++index_ ;
+            pushToVertices(newBasePoint);
+            pushToVertices(newUpPoint);
+            normalAndPushIDs(newBaseIndex, currLeftIndex, currUpIndex);
+            normalAndPushIDs(currUpIndex, newBaseIndex, newUpIndex);
+            currLeftIndex = newBaseIndex;
+            currUpIndex = newUpIndex;
+            d = length*normalize(cross(d, o));
+        }
+
+        normalAndPushIDs(rightBaseID, currLeftIndex, currUpIndex);
+        normalAndPushIDs(currUpIndex, rightBaseID, rightUpID);
     }
 
 
-    int popVec3Int(vector<GLuint> *v){
-        (*v).pop_back();
-        return (*v).back();
-    }
-
-
-    vec3 popDirection(){
-        return popVec3(&direction);
-    }
-
-    vec3 popLeftPoint(){
-        return popVec3(&leftPoint);
-    }
-
-    vec3 popBotLeftPoint(){
-        return popVec3(&botleftPoint);
-    }
-
-    vec3 popRightPoint(){
-        return popVec3(&rightPoint);
-    }
-
-    vec3 popBotRightPoint(){
-        return popVec3(&botRightPoint);
-    }
-
-    int popLeftIndex(){
-        return popVec3Int(&leftIndex);
-    }
-
-    int popBotLeftIndex(){
-        return popVec3Int(&botLeftIndex);
-    }
-
-    int popRightIndex(){
-        return popVec3Int(&rightIndex);
-    }
-    int popBotRightIndex(){
-        return popVec3Int(&botRightIndex);
-    }
-
-
-    /**
-        * @brief updateTriangleIndicesAndIndexes, updates the vertices and indices with a new point
-        * @param newPoint, the up point
-        * @param dlid, down left point-id
-        * @param drid, down right point-id
-        * @param upid, up point id
-        */
-    void updateTriangleIndicesAndIndexes(int dlid, int drid, int upid){
-        normalAndPushIDs(dlid, drid, upid);
-    }
 
     /**
         * @brief updateIndicesAndIndexes
@@ -223,576 +213,90 @@ public:
         normalAndPushIDs(ulid, drid, urid);
     }
 
+    void customCreateCubeVolume(vec3 leftp1, vec3 rightp1, vec3 leftp0, vec3 rightp0,
+                                vec3 bleftp1,vec3  brightp1,vec3  bleftp0, vec3 brightp0,
+                                int lefti1,int  righti1,int  lefti0,int  righti0,
+                                int blefti1,int  brighti1,int  blefti0,int  brighti0){
 
-    /*       void createCubeVolume(vec3 leftBasePoint, vec3 rightBasePoint, vec3 leftUpPoint,
-                             int leftBaseID, int rightBaseID, int leftUpID, int rightUpID){
-
-            vec3 b, d, o, newBasePoint, newUpPoint;
-            int newBaseIndex, newUpIndex, currLeftIndex, currUpIndex;
-            float length = init_width;//turtle.norm(leftBasePoint, rightBasePoint);
-
-            b = leftBasePoint - rightBasePoint;
-            newBasePoint = leftBasePoint;
-            newUpPoint = leftUpPoint;
-
-
-            o = leftUpPoint - leftBasePoint;
-            d = length*normalize(cross(b, o));
-
-            currLeftIndex = leftBaseID;
-            currUpIndex = leftUpID;
-
-            vec3 bp1, bp2;
-            int bp1i, bp2i;
-
-            {
-
-            newBasePoint = newBasePoint+d;
-            newUpPoint = newUpPoint +d;
-            newBaseIndex = ++index_ ;
-            newUpIndex = ++index_ ;
-            bp1i = newBaseIndex;
-            pushToVertices(newBasePoint);
-            bp1 = newBasePoint;
-            pushToVertices(newUpPoint);
-            normalAndPushIDs(newBaseIndex, currLeftIndex, currUpIndex);
-            normalAndPushIDs(currUpIndex, newBaseIndex, newUpIndex);
-            currLeftIndex = newBaseIndex;
-            currUpIndex = newUpIndex;
-            d = length*normalize(cross(d, o));
-
-            newBasePoint = newBasePoint+d;
-            newUpPoint = newUpPoint +d;
-            newBaseIndex = ++index_ ;
-            newUpIndex = ++index_ ;
-            pushToVertices(newBasePoint);
-            bp2 = newBasePoint;
-            pushToVertices(newUpPoint);
-            bp2i = newBaseIndex;
-            normalAndPushIDs(newBaseIndex, currLeftIndex, currUpIndex);
-            normalAndPushIDs(currUpIndex, newBaseIndex, newUpIndex);
-            currLeftIndex = newBaseIndex;
-            currUpIndex = newUpIndex;
-            d = length*normalize(cross(d, o));
-
-            }
-
-            normalAndPushIDs(rightBaseID, currLeftIndex, currUpIndex);
-            normalAndPushIDs(currUpIndex, rightBaseID, rightUpID);
-
-            vec3 abp1 = botleftPoint.back();
-            vec3 abp2 = botRightPoint.back();
-            if(!areConnected(&abp1, &bp1) && !areConnected(&abp2,&bp2)){
-                updateTriangleIndicesAndIndexes(botLeftIndex.back(),leftBaseID,bp1i);
-                updateIndicesAndIndexes(botRightIndex.back(), botLeftIndex.back(), bp2i, bp1i);
-                updateTriangleIndicesAndIndexes(rightBaseID, botRightIndex.back(), bp2i);
-            }
-            if(!areConnected(&abp2, &bp2)){
-
-            }
-
-            botleftPoint.push_back(abp1);
-            botRightPoint.push_back(abp2);
-            botRightIndex.push_back(bp2i);
-            botLeftIndex.push_back(bp1i);
-       }*/
-
-    float norm(vec3 *v){
-        return sqrt(((*v).x*(*v).x)+((*v).y*(*v).y) + ((*v).z*(*v).z));
-    }
-
-    float scalarProjection(vec3 *a, vec3 *b){
-        return (dot((*a), normalize((*b))));
-    }
-
-    bool projIsSmallerThan(vec3 *a, vec3 *b){
-        if(dot((*a), (*b)) < 0){
-            vec3 c = -(*b);
-            return scalarProjection(a, &c) < norm(b);
-        }
-        return scalarProjection(a,b) < norm(b);
-    }
-
-    int compareProjPoints(vec3 *toCompare, vec3 *p1, vec3 *p2, vec3 *p3, vec3 *p4){
-        vec3 p1p2 = (*p1) - (*p2);
-        vec3 p1p3 = (*p1) - (*p3);
-        vec3 p1p4 = (*p1) - (*p4);
-        vec3 pap2 = (*toCompare) - (*p2);
-        vec3 pap3 = (*toCompare) - (*p3);
-        vec3 pap4 = (*toCompare) - (*p4);
-        int count(0);
-        if(projIsSmallerThan(&pap2, &p1p2)) ++count;
-        if(projIsSmallerThan(&pap3,&p1p3)) ++count;
-        if(projIsSmallerThan(&pap4, &p1p4)) ++count;
-
-        return count;
-    }
-
-    void newPointFromDir(vec3 *from, vec3 *to, vec3 *direction, vec3 *res){
-        vec3 v = (*to) - (*from);
-        float projAxis = abs(scalarProjection(&v, direction));
-        vec3 projVector = projAxis*normalize((*direction));
-        vec3 dirVector = v + projVector;
-        vec3 trans = init_width*normalize(dirVector);
-        (*res) = (*from) + trans;
-    }
-/*
-    void someMethod(vec3 *p1, vec3 *p2, vec3 *p3, vec3 *p4,
-                    int *i1, int *i2, int *i3, int *i4,
-                    vec3 pa, vec3 *direction,
-                    vec3 *pb, vec3 *pc, vec3 *pd){
-        vec3 pbBase2 = vec3(0.0,0.0,0.0);
-        newPointFromDir(p1,p2,direction, &pbBase2);
-        int pbBase2Id = ++ index_;
-        pushToVertices(pbBase2);
-        updateTriangleIndicesAndIndexes((*i2),(*i1),pbBase2Id);
-
-        vec3 pbBase4 = vec3(0.0,0.0,0.0);
-        newPointFromDir(p1,p4,direction, &pbBase4);
-        int pbBase4Id = ++ index_;
-        pushToVertices(pbBase4);
-        updateTriangleIndicesAndIndexes((*i1),(*i4),pbBase4Id);
-
-        vec3 pbBase3 = vec3(0.0,0.0,0.0);
-        newPointFromDir(p1,p3,direction, &pbBase3);
-        int pbBase3Id = ++ index_;
-        pushToVertices(pbBase3);
-        updateIndicesAndIndexes((*i3),(*i2),pbBase3Id,pbBase2Id);
-        updateIndicesAndIndexes((*i4),(*i3),pbBase4Id,pbBase3Id);
-
-        int pai = ++ index_;
-        int pbi = ++index_;
-        int pci= ++index_;
-        int pdi = ++index_;
-
-        leftIndex.push_back(pai);
-        botLeftIndex.push_back(pbi);
-        botRightIndex.push_back(pci);
-        rightIndex.push_back(pdi);
-
-        (*pb) = pbBase2 + (*direction);
-        (*pc) = pbBase3 + (*direction);
-        (*pd) = pbBase4 + (*direction);
-
-        pushToVertices(pa);
-        pushToVertices((*pb));
-        pushToVertices((*pc));
-        pushToVertices((*pd));
-
-        leftPoint.push_back(pa);
-        botleftPoint.push_back((*pb));
-        botRightPoint.push_back((*pc));
-        rightPoint.push_back((*pd));
-
-        updateIndicesAndIndexes((*i1),pbBase4Id,pai,pdi);
-        updateIndicesAndIndexes(pbBase2Id,(*i1),pbi, pai);
-        updateIndicesAndIndexes(pbBase3Id, pbBase2Id,pci, pbi);
-        updateIndicesAndIndexes(pbBase4Id, pbBase3Id, pdi, pci);
-
-    }
-
-    void someMethod2(vec3 *p1, vec3 *p2, vec3 *p3, vec3 *p4,
-                     int *i1, int *i2, int *i3, int *i4,
-                     vec3 pa, vec3 pd, vec3 *direction,
-                     vec3 *pb, vec3 *pc){
-        vec3 pbBase2 = vec3(0.0,0.0,0.0);
-        newPointFromDir(p1,p2,direction, &pbBase2);
-        int pbBase2Id = ++ index_;
-        pushToVertices(pbBase2);
-        updateTriangleIndicesAndIndexes((*i2),(*i1),pbBase2Id);
-
-
-        vec3 pbBase3 = vec3(0.0,0.0,0.0);
-        newPointFromDir(p1,p3,direction, &pbBase3);
-        int pbBase3Id = ++ index_;
-        pushToVertices(pbBase3);
-        updateTriangleIndicesAndIndexes((*i4),(*i3), pbBase3Id);
-        updateIndicesAndIndexes((*i3),(*i2),pbBase3Id,pbBase2Id);
-
-
-        int pai = ++ index_;
-        int pbi = ++index_;
-        int pci= ++index_;
-        int pdi = ++index_;
-
-        (*pb) = pbBase2 + (*direction);
-        (*pc) = pbBase3 + (*direction);
-
-        leftIndex.push_back(pai);
-        botLeftIndex.push_back(pbi);
-        botRightIndex.push_back(pci);
-        rightIndex.push_back(pdi);
-
-
-        pushToVertices(pa);
-        pushToVertices((*pb));
-        pushToVertices((*pc));
-        pushToVertices(pd);
-
-        leftPoint.push_back(pa);
-        botleftPoint.push_back((*pb));
-        botRightPoint.push_back((*pc));
-        rightPoint.push_back(pd);
-
-
-        updateIndicesAndIndexes((*i1), (*i4),pai, pdi);
-        updateIndicesAndIndexes(pbBase2Id,(*i1),pbi, pai);
-        updateIndicesAndIndexes(pbBase3Id, pbBase2Id,pci, pbi);
-        updateIndicesAndIndexes((*i4),pbBase3Id, pdi, pci);
-
-    }
-
-*/
-
-    void drawNiceCube(vec3 *p1, vec3 *p2, vec3 *p3, vec3 *p4,
-                      int i1, int i2, int i3, int i4, vec3 *direction){
-
-        int pai = ++ index_;
-        int pbi = ++index_;
-        int pci= ++index_;
-        int pdi = ++index_;
-
-        leftIndex.push_back(pai);
-        botLeftIndex.push_back(pbi);
-        botRightIndex.push_back(pci);
-        rightIndex.push_back(pdi);
-
-        vec3 a = (*p1) + (*direction);
-        vec3 b = (*p2) + (*direction);
-        vec3 c = (*p3) + (*direction);
-        vec3 d = (*p4) + (*direction);
-
-        pushToVertices(a);
-        pushToVertices(b);
-        pushToVertices(c);
-        pushToVertices(d);
-
-        leftPoint.push_back(a);
-        botleftPoint.push_back(b);
-        botRightPoint.push_back(c);
-        rightPoint.push_back(d);
-
-        updateIndicesAndIndexes(i1,i4,pai, pdi);
-        updateIndicesAndIndexes(i2,i1, pbi, pai);
-        updateIndicesAndIndexes(i3,i2, pci, pbi);
-        updateIndicesAndIndexes(i4,i3,pdi,pci);
+        pushToVertices(leftp0);
+        pushToVertices(bleftp0);
+        pushToVertices(brightp0);
+        pushToVertices(rightp0);
+        updateIndicesAndIndexes(lefti1, righti1, lefti0, righti0);
+        updateIndicesAndIndexes(blefti1, lefti1, blefti0, lefti0);
+        updateIndicesAndIndexes(brighti1, blefti1, brighti0, blefti0);
+        updateIndicesAndIndexes(righti1, brighti1, righti0, brighti0);
     }
 
 
-
-    // left, botleft, botright, right
-    void createBranch(vec3 *p1, vec3 *p2, vec3 *p3, vec3 *p4,
-                      int *i1, int *i2, int *i3, int *i4, vec3 *direction){
-        // Here will be the main meat
-
-        vec3 fromp1top2 = (*p2) - (*p1);
-        vec3 fromp1top4 = (*p4) - (*p1);
-        float dot1 = dot(fromp1top2, (*direction));
-        float dot2 = dot(fromp1top4, (*direction));
-        if(dot1 == 0 && dot2 == 0){
-            // neutral / neutral = no more construct
-            // we can directly create the next branch!
-            drawNiceCube(p1,p2,p3,p4,(*i1),(*i2),(*i3),(*i4),direction);
-        }else if(dot1 < 0 && dot2 == 0){
-            // interior / neutral
-            // we must create the vector for p2
-            // the use it to create the new p3
-            // draw the resulting triangles and square
-            // finally the cube with those new values
-            vec3 altp2 = vec3(0.0,0.0,0.0);
-            newPointFromDir(p1,p2,direction, &altp2); // creates the new p2
-            vec3 trans = altp2 - (*p1);
-            vec3 altp3 = (*p4) + trans;
-
-            int indaltp2 = ++index_;
-            int indaltp3 = ++index_;
-            pushToVertices(altp2);
-            pushToVertices(altp3);
-            updateTriangleIndicesAndIndexes((*i2), (*i1), indaltp2);
-            updateIndicesAndIndexes((*i3), (*i2),indaltp3, indaltp2);
-            updateTriangleIndicesAndIndexes((*i4),(*i3), indaltp3);
-
-            drawNiceCube(p1,&altp2,&altp3,p4,(*i1),indaltp2, indaltp3, (*i4), direction);
-
-        }else if(dot1 == 0 && dot2 <0){
-            // neutral /interior
-            // same, but with p3 and p4, not p2 and p3
-
-
-            vec3 altp3 = vec3(0.0,0.0,0.0);
-            newPointFromDir(p2,p3,direction, &altp3); // creates the new p2
-            vec3 trans = altp3 - (*p2);
-            vec3 altp4 = (*p1) + trans;
-
-            int indaltp3 = ++index_;
-            int indaltp4 = ++index_;
-            pushToVertices(altp3);
-            pushToVertices(altp4);
-            updateTriangleIndicesAndIndexes((*i2), (*i3), indaltp3);
-            updateIndicesAndIndexes((*i4), (*i3),indaltp4, indaltp3);
-            updateTriangleIndicesAndIndexes((*i1),(*i4), indaltp4);
-
-            drawNiceCube(p1,p2,&altp3,&altp4,(*i1),(*i2), indaltp3, indaltp4, direction);
-
-        }else if(dot1 <0 && dot2 <0){
-            // interior/interior
-            vec3 altp2 = vec3(0.0,0.0,0.0);
-            vec3 altp4 = vec3(0.0,0.0,0.0);
-            vec3 altp3 = vec3(0.0,0.0,0.0);
-            newPointFromDir(p1,p2,direction, &altp2);
-            newPointFromDir(p1,p4, direction, &altp4);
-            altp3 = altp2 + altp3 - (*p1);
-
-            int indaltp2 = ++index_;
-            int indaltp3 = ++index_;
-            int indaltp4 = ++index_;
-
-            pushToVertices(altp2);
-            pushToVertices(altp3);
-            pushToVertices(altp4);
-
-            updateTriangleIndicesAndIndexes((*i2), (*i1), indaltp2);
-            updateIndicesAndIndexes((*i3), (*i2), indaltp3, indaltp2);
-            updateIndicesAndIndexes((*i4), (*i3), indaltp4, indaltp3);
-            updateTriangleIndicesAndIndexes((*i1), (*i4), indaltp4);
-
-            drawNiceCube(p1, &altp2, &altp3, &altp4, (*i1), indaltp2, indaltp3, indaltp4, direction);
-
-        }else{
-            // in all other cases, we must rotate counter clockwise to handle it from another point.
-            //createBranch(p4,p1,p2,p3,i4,i1,i2,i3,direction);
-            vec3 fromp3top4 = (*p4) - (*p3);
-            vec3 fromp3top2 = (*p2) - (*p3);
-            dot1 = dot(fromp3top4,(*direction));
-            dot2 = dot(fromp3top2, (*direction));
-            if(dot1 < 0 && dot2 == 0){
-                // interior / neutral
-                // we must create the vector for p4
-                // the use it to create the new p1
-                // draw the resulting triangles and square
-                // finally the cube with those new values
-                vec3 altp4 = vec3(0.0,0.0,0.0);
-                newPointFromDir(p3,p4,direction, &altp4); // creates the new p2
-                vec3 trans = altp4 - (*p3);
-                vec3 altp1 = (*p1) + trans;
-
-                int indaltp4 = ++index_;
-                int indaltp1 = ++index_;
-                pushToVertices(altp4);
-                pushToVertices(altp1);
-                updateTriangleIndicesAndIndexes((*i4), (*i3), indaltp4);
-                updateIndicesAndIndexes((*i1), (*i4),indaltp1, indaltp4);
-                updateTriangleIndicesAndIndexes((*i2),(*i1), indaltp1);
-
-                drawNiceCube(&altp1,p2,p3,&altp4,indaltp1,(*i2), (*i3), indaltp4, direction);
-
-
-            }else if(dot1 == 0 && dot2 <0){
-                // neutral / interior
-
-                vec3 altp1 = vec3(0.0,0.0,0.0);
-                newPointFromDir(p3,p1,direction, &altp1); // creates the new p2
-                vec3 trans = altp1 - (*p3);
-                vec3 altp2 = (*p2) + trans;
-
-                int indaltp1 = ++index_;
-                int indaltp2 = ++index_;
-                pushToVertices(altp1);
-                pushToVertices(altp2);
-                updateTriangleIndicesAndIndexes((*i4), (*i1), indaltp1);
-                updateIndicesAndIndexes((*i2), (*i1),indaltp2, indaltp1);
-                updateTriangleIndicesAndIndexes((*i3),(*i2), indaltp2);
-
-                drawNiceCube(&altp1,&altp2,p3,p4,indaltp1,indaltp2, (*i3), (*i4), direction);
-
-            }else{
-                // interior / interior
-                vec3 altp4 = vec3(0.0,0.0,0.0);
-                vec3 altp1 = vec3(0.0,0.0,0.0);
-                vec3 altp2 = vec3(0.0,0.0,0.0);
-                newPointFromDir(p3,p4,direction, &altp4);
-                newPointFromDir(p3,p2, direction, &altp2);
-                altp1 = altp4 + altp2 - (*p3);
-
-                int indaltp4 = ++index_;
-                int indaltp1 = ++index_;
-                int indaltp2 = ++index_;
-
-                pushToVertices(altp4);
-                pushToVertices(altp1);
-                pushToVertices(altp2);
-                updateTriangleIndicesAndIndexes((*i4), (*i3), indaltp4);
-                updateIndicesAndIndexes((*i1), (*i4), indaltp1, indaltp4);
-                updateIndicesAndIndexes((*i2), (*i1), indaltp2, indaltp1);
-                updateTriangleIndicesAndIndexes((*i3), (*i2), indaltp2);
-
-                drawNiceCube(&altp1, &altp2, p3, &altp4, indaltp1, indaltp2, (*i3), indaltp4, direction);
-            }
-        }
-
-        {
-        /*
-            * Idea: First, the four points of the last cube (stacky stack ~ )
-            * Then, take the points, apply the dir vector.*/
-/*
-        vec3 pa, pb, pc, pd;
-        pa = (*p1) + (*direction);
-        pb = (*p2) + (*direction);
-        pc = (*p3) + (*direction);
-        pd = (*p4) + (*direction);*/
-
-        /*
-            * The resulting vector is then projected onto a vector composed betw 2 points
-            * If same sign & smaller than said vector = outer point
-            * If sign different, flip vector of projection
-            * If same sign & bigger than said vector = inner point*/
-/*
-        int paCount(0), pbCount(0), pcCount(0), pdCount(0);
-
-        paCount = compareProjPoints(&pa, p1, p2, p3, p4);
-        pbCount = compareProjPoints(&pb, p2, p1, p3, p4);
-        pcCount = compareProjPoints(&pc, p3, p1,p2,p3);
-        pdCount = compareProjPoints(&pd, p4, p1, p2,p3);*/
-
-        /* * If there is one point that is "farther" than all others, case of one point
-            * If there are two points that are "farthest" of others, but close to each other
-            * case of two points
-            * From here, we do as follow
-            * If case of "one point", then we use three points as the basis. The one further
-            * from it will be the only one changed and translated.*/
-        //if(paCount == 0){
-            // p1 will be the basis of our triangles.
-            // p2 - p3 - p4
-        /*    someMethod(p1, p2,p3,p4,i1,i2,i3,i4, pa, direction, &pb, &pc, &pd);
-        }else if(pbCount == 0){
-            // p2 will be the basis of our triangles.
-            // p3 - p4 - p1
-            someMethod(p2, p3,p4,p1,i2,i3,i4,i1,pb, direction, &pc, &pd, &pa);
-        }else if(pcCount == 0){
-            // p3 will be the basis of our triangles.
-            // p4 - p1 - p2
-            someMethod(p3,p4,p1,p2,i3,i4,i1,i2,pc,direction, &pd, &pa,&pb);
-        }else if(pdCount == 0){
-            // p4 will be the basis of our triangles.
-            // p1 - p2 - p3
-            someMethod(p4,p1,p2,p3,i4,i1,i2,i3, pd, direction, &pa, &pb, &pc);
-        }*/
-        /* case of two points*/
-        /*else if(paCount ==1){
-            if(pbCount == 1){
-                // our two points are p1 and p2
-                // p2 - p1 / p3 - p4
-                someMethod2(p2,p3,p4,p1,i2,i3,i4,i1,pb,pa,direction, &pc, &pd);
-
-
-            }else if(pcCount == 1){
-                // our two points are p1 and p3= IMPOSSIBLE
-                cout << "ERROR" << endl;
-
-            }else if(pdCount == 1){
-                // our two points are p1 and p4
-                // p1 - p4 / p2 - p3
-                someMethod2(p1,p2,p3,p4,i1,i2,i3,i4,pa,pd,direction, &pb, &pc);
-
-                cout << "ok" << endl;
-            }
-        }else if(pbCount == 1){
-            if(pcCount == 1){
-                // our two points are p2 and p3
-                // p3 - p2 / p4 - p1
-                someMethod2(p3,p4,p1,p2,i3,i4,i1,i2,pc,pb,direction, &pd, &pa);
-
-                cout << "ok" << endl;
-            }else if(pdCount ==1){
-                // our two points are p2 and p4= IMPOSSIBLE
-                cout << "ERROR" << endl;
-
-            }
-        }else if(pcCount == 1){
-            if(pdCount == 1){
-                // our two points are p3 and p4
-                // p4 - p3 / p1 - p2
-                someMethod2(p4,p1,p2,p3,i4,i1,i2,i3,pd,pc,direction, &pa, &pb);
-
-                cout << "ok" << endl;
-            }
-        }*/
-
-        /*
-            * If case of "two points", then we have to do two triangles and one square.
-            * The idea is to create a new method "createBranch"
-            * It must still create the cube, of course
-            * But it takes additionnal parameters
-            * That will define exactly the aforementioned behaviour
-            * First, one method to find the number of points, as well as the points
-            * It must then construct the additionnal forms (triangles + square)
-            * Then, said method should call the createCube method accordingly
-            * createCube will create the box, based on the "new points".
-            * It is, of course, extremely important to have 4 stacks, for all 4 points.
-            * Note that, since it will be an effective rotation and not a shear anymore
-            * The control on the width will thus not become necessary anymore
-
-           */
-        /*
-                vec3 dirbase = leftp1 - rightp1;
-                vec3 axis = normalize(cross(dir0, dirbase));
-                vec3 transdir = init_width*normalize(cross(axis,dir0));
-                vec3 newLeftPoint = updatePoint(rightp1,transdir);
-                vec3 newBotLeftPoint = updatePoint(botrightp1, transdir);
-                int leftId = ++index_;
-                int botleftId = ++index_;
-
-                lefti1 = popLeftIndex();
-                botlefti1 = popBotLeftIndex();
-
-                righti1 = popRightIndex();
-                botrighti1 = popBotRightIndex();
-
-                updateTriangleIndicesAndIndexes(newLeftPoint, lefti1, righti1, leftId);
-                updateTriangleIndicesAndIndexes(newBotLeftPoint,botlefti1, botrighti1, botleftId);
-
-                ## Updating indices
-                lefti0 = ++ index_;
-                botlefti0 = ++ index_;
-                botrighti0 = ++ index_;
-                righti0 = ++ index_;
-
-                #Saving 'em
-                leftIndex.push_back(lefti0);
-                botleftIndex.push_back(botlefti0);
-                rightIndex.push_back(righti0);
-                botrightIndex.push_back(botrighti0);
-
-
-                #Updating points
-                leftp0 = updatePoint(dir0, newLeftPoint);
-                botleftp0 = updatePoint(dir0, newBotLeftPoint);
-                rightp0 = updatePoint(dir0, rightp1);
-                botrightp0 = updatePoint(dir0, botrightp1);
-
-                #Saving 'em
-                leftPoint.push_back(leftp0);
-                botleftPoint.push_back(botleftp0);
-                rightPoint.push_back(rightp0);
-                botrightPoint.push_back(botrightp0);
-
-                // left, bleft, bright, right
-                #Pushing new points to vertices
-                pushToVertices(leftp0);
-                pushToVertices(botleftp0);
-                pushToVertices(botrightp0);
-                pushToVertices(rightp0);
-
-                #Drawing the triangles
-                updateIndicesAndIndexes(lefti1, righti1, lefti0, righti0);
-                updateIndicesAndIndexes(botlefti1, lefti1, botlefti0, lefti0);
-                updateIndicesAndIndexes(botrighti1, botlefti1, botrighti0, botlefti0);
-                updateIndicesAndIndexes(righti1, botrighti1, righti0, botrighti0);
-                //createCubeVolume(leftp1, rightp1, leftp0, lefti1, righti1, lefti0, righti0);
-            }           */
-
-        }
+    /**
+        * @brief popDirection, pop the stack of direction and returns its last element
+        * @return Last element of direction after a pop
+        */
+    vec3 popDirection(){
+        direction.pop_back();
+        return direction.back();
     }
+
+    /**
+        * @brief popLeftPoint, pop the stack of leftPoint and returns its last element
+        * @return Last element of leftPoint after a pop
+        */
+    vec3 popLeftPoint(){
+        leftPoint.pop_back();
+        return leftPoint.back();
+    }
+
+
+    vec3 popBLeftPoint(){
+        bLeftPoint.pop_back();
+        return bLeftPoint.back();
+    }
+
+    vec3 popRightPoint(){
+        rightPoint.pop_back();
+        return rightPoint.back();
+    }
+
+    vec3 popBRightPoint(){
+        bRightPoint.pop_back();
+        return bRightPoint.back();
+    }
+
+    int popLeftIndex(){
+        leftIndex.pop_back();
+        return leftIndex.back();
+    }
+
+
+    int popBLeftIndex(){
+        bLeftIndex.pop_back();
+        return bLeftIndex.back();
+    }
+
+    int popRightIndex(){
+        rightIndex.pop_back();
+        return rightIndex.back();
+    }
+
+
+    int popBRightIndex(){
+        bRightIndex.pop_back();
+        return bRightIndex.back();
+    }
+
+    /**
+        * @brief updateTriangleIndicesAndIndexes, updates the vertices and indices with a new point
+        * @param newPoint, the up point
+        * @param dlid, down left point-id
+        * @param drid, down right point-id
+        * @param upid, up point id
+        */
+    void updateTriangleIndicesAndIndexes(int dlid, int drid, int upid){
+        normalAndPushIDs(dlid, drid, upid);
+    }
+
+
 
     /**
         * @brief generateAlgae
@@ -804,25 +308,20 @@ public:
         vec3 dir0,dir1;
         dir0 = direction.back();
 
-        vec3 leftp0, leftp1;
-        vec3 botleftp0, botleftp1;
-        vec3 rightp0, rightp1;
-        vec3 botrightp0, botrightp1;
-
+        vec3 leftp0, leftp1, bleftp0, bleftp1;
         leftp0 = leftPoint.back();
-        botleftp0 = botleftPoint.back();
+        bleftp0 = bLeftPoint.back();
+        vec3 rightp0, rightp1, brightp0, brightp1;
         rightp0 = rightPoint.back();
-        botrightp0 = botRightPoint.back();
+        brightp0 = bRightPoint.back();
 
-        int lefti0, lefti1;
-        int botlefti0, botlefti1;
-        int righti0, righti1;
-        int botrighti0, botrighti1;
-
+        int lefti0, lefti1, blefti0, blefti1;
         lefti0 = leftIndex.back();
-        botlefti0 = botLeftIndex.back();
+        blefti0 = bLeftIndex.back();
+
+        int righti0, righti1, brighti0, brighti1;
         righti0 = rightIndex.back();
-        botrighti0 = botRightIndex.back();
+        brighti0 = bRightIndex.back();
 
         char lo = 'n';
         char l1 = 'n';
@@ -832,14 +331,13 @@ public:
                 dir0 = popDirection();
 
                 leftp0 = popLeftPoint();
-                botleftp0 = popBotLeftPoint();
+                bleftp0 = popBLeftPoint();
                 rightp0 = popRightPoint();
-                botrightp0 = popBotRightPoint();
-
+                brightp0 = popBRightPoint();
                 lefti0 = popLeftIndex();
-                botlefti0 = popBotLeftIndex();
+                blefti0 = popBLeftIndex();
                 righti0 = popRightIndex();
-                botrighti0 = popBotRightIndex();
+                brighti0 = popBRightIndex();
 
                 branches.pop_back();
             } else if(str == 'A' || str == 'B'){
@@ -851,60 +349,162 @@ public:
                     dir0 = updateDirection(dir1, l1, lo);
 
                     direction.push_back(dir0);
-
                     leftp1 = popLeftPoint();
-                    botleftp1 = popBotLeftPoint();
+                    bleftp1 = popBLeftPoint();
                     rightp1 =  popRightPoint();
-                    botrightp1 = popBotRightPoint();
+                    brightp1 =  popBRightPoint();
+                    if(!smallerThanWidth(dir0, leftp1, rightp1) &&
+                            !smallerThanWidth(dir0, bleftp1, brightp1)){
+                        leftp0 = updatePoint(dir0, leftp1);
+                        leftPoint.push_back(leftp0);
+                        bleftp0 = updatePoint(dir0, bleftp1);
+                        bLeftPoint.push_back(bleftp0);
 
-                    lefti1 = popLeftIndex();
-                    botlefti1 = popBotLeftIndex();
-                    righti1 = popRightIndex();
-                    botrighti1 = popBotRightIndex();
+                        rightp0 = updatePoint(dir0, rightp1);
+                        rightPoint.push_back(rightp0);
+                        brightp0 = updatePoint(dir0, brightp1);
+                        bRightPoint.push_back(brightp0);
 
-                    createBranch(&leftp1, &botleftp1, &botrightp1, &rightp1,
-                                 &lefti1, &botlefti1, &botrighti1, &righti1, &dir0);
+                        lefti1 = popLeftIndex();
+                        lefti0 = ++index_ ;
+                        leftIndex.push_back(lefti0);
+                        blefti1 = popBLeftIndex();
+                        blefti0 = ++index_ ;
+                        bLeftIndex.push_back(blefti0);
 
-                    leftp0 = leftPoint.back();
-                    botleftp0 = botleftPoint.back();
-                    rightp0 = rightPoint.back();
-                    botrightp0 = botRightPoint.back();
+                        brighti1 = popBRightIndex();
+                        brighti0 = ++index_ ;
+                        bRightIndex.push_back(brighti0);
+                        righti1 = popRightIndex();
+                        righti0 = ++index_ ;
+                        rightIndex.push_back(righti0);
 
-                    lefti0 = leftIndex.back();
-                    botlefti0 = botLeftIndex.back();
-                    righti0 = rightIndex.back();
-                    botrighti0 = botRightIndex.back();
+                        pushToVertices(leftp0);
+                        pushToVertices(bleftp0);
+                        pushToVertices(brightp0);
+                        pushToVertices(rightp0);
+                        updateIndicesAndIndexes(lefti1, righti1, lefti0, righti0);
+                        updateIndicesAndIndexes(blefti1, lefti1, blefti0, lefti0);
+                        updateIndicesAndIndexes(brighti1, blefti1, brighti0, blefti0);
+                        updateIndicesAndIndexes(righti1, brighti1, righti0, brighti0);
+
+
+                    }else if(smallerThanWidth(dir0, leftp1, rightp1)) {
+                        vec3 dirbase = leftp1 - rightp1;
+                        vec3 axis = normalize(cross(dir0, dirbase));
+                        vec3 transdir = init_width*normalize(cross(axis,dir0));
+                        vec3 newLeftPoint = updatePoint(rightp1,transdir);
+                        vec3 newBLeftPoint = updatePoint(brightp1, transdir);
+                        int leftId = ++index_;
+                        pushToVertices(newLeftPoint);
+                        int bLeftId = ++index_;
+                        pushToVertices(newBLeftPoint);
+                        lefti1 = popLeftIndex();
+                        blefti1 = popBLeftIndex();
+                        righti1 = popRightIndex();
+                        brighti1 = popBRightIndex();
+
+
+                        lefti0 = ++ index_;
+                        blefti0 = ++ index_;
+                        brighti0 = ++ index_;
+                        righti0 = ++ index_;
+
+                        leftIndex.push_back(lefti0);
+                        bLeftIndex.push_back(blefti0);
+
+                        rightIndex.push_back(righti0);
+                        bRightIndex.push_back(brighti0);
+
+                        leftp0 = updatePoint(dir0, newLeftPoint);
+                        bleftp0 = updatePoint(dir0, newBLeftPoint);
+                        rightp0 = updatePoint(dir0, rightp1);
+                        brightp0 = updatePoint(dir0, brightp1);
+                        leftPoint.push_back(leftp0);
+                        bLeftPoint.push_back(bleftp0);
+                        rightPoint.push_back(rightp0);
+                        bRightPoint.push_back(brightp0);
+
+                        customCreateCubeVolume(newLeftPoint, rightp1, leftp0, rightp0,
+                                               newBLeftPoint, brightp1, bleftp0, brightp0,
+                                               leftId, righti1, lefti0, righti0,
+                                               bLeftId, brighti1, blefti0, brighti0);
+
+
+                        updateTriangleIndicesAndIndexes(lefti1, righti1, leftId);
+                        updateTriangleIndicesAndIndexes(blefti1, brighti1, bLeftId);
+                        updateIndicesAndIndexes(blefti1, lefti1, bLeftId, leftId);
+
+                    }else if(smallerThanWidth(dir0, leftp1, bleftp1)){
+                        // this time is left and bleft
+                        vec3 dirbase = bleftp1 - leftp1;
+                        vec3 axis = normalize(cross(dir0, dirbase));
+                        vec3 transdir = init_width*normalize(cross(axis,dir0));
+                        vec3 newBLeftPoint = updatePoint(leftp1,transdir);
+                        vec3 newBRightPoint = updatePoint(rightp1, transdir);
+                        int bLeftId = ++index_;
+                        pushToVertices(newBLeftPoint);
+                        int bRightId = ++index_;
+                        pushToVertices(newBRightPoint);
+                        lefti1 = popLeftIndex();
+                        blefti1 = popBLeftIndex();
+                        righti1 = popRightIndex();
+                        brighti1 = popBRightIndex();
+
+                        lefti0 = ++ index_;
+                        blefti0 = ++ index_;
+                        brighti0 = ++ index_;
+                        righti0 = ++ index_;
+
+                        leftIndex.push_back(lefti0);
+                        bLeftIndex.push_back(blefti0);
+
+                        rightIndex.push_back(righti0);
+                        bRightIndex.push_back(brighti0);
+
+                        leftp0 = updatePoint(dir0, leftp1);
+                        bleftp0 = updatePoint(dir0, newBLeftPoint);
+                        rightp0 = updatePoint(dir0, rightp1);
+                        brightp0 = updatePoint(dir0, newBRightPoint);
+                        leftPoint.push_back(leftp0);
+                        bLeftPoint.push_back(bleftp0);
+                        rightPoint.push_back(rightp0);
+                        bRightPoint.push_back(brightp0);
+
+                        customCreateCubeVolume(leftp1, rightp1, leftp0, rightp0,
+                                               newBLeftPoint, newBRightPoint, bleftp0, brightp0,
+                                               lefti1, righti1, lefti0, righti0,
+                                               bLeftId, bRightId, blefti0, brighti0);
+
+
+                        updateTriangleIndicesAndIndexes(blefti1, lefti1, bLeftId);
+                        updateTriangleIndicesAndIndexes(brighti1, righti1, bRightId);
+                        updateIndicesAndIndexes(brighti1, blefti1, bLeftId, bRightId);
+                    }
 
                 }
             } else if(str == '['){
                 direction.push_back(dir0);
-
                 leftPoint.push_back(leftp0);
-                botleftPoint.push_back(botleftp0);
+                bLeftPoint.push_back(bleftp0);
                 rightPoint.push_back(rightp0);
-                botRightPoint.push_back(botrightp0);
-
+                bRightPoint.push_back(brightp0);
                 leftIndex.push_back(lefti0);
-                botLeftIndex.push_back(botlefti0);
+                bLeftIndex.push_back(blefti0);
                 rightIndex.push_back(righti0);
-                botRightIndex.push_back(botrighti0);
-
+                bRightIndex.push_back(brighti0);
                 branches.push_back(lo);
             }
         }
 
-        botleftPoint.clear();
         leftPoint.clear();
-
-        botRightPoint.clear();
+        bLeftPoint.clear();
         rightPoint.clear();
-
-        botLeftIndex.clear();
+        bRightPoint.clear();
         leftIndex.clear();
-
-        botRightIndex.clear();
+        bLeftIndex.clear();
         rightIndex.clear();
-
+        bRightIndex.clear();
         direction.clear();
         branches.clear();
 
@@ -959,7 +559,7 @@ public:
     void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
               const glm::mat4 &view = IDENTITY_MATRIX,
               const glm::mat4 &projection = IDENTITY_MATRIX){
-           grid.Draw(model, view, projection);
+        grid.Draw(model, view, projection);
     }
 
     void Cleanup(){
