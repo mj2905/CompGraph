@@ -7,6 +7,9 @@ out vec4 vpoint_mv;
 out vec3 light_dir, view_dir;
 out float height;
 
+out vec3 pos_eye;
+out vec3 n_eye;
+
 uniform mat4 projection;
 uniform mat4 model;
 uniform mat4 view;
@@ -19,6 +22,8 @@ uniform sampler2D tex;
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
 
+    n_eye = vec3(view * model * vec4(0.0, 0.0,1.0, 0.0));
+
     height = 0.4 + (texture(tex, uv*10 + offset).r -0.5)/50;
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
@@ -29,4 +34,3 @@ void main() {
     view_dir = normalize(- vec3(vpoint_mv));
 
 }
-

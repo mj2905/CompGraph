@@ -13,6 +13,7 @@ class Water {
 
         GLuint texture_id_;
         GLuint interpolation_id_;
+        GLuint reflection_id_;
 
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                         // model matrix ID
@@ -20,7 +21,7 @@ class Water {
         GLuint P_id_;                         // proj matrix ID
 
     public:
-        void Init(GLuint terrain_texture) {
+        void Init(GLuint terrain_texture, GLuint reflection_id) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("water_vshader.glsl",
                                                   "water_fshader.glsl");
@@ -113,6 +114,14 @@ class Water {
                 glBindTexture(GL_TEXTURE_1D, 0);
             }
 
+
+            //reflection texture
+            reflection_id_ = reflection_id;
+            GLuint refl_id = glGetUniformLocation(program_id_, "reflection");
+            glUniform1i(refl_id, 2 /*GL_TEXTURE2*/);
+
+
+
             glm::vec3 light_pos = glm::vec3(2.0f, 2.0f, 0.5f);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -181,6 +190,10 @@ class Water {
             // bind textures
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_1D, interpolation_id_);
+
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, reflection_id_);
+
 
             // setup MVP
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));

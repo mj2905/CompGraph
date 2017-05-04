@@ -34,7 +34,7 @@ public:
 
     }
 
-    void Init(size_t width, size_t height) {
+    void Init(size_t width, size_t height, GLuint reflection_id) {
 
         assert(INCREMENT <= 0.5);
 
@@ -42,7 +42,7 @@ public:
             framebuffers[i].Init(size_tile, size_tile, true);
         }
 
-        terrain.Init(width, height);
+        terrain.Init(width, height, reflection_id);
         perlin.Init();
 
         for(int i = 0; i < 4; ++i) {

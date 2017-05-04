@@ -20,6 +20,8 @@ const unsigned int OFFSET_Y = 256;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 
+FrameBuffer reflection;
+
 Skybox skybox;
 
 int window_width = 800;
@@ -29,6 +31,7 @@ using namespace glm;
 
 mat4 projection_matrix;
 mat4 view_matrix;
+mat4 view_inverted;
 mat4 trackball_matrix;
 mat4 old_trackball_matrix;
 mat4 quad_model_matrix;
@@ -117,11 +120,18 @@ void Init() {
                          vec3(0.0f, 1.0f, 0.0f));
     view_matrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, distance_camera));
 
+    view_inverted = LookAt(vec3(2.0f, 2.0f, 2.0f),
+                         vec3(0.0f, 0.0f, 0.0f),
+                         vec3(0.0f, -1.0f, 0.0f));
+    view_inverted = translate(mat4(-1.0f), vec3(0.0f, 0.0f, distance_camera));
+
     trackball_matrix = glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
     quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
 
-    multitiles.Init(window_width, window_height);
+    GLuint reflection_texture_id = reflection.Init(window_width, window_height);
+
+    multitiles.Init(window_width, window_height, reflection_texture_id);
 
     skybox.init("miramar");
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -130,16 +140,24 @@ void Init() {
 
 // gets called for every frame.
 void Display() {
-
     //multitiles.incrementY(); //to move with the camera
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glViewport(0, 0, window_width, window_height);
 
+
     skybox.draw(trackball_matrix * view_matrix, projection_matrix);
 
     mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(1,0.5, 1));
+
+
+    reflection.Bind();
+    skybox.draw(trackball_matrix * view_inverted, projection_matrix);
+     //multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
+    reflection.Unbind();
+
+    glViewport(0, 0, window_width, window_height);
 
     multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
 
@@ -192,6 +210,7 @@ void MousePos(GLFWwindow* window, double x, double y) {
         }
 
         view_matrix = translate(view_matrix, vec3(0.0, 0.0, p.y - old_y));
+        view_inverted = translate(view_inverted, vec3(0.0, 0.0, -p.y + old_y));
         distance_camera += p.y - old_y;
         old_y = p.y;
     }

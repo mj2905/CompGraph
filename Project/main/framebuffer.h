@@ -28,7 +28,7 @@ class FrameBuffer {
             return color_texture_id_;
         }
 
-        void Init(int image_width, int image_height,
+        GLuint Init(int image_width, int image_height,
                                   bool use_interpolation = false) {
             this->width_ = image_width;
             this->height_ = image_height;
@@ -81,6 +81,8 @@ class FrameBuffer {
                 }
                 glBindFramebuffer(GL_FRAMEBUFFER, 0); // avoid pollution
             }
+
+            return framebuffer_object_id_;
         }
 
         void ClearContent() {

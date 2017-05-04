@@ -16,11 +16,11 @@ class Terrain {
         Water water;
 
     public:
-        void Init(size_t width, size_t height) {
+        void Init(size_t width, size_t height, GLuint reflection_id) {
             mountainsCreator.Init();
             framebuffer.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
-            water.Init(framebuffer.getTextureId());
+            water.Init(framebuffer.getTextureId(), reflection_id);
         }
 
         void changeTexture(const array<GLuint, 4>& textures) {
