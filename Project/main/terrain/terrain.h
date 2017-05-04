@@ -44,6 +44,12 @@ class Terrain {
             framebuffer.Unbind();
         }
 
+        float getCurrentHeight() {
+          framebuffer.Bind();
+
+          framebuffer.Unbind();
+        }
+
         void Draw(float offsetX, float offsetY,
                   const glm::mat4 &model,
                   const glm::mat4 &view,
