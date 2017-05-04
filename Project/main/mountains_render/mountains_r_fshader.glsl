@@ -87,10 +87,10 @@ void main() {
             + alpha4 * texture(sand, (uv + offset)*60).rgb
             + kd * nDotL * Ld); //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 
-            float distance = gl_FragCoord.z;
-            if (distance > fog_threshold) {
-              color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
-            }
+            //float distance = gl_FragCoord.z;
+            //if (distance > fog_threshold) {
+              //color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
+            //}
 
 
 }
