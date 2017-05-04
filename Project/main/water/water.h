@@ -153,8 +153,8 @@ class Water {
                 loadImage("normalmap.jpg", "normal_map", 2, normal_id_);
             }
 
-            //glm::vec3 light_pos = glm::vec3(2.5f, 3, 0.0f);
-            glm::vec3 light_pos = glm::vec3(0.0, 3, -1.0f);
+            glm::vec3 light_pos = glm::vec3(2.5f, 3, 0.0f);
+            //glm::vec3 light_pos = glm::vec3(0.0, 3, -1.0f);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
             glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);

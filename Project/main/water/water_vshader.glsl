@@ -22,7 +22,7 @@ uniform float time;
 out vec3 normal_t;
 
 float getHeight(vec2 uv) {
-    return 0.35 + (sin(2*M_PI*12*(uv.x + 2*uv.y) - 2*time)/500 + sin(2*M_PI*12*(2*uv.x + uv.y) -2*time)/500 + sin(2*M_PI*12*(uv.x + uv.y) -2*time)/500);
+    return 0.4 + (sin(2*M_PI*12*(uv.x + 2*uv.y) - 2*time)/500 + sin(2*M_PI*12*(2*uv.x + uv.y) -2*time)/500 + sin(2*M_PI*12*(uv.x + uv.y) -2*time)/500);
 }
 
 void main() {
