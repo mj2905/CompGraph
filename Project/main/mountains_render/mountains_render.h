@@ -141,6 +141,10 @@ class MountainsRender {
                 glUniform3fv(ka_id, ONE, glm::value_ptr(ka));
                 glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
                 glUniform1f(alpha_id, alpha);
+
+
+                GLuint fog_threshold_id = glGetUniformLocation(program_id_, "fog_threshold");
+                glUniform1f(fog_threshold_id, FOG_THRESHOLD);
             }
 
             // other uniforms

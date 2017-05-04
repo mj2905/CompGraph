@@ -16,6 +16,8 @@ uniform float alpha;
 uniform sampler2D tex;
 uniform sampler1D colormap;
 
+uniform float fog_threshold;
+
 void main() {
 
     vec3 p = vpoint_mv.xyz;
@@ -31,4 +33,9 @@ void main() {
 
     color.xyz = c * La + kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
     color.a = texture(tex, uv).r < height ? 0.6 : 0.0;
+
+    float distance = gl_FragCoord.z;
+    if (distance > fog_threshold) {
+      color.xyz = mix(color.xyz, vec3(0.85,0.85,0.85), (distance-fog_threshold)*5);
+    }
 }

@@ -150,6 +150,9 @@ class Water {
             V_id_ = glGetUniformLocation(program_id_, "view");
             P_id_ = glGetUniformLocation(program_id_, "projection");
 
+            GLuint fog_threshold_id = glGetUniformLocation(program_id_, "fog_threshold");
+            glUniform1f(fog_threshold_id, FOG_THRESHOLD);
+
             // to avoid the current object being polluted
             glBindVertexArray(0);
             glUseProgram(0);
