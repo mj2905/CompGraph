@@ -1,6 +1,6 @@
 #version 330
 
-in vec2 uv;
+//in vec2 uv;
 out vec4 color;
 in vec3 normal_mv;
 in vec3 light_dir;
@@ -30,10 +30,10 @@ void main() {
                     + ks * pow(rDotV, alpha) * Ls;
 
 
-    float x = uv.x;
-    float y = uv.y;
-    float a = (1.0/y - 0.3);
-    color = vec4(c.x,c.y,c.z, a);
+    //float x = uv.x;
+    //float y = uv.y;
+    //float a = (1.0/y - 0.3);
+    color = vec4(c.x,c.y,c.z, 1.0);
 }
 
 /*
