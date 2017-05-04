@@ -19,6 +19,7 @@ uniform sampler2D sand;
 
 uniform sampler1D colormap;
 
+
 uniform bool clip;
 
 uniform vec2 offset;
@@ -55,6 +56,9 @@ float sand_distrib(float height, float n) {
     return 0;
 }
 
+uniform float fog_threshold;
+
+
 void main() {
 
     vec3 p = vpoint_mv.xyz;
@@ -82,6 +86,11 @@ void main() {
             + alpha3 * texture(snow, (uv + offset)*35).rgb
             + alpha4 * texture(sand, (uv + offset)*60).rgb
             + kd * nDotL * Ld); //computation of the color : we use the height, and we add the diffuse component so that we have shadings
+
+            //float distance = gl_FragCoord.z;
+            //if (distance > fog_threshold) {
+              //color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
+            //}
 
 
 }

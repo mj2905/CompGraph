@@ -20,6 +20,8 @@ in vec3 normal_t;
 
 uniform float time;
 
+uniform float fog_threshold;
+
 void main() {
 
     float terrainHeight = texture(tex, uv).r;
@@ -45,6 +47,11 @@ void main() {
         color.a = 0.6;
 
         color.xyz +=  kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
+
+        //float distance = gl_FragCoord.z;
+        //if (distance > fog_threshold) {
+          //color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
+        //}
 
     }
     else {

@@ -48,9 +48,6 @@ class Terrain {
                   const glm::mat4 &model,
                   const glm::mat4 &view,
                   const glm::mat4 &projection) {
-            skybox.Draw(view, projection);
-            mountainsRender.Draw(offsetX, offsetY, false, model, view, projection);
-            water.Draw(offsetX, offsetY, model, view, projection);
 
             framebuffer2.ClearContent();
             framebuffer2.Bind();
@@ -58,6 +55,10 @@ class Terrain {
                 skybox.Draw(view * glm::scale(IDENTITY_MATRIX, vec3(1, -1, 1)), projection);
                 mountainsRender.Draw(offsetX, offsetY, true, model * rot, view, projection);
             framebuffer2.Unbind();
+
+            skybox.Draw(view, projection);
+            mountainsRender.Draw(offsetX, offsetY, false, model, view, projection);
+            water.Draw(offsetX, offsetY, model, view, projection);
         }
 
         void Cleanup() {
