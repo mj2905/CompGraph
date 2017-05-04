@@ -29,15 +29,21 @@ using namespace glm;
 
 mat4 projection_matrix;
 mat4 view_matrix;
+mat4 view_matrix_base;
 mat4 trackball_matrix;
 mat4 old_trackball_matrix;
 mat4 quad_model_matrix;
+mat4 quad_model_matrix_base;
 
 double old_y;
+double old_x;
+
+float view_angle_x = 0;
+float view_angle_y = 0;
 
 Trackball trackball;
 
-float distance_camera = -2.5;
+float distance_camera = 0;
 
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
@@ -112,14 +118,16 @@ void Init() {
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
     // applied in a rotated coordinate frame.
     // uncomment lower line to achieve this.
-    view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
+    view_matrix_base = LookAt(vec3(2.0f, 2.0f, 2.0f),
                          vec3(0.0f, 0.0f, 0.0f),
                          vec3(0.0f, 1.0f, 0.0f));
-    view_matrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, distance_camera));
+    view_matrix_base = translate(mat4(1.0f), vec3(0.0f, -0.48f, distance_camera));
+
+    view_matrix = view_matrix_base;
 
     trackball_matrix = glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
+    quad_model_matrix_base = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
 
     multitiles.Init(window_width, window_height);
 
@@ -133,15 +141,22 @@ void Display() {
 
     //multitiles.incrementY(); //to move with the camera
 
+
+    mat4 roty = rotate(IDENTITY_MATRIX, (float) (view_angle_y), vec3(1,0,0));
+    mat4 rotx = roty * rotate(IDENTITY_MATRIX, (float) (view_angle_x), vec3(0,1,0));
+
+  //  quad_model_matrix = rotate(quad_model_matrix_base, (float) (view_angle_x), vec3(0,1,0));
+  //  quad_model_matrix = rotate(quad_model_matrix_base, (float) (view_angle_y), vec3(1,0,0));
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glViewport(0, 0, window_width, window_height);
 
-    skybox.draw(trackball_matrix * view_matrix, projection_matrix);
+    skybox.draw(rotx*roty*view_matrix, projection_matrix);
 
     mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(1,0.5, 1));
 
-    multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
+    multitiles.Draw(quad_model_matrix * scale, rotx*roty*view_matrix, projection_matrix);
 
 }
 
@@ -175,7 +190,21 @@ void MousePos(GLFWwindow* window, double x, double y) {
         // trackball.Drag(...) and the value stored in 'old_trackball_matrix'.
         // See also the mouse_button(...) function.
         // trackball_matrix = ...
-        trackball_matrix = trackball.Drag(p.x, p.y) * old_trackball_matrix;
+        //trackball_matrix = trackball.Drag(p.x, p.y) * old_trackball_matrix;
+
+        if(old_y < -1.5) {
+            old_y = p.y;
+        }
+
+        if(old_x < -1.5) {
+            old_x = p.x;
+        }
+
+        view_angle_x += p.x - old_x;
+        view_angle_y += -p.y + old_y;
+        old_y = p.y;
+        old_x = p.x;
+
     }
 
     // zoom
@@ -191,8 +220,8 @@ void MousePos(GLFWwindow* window, double x, double y) {
             old_y = p.y;
         }
 
-        view_matrix = translate(view_matrix, vec3(0.0, 0.0, p.y - old_y));
-        distance_camera += p.y - old_y;
+  //      view_matrix = translate(view_matrix, vec3(0.0, 0.0, p.y - old_y));
+      //  distance_camera += p.y - old_y;
         old_y = p.y;
     }
 }
