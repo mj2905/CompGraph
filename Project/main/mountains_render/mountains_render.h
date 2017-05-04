@@ -1,4 +1,5 @@
 #pragma once
+#include "../constants.h"
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
@@ -138,6 +139,10 @@ class MountainsRender {
                 glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
                 glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
                 glUniform1f(alpha_id, alpha);
+
+
+                GLuint fog_threshold_id = glGetUniformLocation(program_id_, "fog_threshold");
+                glUniform1f(fog_threshold_id, FOG_THRESHOLD);
             }
 
             loadImage("grass.jpg", "grass", 2, grass_id_);

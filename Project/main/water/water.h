@@ -1,4 +1,5 @@
 #pragma once
+#include "../constants.h"
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
@@ -189,6 +190,9 @@ class Water {
             M_id_ = glGetUniformLocation(program_id_, "model");
             V_id_ = glGetUniformLocation(program_id_, "view");
             P_id_ = glGetUniformLocation(program_id_, "projection");
+
+            GLuint fog_threshold_id = glGetUniformLocation(program_id_, "fog_threshold");
+            glUniform1f(fog_threshold_id, FOG_THRESHOLD);
 
             // to avoid the current object being polluted
             glBindVertexArray(0);

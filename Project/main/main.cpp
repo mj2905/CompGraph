@@ -30,11 +30,14 @@ using namespace glm;
 
 mat4 projection_matrix;
 mat4 view_matrix;
+
 mat4 quad_model_matrix;
+mat4 quad_model_matrix_base;
 
 float old_x, old_y;
 
-float distance_camera = -2.5;
+
+float distance_camera = 0;
 
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
@@ -112,7 +115,7 @@ void Init() {
     view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
                          vec3(0.0f, 0.0f, 0.0f),
                          vec3(0.0f, 1.0f, 0.0f));
-    view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, 0.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
+    view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
     quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
