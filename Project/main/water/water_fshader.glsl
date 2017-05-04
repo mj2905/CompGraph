@@ -14,21 +14,41 @@ uniform vec3 ka, kd, ks;
 uniform float alpha;
 
 uniform sampler2D tex;
-uniform sampler1D colormap;
+uniform sampler2D ref;
+
+in vec3 normal_t;
+
+uniform float time;
 
 void main() {
 
-    vec3 p = vpoint_mv.xyz;
+    float terrainHeight = texture(tex, uv).r;
 
-    vec3 normal_mv = normalize(cross(dFdx(p), dFdy(p)));
+    if(terrainHeight < height) {
 
-    float nDotL = max(dot(normal_mv, light_dir), 0);
+        vec3 p = vpoint_mv.xyz;
 
-    vec3 r = normalize(reflect(- light_dir, normal_mv));
-    float rDotV = max(dot(r, view_dir), 0);
+        vec3 normal_mv = normalize(normal_t);//normalize(cross(dFdx(p), dFdy(p)));//normalize(texture(normal_map, 4*uv - time/100).xyz);//normalize(cross(dFdx(p), dFdy(p))); // normalize(test);////
 
-    vec3 c = texture(colormap, (height - 0.4)*10).rgb;
+        float nDotL = max(dot(normal_mv, light_dir), 0);
 
-    color.xyz = c * La + kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
-    color.a = texture(tex, uv).r < height ? 0.6 : 0.0;
+        vec3 r = normalize(reflect(- light_dir, normal_mv));
+        float rDotV = max(dot(r, view_dir), 0);
+
+        vec3 c = vec3(0.0, 0.0, .5);
+
+        color.xyz = c * La;
+
+        ivec2 window_dim = textureSize(ref, 0);
+        vec2 window_rel = vec2(gl_FragCoord.x / window_dim.x, gl_FragCoord.y / window_dim.y);
+        color.xyz = mix(color.xyz, texture(ref, window_rel).rgb, 0.5);
+        color.a = 0.6;
+
+        color.xyz +=  kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
+
+    }
+    else {
+        discard;
+    }
+
 }

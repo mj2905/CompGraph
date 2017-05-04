@@ -12,6 +12,10 @@ class MountainsRender {
         GLuint program_id_;                     // GLSL shader program ID
 
         GLuint texture_id_;
+        GLuint grass_id_;
+        GLuint rock_id_;
+        GLuint snow_id_;
+        GLuint sand_id_;
 
         GLuint interpolation_id_;               // sampler for the height colors
         GLuint num_indices_;                    // number of vertices to render
@@ -118,29 +122,28 @@ class MountainsRender {
             {
                 glm::vec3 light_pos = glm::vec3(2.0f, 2.0f, 0.5f);
 
-                glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
                 glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
 
                 GLuint light_pos_id = glGetUniformLocation(program_id_, "light_pos");
 
-                GLuint La_id = glGetUniformLocation(program_id_, "La");
                 GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
 
-                glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
                 glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
                 float alpha = 60.0f;
 
-                GLuint ka_id = glGetUniformLocation(program_id_, "ka");
                 GLuint kd_id = glGetUniformLocation(program_id_, "kd");
                 GLuint alpha_id = glGetUniformLocation(program_id_, "alpha");
 
                 glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
-                glUniform3fv(La_id, 1, glm::value_ptr(La));
                 glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
-                glUniform3fv(ka_id, ONE, glm::value_ptr(ka));
                 glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
                 glUniform1f(alpha_id, alpha);
             }
+
+            loadImage("grass.jpg", "grass", 2, grass_id_);
+            loadImage("rock.jpg", "rock", 3, rock_id_);
+            loadImage("snow.jpg", "snow", 4, snow_id_);
+            loadImage("sand.jpg", "sand", 5, sand_id_);
 
             // other uniforms
             M_id_ = glGetUniformLocation(program_id_, "model");
@@ -150,6 +153,51 @@ class MountainsRender {
             // to avoid the current object being polluted
             glBindVertexArray(0);
             glUseProgram(0);
+        }
+
+        void loadImage(string filename, string uniformName, int textureNb, GLuint& id) {
+            // load texture
+            {
+                int width;
+                int height;
+                int nb_component;
+                // set stb_image to have the same coordinates as OpenGL
+                stbi_set_flip_vertically_on_load(1);
+                unsigned char* image = stbi_load(filename.c_str(), &width,
+                                                 &height, &nb_component, 0);
+
+                if(image == nullptr) {
+                    throw(string("Failed to load texture " + filename));
+                }
+
+                glGenTextures(1, &id);
+                glBindTexture(GL_TEXTURE_2D, id);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, -1);
+
+
+
+                if(nb_component == 3) {
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+                                 GL_RGB, GL_UNSIGNED_BYTE, image);
+                } else if(nb_component == 4) {
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                                 GL_RGBA, GL_UNSIGNED_BYTE, image);
+                }
+
+                glGenerateMipmap(GL_TEXTURE_2D);
+
+                GLuint tex_id = glGetUniformLocation(program_id_, uniformName.c_str());
+                glUniform1i(tex_id, textureNb);
+
+                // cleanup
+                glBindTexture(GL_TEXTURE_2D, 0);
+                stbi_image_free(image);
+            }
         }
 
         void Cleanup() {
@@ -163,7 +211,8 @@ class MountainsRender {
             glDeleteTextures(1, &interpolation_id_);
         }
 
-        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
+        void Draw(float offsetX, float offsetY, bool underwaterclip,
+                  const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
 
@@ -177,6 +226,27 @@ class MountainsRender {
             // bind textures
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_1D, interpolation_id_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, grass_id_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, rock_id_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, snow_id_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_2D, sand_id_);
+
+            glm::vec2 offset = glm::vec2(offsetX, offsetY);
+
+            glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
+            glUniform1i(glGetUniformLocation(program_id_, "clip"), underwaterclip);
 
             // setup MVP
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));

@@ -12,20 +12,35 @@ uniform mat4 model;
 uniform mat4 view;
 uniform vec3 light_pos;
 
-uniform vec2 offset;
+const float M_PI = 3.1415926535897932384626433832795;
 
-uniform sampler2D tex;
+uniform vec2 offset;
+uniform sampler2D normal_map;
+
+uniform float time;
+
+out vec3 normal_t;
+
+float getHeight(vec2 uv) {
+    return 0.4 + (sin(2*M_PI*12*(uv.x + 2*uv.y) - 2*time)/500 + sin(2*M_PI*12*(2*uv.x + uv.y) -2*time)/500 + sin(2*M_PI*12*(uv.x + uv.y) -2*time)/500);
+}
 
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
-
-    height = 0.4 + (texture(tex, uv*10 + offset).r -0.5)/50;
+    vec2 pos = uv + vec2(mod(offset.x, 1.0), mod(offset.y, 1.0));
+    height = getHeight(uv);
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
 
-    vpoint_mv = view * model * vec4(pos_3d, 1.0);
+    normal_t = mat3(transpose(inverse(view * model))) * texture(normal_map, uv + time/1000).xzy; //xzy
+
+    //test = mat3(transpose(inverse(view * model))) * texture(normal_map, 2*uv + time/1000).xyz;
+
+    mat4 MV = view * model;
+
+    vpoint_mv = MV * vec4(pos_3d, 1.0);
     gl_Position = projection * vpoint_mv;
-    light_dir = normalize(light_pos - vec3(vpoint_mv));
+    light_dir = normalize(mat3(MV) * light_pos - vpoint_mv.xyz);
     view_dir = normalize(- vec3(vpoint_mv));
 
 }

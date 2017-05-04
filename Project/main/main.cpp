@@ -15,12 +15,13 @@
 
 #include "multitiles/multitiles.h"
 
+constexpr float NB_FPS = 60.0;
+
+
 const unsigned int OFFSET_X = 256;
-const unsigned int OFFSET_Y = 256;
+const unsigned int OFFSET_Y = 257;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
-
-Skybox skybox;
 
 int window_width = 800;
 int window_height = 600;
@@ -29,13 +30,9 @@ using namespace glm;
 
 mat4 projection_matrix;
 mat4 view_matrix;
-mat4 trackball_matrix;
-mat4 old_trackball_matrix;
 mat4 quad_model_matrix;
 
-double old_y;
-
-Trackball trackball;
+float old_x, old_y;
 
 float distance_camera = -2.5;
 
@@ -115,15 +112,12 @@ void Init() {
     view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
                          vec3(0.0f, 0.0f, 0.0f),
                          vec3(0.0f, 1.0f, 0.0f));
-    view_matrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, distance_camera));
+    view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, 0.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    trackball_matrix = glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
-
-    quad_model_matrix = translate(mat4(1.0f), vec3(0.0f, -0.25f, 0.0f));
+    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
     multitiles.Init(window_width, window_height);
 
-    skybox.init("miramar");
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 }
@@ -131,18 +125,16 @@ void Init() {
 // gets called for every frame.
 void Display() {
 
-    //multitiles.incrementY(); //to move with the camera
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glViewport(0, 0, window_width, window_height);
 
-    skybox.draw(trackball_matrix * view_matrix, projection_matrix);
+    multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
 
-    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(1,0.5, 1));
+}
 
-    multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
-
+void Update() {
+    multitiles.incrementY(); //to move with the camera
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.
@@ -161,11 +153,10 @@ void MouseButton(GLFWwindow* window, int button, int action, int mod) {
         double x_i, y_i;
         glfwGetCursorPos(window, &x_i, &y_i);
         vec2 p = TransformScreenCoords(window, x_i, y_i);
-        trackball.BeingDrag(p.x, p.y);
-        old_trackball_matrix = trackball_matrix;
         // Store the current state of the model matrix.
     }
     old_y = -2;
+    old_x = -2;
 }
 
 void MousePos(GLFWwindow* window, double x, double y) {
@@ -175,24 +166,18 @@ void MousePos(GLFWwindow* window, double x, double y) {
         // trackball.Drag(...) and the value stored in 'old_trackball_matrix'.
         // See also the mouse_button(...) function.
         // trackball_matrix = ...
-        trackball_matrix = trackball.Drag(p.x, p.y) * old_trackball_matrix;
-    }
+        //view_matrix = trackball.Drag(p.x, p.y) * view_matrix;
 
-    // zoom
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-        // TODO 4: Implement zooming. When the right mouse button is pressed,
-        // moving the mouse cursor up and down (along the screen's y axis)
-        // should zoom out and it. For that you have to update the current
-        // 'view_matrix' with a translation along the z axis.
-        // view_matrix = ...
-
-        vec2 p = TransformScreenCoords(window, x, y);
+        if(old_x < -1.5) {
+            old_x = p.x;
+        }
         if(old_y < -1.5) {
             old_y = p.y;
         }
 
-        view_matrix = translate(view_matrix, vec3(0.0, 0.0, p.y - old_y));
-        distance_camera += p.y - old_y;
+        view_matrix = glm::rotate(IDENTITY_MATRIX, p.x - old_x, vec3(0.0, 1.0, 0.0)) * view_matrix;
+        view_matrix = glm::rotate(IDENTITY_MATRIX, old_y - p.y, vec3(1.0, 0.0, 0.0)) * view_matrix;
+        old_x = p.x;
         old_y = p.y;
     }
 }
@@ -226,16 +211,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 
     if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        multitiles.incrementY();
+        view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
     }
     if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        multitiles.decrementY();
+        view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, -0.1)) * view_matrix;
     }
     if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        multitiles.decrementX();
+        view_matrix = translate(IDENTITY_MATRIX, vec3(0.1, 0, 0)) * view_matrix;
     }
     if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        multitiles.incrementX();
+        view_matrix = translate(IDENTITY_MATRIX, vec3(-0.1, 0, 0)) * view_matrix;
     }
 }
 
@@ -260,7 +245,7 @@ int main(int argc, char *argv[]) {
     // note some Intel GPUs do not support OpenGL 3.2
     // note update the driver of your graphic card
     GLFWwindow* window = glfwCreateWindow(window_width, window_height,
-                                          "Trackball", NULL, NULL);
+                                          "Mountains", NULL, NULL);
     if(!window) {
         glfwTerminate();
         return EXIT_FAILURE;
@@ -297,10 +282,19 @@ int main(int argc, char *argv[]) {
     glfwGetFramebufferSize(window, &window_width, &window_height);
     SetupProjection(window, window_width, window_height);
 
+    constexpr double limitSPF = 1.0/NB_FPS;
+    double lastTime = 0, time = 0;
+
     // render loop
     while(!glfwWindowShouldClose(window)){
-        Display();
-        glfwSwapBuffers(window);
+
+        time = glfwGetTime();
+        if(time - lastTime >= limitSPF) {
+            Display();
+            //Update();
+            lastTime = time;
+            glfwSwapBuffers(window);
+        }
         glfwPollEvents();
     }
 

@@ -6,7 +6,12 @@ file(GLOB_RECURSE HEADERS "*.h")
 # these files are copied only once
 file(GLOB TEXTURES
     skybox/miramar
-    skybox/ely_cloudtop)
+    skybox/ely_cloudtop
+    mountains_render/grass.jpg
+mountains_render/rock.jpg
+mountains_render/snow.jpg
+mountains_render/sand.jpg
+water/normalmap.jpg)
 copy_files_once(${TEXTURES})
 
 # list all the files you want to copy everytime
