@@ -29,14 +29,17 @@ MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 int window_width = 800;
 int window_height = 600;
 
-float a1(0.0), a2(0.0), currTrans, x0(0.0),v0(0.0);
-int t(0);
-float eps(0.01);
+float a1(0.0), a2(0.0), currTrans, x0(0.0);
+float rh1(0.0), rh2(0.0), currRoth, rh0(0.0);
+float rv1(0.0), rv2(0.0), currRotv, rv0(0.0);
+int t(0), trh(0), trv(0);
 bool frontInc(false), frontDec(false);
-int t1(0), t2(0), tmax(0);
+bool frontIncv(false), frontDecv(false);
+bool frontInch(false), frontDech(false);
 int t10(0), t20(0);
-bool firstForm(true);
-bool increment(false);
+int rH10(0), rH20(0);
+int rV10(0), rV20(0);
+bool increment(false), incrementrh(false), incrementrv(false);
 
 using namespace glm;
 
@@ -137,20 +140,40 @@ void Init() {    // sets background color
 
 
 
-void startIncrementing(){
+void startIncrementingTranslation(){
     increment = true;
     t = 0;
 }
 
-void stopIncrementing(){
+void startIncrementingRotationh(){
+    incrementrh = true;
+    trh = 0;
+}
+
+void startIncrementingRotationv(){
+    incrementrv = true;
+    trv = 0;
+}
+
+void stopIncrementingTranslation(){
     increment = false;
     t = 0;
+}
+
+void stopIncrementingRotationh(){
+    incrementrh = false;
+    trh=0;
+}
+
+void stopIncrementingRotationv(){
+    incrementrv = false;
+    trv =0;
 }
 
 void transFunc(bool *front, bool* back){
     if((*front)){
         if(currTrans == 0){
-            startIncrementing();
+            startIncrementingTranslation();
             ++t;
             currTrans = 0.5*a1*t*t;
         }
@@ -173,7 +196,7 @@ void transFunc(bool *front, bool* back){
 
     } else if((*back)){
         if(currTrans == 0){
-            startIncrementing();
+            startIncrementingTranslation();
             ++t;
             currTrans = 0.5*a2*t*t;
         }
@@ -209,7 +232,7 @@ void transFunc(bool *front, bool* back){
             }
         }
         else if(currTrans == 0){
-            stopIncrementing();
+            stopIncrementingTranslation();
             a1 = 0.0;
             a2 = 0.0;
             x0 =0;
@@ -220,6 +243,151 @@ void transFunc(bool *front, bool* back){
     view_matrix = translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
 }
 
+void rotHFunc(bool *front, bool* back){
+    if((*front)){
+        if(currRoth == 0){
+            startIncrementingRotationh();
+            ++trh;
+            currRoth = 0.5*rh1*trh*trh;
+        }
+        if(currRoth>=0 && currRoth < 0.5*rh1*MAX_T*MAX_T){
+            rh2 = 0.0;
+            currRoth = rh0+ 0.5*rh1*trh*trh;
+            //x0 = currTrans;
+        } else if(currRoth >=0.5*rh1*MAX_T*MAX_T){
+            rh2 = 0.0;
+            currRoth = rh0+0.5*rh1*MAX_T*MAX_T;
+            //x0 = currTrans;
+        } else{
+            rh2 = 0.0;
+            currRoth = rh0 + 0.5*rh1*(trh-rH20)*(trh-rH20);
+            cout << "x0: " << rh0 << endl;
+            cout << "currTrans: " << currTrans << endl;
+
+        }
+
+
+    } else if((*back)){
+        if(currRoth == 0){
+            startIncrementingRotationh();
+            ++trh;
+            currRoth = 0.5*rh2*trh*trh;
+        }
+        if(currRoth<=0 && currRoth > 0.5*rh2*MAX_T*MAX_T){
+            rh1 = 0.0;
+            currRoth = rh0+ 0.5*rh2*trh*trh;
+            //x0 = currTrans;
+        }else if(currRoth <= 0.5*rh2*MAX_T*MAX_T){
+            rh1 = 0.0;
+            currRoth = rh0+0.5*rh2*MAX_T*MAX_T;
+            //x0 = currTrans;
+        }else{
+            rh1 = 0.0;
+            currRoth=  rh0 + 0.5*rh2*(trh-rH10)*(trh-rH10);
+        }
+
+    }else{
+        if(currRoth > 0){
+            rh0 = currRoth;
+            rh1 = 0.0;
+            rh2 = -ACCEL_FACTOR;
+            currRoth = rh0 + 0.5*rh2*(trh-rH10)*(trh-rH10);
+            if(currRoth <= 0){
+                currRoth = 0;
+            }
+        }else if(currRoth < 0){
+            rh0 = currRoth;
+            rh2 = 0.0;
+            rh1 = ACCEL_FACTOR;
+            currRoth = rh0 + 0.5*rh1*(trh-rH20)*(trh-rH20);
+            if(currRoth >=0){
+                currRoth = 0;
+            }
+        }
+        else if(currRoth == 0){
+            stopIncrementingRotationh();
+            rh1 = 0.0;
+            rh2 = 0.0;
+            rh0 =0;
+            rH10 = 0;
+            rH20 = 0;
+        }
+    }
+    view_matrix = rotate(IDENTITY_MATRIX, -currRoth, vec3(1.0,0.0,0.0f))*view_matrix;
+}
+
+void rotVFunc(bool *front, bool* back){
+    if((*front)){
+        if(currRotv == 0){
+            startIncrementingRotationv();
+            ++trv;
+            currRotv = 0.5*rv1*trv*trv;
+        }
+        if(currRotv>=0 && currRotv < 0.5*rv1*MAX_T*MAX_T){
+            rv2 = 0.0;
+            currRotv = rv0+ 0.5*rv1*trv*trv;
+            //x0 = currTrans;
+        } else if(currRotv >=0.5*rv1*MAX_T*MAX_T){
+            rv2 = 0.0;
+            currRotv = rv0+0.5*rv1*MAX_T*MAX_T;
+            //x0 = currTrans;
+        } else{
+            rv2 = 0.0;
+            currRotv = rv0 + 0.5*rv1*(trv-rV20)*(trv-rV20);
+
+        }
+
+
+    } else if((*back)){
+        if(currRotv == 0){
+            startIncrementingRotationv();
+            ++trv;
+            currRotv = 0.5*rv2*trv*trv;
+        }
+        if(currRotv<=0 && currRotv > 0.5*rv2*MAX_T*MAX_T){
+            rv1 = 0.0;
+            currRotv = rv0+ 0.5*rv2*trv*trv;
+            //x0 = currTrans;
+        }else if(currRotv <= 0.5*rv2*MAX_T*MAX_T){
+            rv1 = 0.0;
+            currRotv = rv0+0.5*rv2*MAX_T*MAX_T;
+            //x0 = currTrans;
+        }else{
+            rv1 = 0.0;
+            currRotv=  rv0 + 0.5*rv2*(trv-rV10)*(trv-rV10);
+        }
+
+    }else{
+        if(currRotv > 0){
+            rv0 = currRotv;
+            rv1 = 0.0;
+            rv2 = -ACCEL_FACTOR;
+            currRotv = rv0 + 0.5*rv2*(trv-rV10)*(trv-rV10);
+            if(currRotv <= 0){
+                currRotv = 0;
+            }
+        }else if(currRotv < 0){
+            rv0 = currRotv;
+            rv2 = 0.0;
+            rv1 = ACCEL_FACTOR;
+            currRotv = rv0 + 0.5*rv1*(trv-rV20)*(trv-rV20);
+            if(currRotv >=0){
+                currRotv = 0;
+            }
+        }
+        else if(currRotv == 0){
+            stopIncrementingRotationv();
+            rv1 = 0.0;
+            rv2 = 0.0;
+            rv0 =0;
+            rV10 = 0;
+            rV20 = 0;
+        }
+    }
+    view_matrix = rotate(IDENTITY_MATRIX, -currRotv, vec3(0.0,1.0,0.0f))*view_matrix;
+}
+
+
 
 // gets called for every frame.
 void Display() {
@@ -228,9 +396,18 @@ void Display() {
 
     glViewport(0, 0, window_width, window_height);
     if(increment) t++;
+    if(incrementrh) trh++;
+    if(incrementrv) trv++;
     transFunc(&frontInc, &frontDec);
+    rotHFunc(&frontInch, &frontDech);
+    rotVFunc(&frontIncv, &frontDecv);
     frontInc = false;
     frontDec = false;
+
+    frontInch = false;
+    frontDech = false;
+    frontIncv = false;
+    frontDecv = false;
     multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
 
 }
@@ -322,7 +499,26 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         a2 = -ACCEL_FACTOR;
         t20 = t;
     }
-
+    if(key == GLFW_KEY_Q &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        frontInch = true;
+        rh1 = ACCEL_FACTOR;
+        rH10 = trh;
+    }
+    if(key == GLFW_KEY_E &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        frontDech = true;
+        rh2 = -ACCEL_FACTOR;
+        rH20 = trh;
+    }
+    if(key == GLFW_KEY_A &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        frontIncv = true;
+        rv1 = ACCEL_FACTOR;
+        rV10 = trv;
+    }
+    if(key == GLFW_KEY_D &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        frontDecv = true;
+        rv2 = -ACCEL_FACTOR;
+        rV20 = trv;
+    }
 }
 
 
