@@ -15,6 +15,9 @@
 
 #include "multitiles/multitiles.h"
 
+#define ACCEL_FACTOR 0.000005
+#define MAX_T 30
+
 constexpr float NB_FPS = 60.0;
 
 
@@ -25,6 +28,15 @@ MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 
 int window_width = 800;
 int window_height = 600;
+
+float a1(0.0), a2(0.0), currTrans, x0(0.0),v0(0.0);
+int t(0);
+float eps(0.01);
+bool frontInc(false), frontDec(false);
+int t1(0), t2(0), tmax(0);
+int t10(0), t20(0);
+bool firstForm(true);
+bool increment(false);
 
 using namespace glm;
 
@@ -97,8 +109,7 @@ mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
     return look_at;
 }
 
-void Init() {
-    // sets background color
+void Init() {    // sets background color
     glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
 
     // enable depth test.
@@ -114,7 +125,7 @@ void Init() {
                          vec3(0.0f, 1.0f, 0.0f));
     view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, 0.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
+    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,5, 5));
 
     multitiles.Init(window_width, window_height);
 
@@ -122,13 +133,104 @@ void Init() {
 
 }
 
+
+
+
+
+void startIncrementing(){
+    increment = true;
+    t = 0;
+}
+
+void stopIncrementing(){
+    increment = false;
+    t = 0;
+}
+
+void transFunc(bool *front, bool* back){
+    if((*front)){
+        if(currTrans == 0){
+            startIncrementing();
+            ++t;
+            currTrans = 0.5*a1*t*t;
+        }
+        if(currTrans>=0 && currTrans < 0.5*a1*MAX_T*MAX_T){
+            a2 = 0.0;
+            currTrans = x0+ 0.5*a1*t*t;
+            //x0 = currTrans;
+        } else if(currTrans >=0.5*a1*MAX_T*MAX_T){
+            a2 = 0.0;
+            currTrans = x0+0.5*a1*MAX_T*MAX_T;
+            //x0 = currTrans;
+        } else{
+            a2 = 0.0;
+            currTrans = x0 + 0.5*a1*(t-t20)*(t-t20);
+            cout << "x0: " << x0 << endl;
+            cout << "currTrans: " << currTrans << endl;
+
+        }
+
+
+    } else if((*back)){
+        if(currTrans == 0){
+            startIncrementing();
+            ++t;
+            currTrans = 0.5*a2*t*t;
+        }
+        if(currTrans<=0 && currTrans > 0.5*a2*MAX_T*MAX_T){
+            a1 = 0.0;
+            currTrans = x0+ 0.5*a2*t*t;
+            //x0 = currTrans;
+        }else if(currTrans <= 0.5*a2*MAX_T*MAX_T){
+            a1 = 0.0;
+            currTrans = x0+0.5*a2*MAX_T*MAX_T;
+            //x0 = currTrans;
+        }else{
+            a1 = 0.0;
+            currTrans=  x0 + 0.5*a2*(t-t10)*(t-t10);
+        }
+
+    }else{
+        if(currTrans > 0){
+            x0 = currTrans;
+            a1 = 0.0;
+            a2 = -ACCEL_FACTOR;
+            currTrans = x0 + 0.5*a2*(t-t10)*(t-t10);
+            if(currTrans <= 0){
+                currTrans = 0;
+            }
+        }else if(currTrans < 0){
+            x0 = currTrans;
+            a2 = 0.0;
+            a1 = ACCEL_FACTOR;
+            currTrans = x0 + 0.5*a1*(t-t20)*(t-t20);
+            if(currTrans >=0){
+                currTrans = 0;
+            }
+        }
+        else if(currTrans == 0){
+            stopIncrementing();
+            a1 = 0.0;
+            a2 = 0.0;
+            x0 =0;
+            t10 = 0;
+            t20 = 0;
+        }
+    }
+    view_matrix = translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
+}
+
+
 // gets called for every frame.
 void Display() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glViewport(0, 0, window_width, window_height);
-
+    if(increment) t++;
+    transFunc(&frontInc, &frontDec);
+    frontInc = false;
+    frontDec = false;
     multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
 
 }
@@ -210,19 +312,19 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
 
-    if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+    if(key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+        frontInc = true;
+        a1 = ACCEL_FACTOR;
+        t10 = t;
     }
-    if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, -0.1)) * view_matrix;
+    if(key == GLFW_KEY_S &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        frontDec = true;
+        a2 = -ACCEL_FACTOR;
+        t20 = t;
     }
-    if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(0.1, 0, 0)) * view_matrix;
-    }
-    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(-0.1, 0, 0)) * view_matrix;
-    }
+
 }
+
 
 
 int main(int argc, char *argv[]) {
