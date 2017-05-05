@@ -106,9 +106,9 @@ mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
     R = transpose(R);
 
     mat4 look_at(vec4(R[0], 0.0f),
-                 vec4(R[1], 0.0f),
-                 vec4(R[2], 0.0f),
-                 vec4(-R * (eye), 1.0f));
+            vec4(R[1], 0.0f),
+            vec4(R[2], 0.0f),
+            vec4(-R * (eye), 1.0f));
     return look_at;
 }
 
@@ -163,6 +163,7 @@ void stopIncrementingTranslation(){
 void stopIncrementingRotationh(){
     incrementrh = false;
     trh=0;
+
 }
 
 void stopIncrementingRotationv(){
@@ -170,224 +171,103 @@ void stopIncrementingRotationv(){
     trv =0;
 }
 
-void transFunc(bool *front, bool* back){
+
+void inertiaFunc(bool *front, bool* back,
+                 float *posValue, float *initPos,
+                 float *fwAccel, float *bwAccel,
+                 int *time, int *fwStartTime, int *bwStartTime,
+                 void (*startIncremF)(), void (*stopIncremF)()){
     if((*front)){
-        if(currTrans == 0){
-            startIncrementingTranslation();
-            ++t;
-            currTrans = 0.5*a1*t*t;
+        if((*posValue) == 0){
+            startIncremF();
+            ++(*time);
+            (*posValue) = 0.5*(*fwAccel)*(*time)*(*time);
         }
-        if(currTrans>=0 && currTrans < 0.5*a1*MAX_T*MAX_T){
-            a2 = 0.0;
-            currTrans = x0+ 0.5*a1*t*t;
-            //x0 = currTrans;
-        } else if(currTrans >=0.5*a1*MAX_T*MAX_T){
-            a2 = 0.0;
-            currTrans = x0+0.5*a1*MAX_T*MAX_T;
-            //x0 = currTrans;
+        if((*posValue)>=0 && (*posValue) < 0.5*(*fwAccel)*MAX_T*MAX_T){
+            (*bwAccel) = 0.0;
+            (*posValue) = (*initPos)+ 0.5*(*fwAccel)*(*time)*(*time);
+        } else if((*posValue) >=0.5*(*fwAccel)*MAX_T*MAX_T){
+            (*bwAccel) = 0.0;
+            (*posValue) = (*initPos)+0.5*(*fwAccel)*MAX_T*MAX_T;
         } else{
-            a2 = 0.0;
-            currTrans = x0 + 0.5*a1*(t-t20)*(t-t20);
-            cout << "x0: " << x0 << endl;
-            cout << "currTrans: " << currTrans << endl;
+            (*bwAccel) = 0.0;
+            (*posValue) = (*initPos) + 0.5*(*fwAccel)*((*time)-(*bwStartTime))*((*time)-(*bwStartTime));
 
         }
 
 
     } else if((*back)){
-        if(currTrans == 0){
-            startIncrementingTranslation();
-            ++t;
-            currTrans = 0.5*a2*t*t;
+        if((*posValue) == 0){
+            startIncremF();
+            ++(*time);
+            (*posValue) = 0.5*(*bwAccel)*(*time)*(*time);
         }
-        if(currTrans<=0 && currTrans > 0.5*a2*MAX_T*MAX_T){
-            a1 = 0.0;
-            currTrans = x0+ 0.5*a2*t*t;
-            //x0 = currTrans;
-        }else if(currTrans <= 0.5*a2*MAX_T*MAX_T){
-            a1 = 0.0;
-            currTrans = x0+0.5*a2*MAX_T*MAX_T;
-            //x0 = currTrans;
+        if((*posValue)<=0 && (*posValue) > 0.5*(*bwAccel)*MAX_T*MAX_T){
+            (*fwAccel) = 0.0;
+            (*posValue) = (*initPos)+ 0.5*(*bwAccel)*(*time)*(*time);
+        }else if((*posValue) <= 0.5*(*bwAccel)*MAX_T*MAX_T){
+            (*fwAccel) = 0.0;
+            (*posValue) = (*initPos)+0.5*(*bwAccel)*MAX_T*MAX_T;
         }else{
-            a1 = 0.0;
-            currTrans=  x0 + 0.5*a2*(t-t10)*(t-t10);
+            (*fwAccel) = 0.0;
+            (*posValue)=  (*initPos) + 0.5*(*bwAccel)*((*time)-(*fwStartTime))*((*time)-(*fwStartTime));
         }
 
     }else{
-        if(currTrans > 0){
-            x0 = currTrans;
-            a1 = 0.0;
-            a2 = -ACCEL_FACTOR;
-            currTrans = x0 + 0.5*a2*(t-t10)*(t-t10);
-            if(currTrans <= 0){
-                currTrans = 0;
+        if((*posValue) > 0){
+            (*initPos) = (*posValue);
+            (*fwAccel) = 0.0;
+            (*bwAccel) = -ACCEL_FACTOR;
+            (*posValue) = (*initPos) + 0.5*(*bwAccel)*((*time)-(*fwStartTime))*((*time)-(*fwStartTime));
+            if((*posValue) <= 0){
+                (*posValue) = 0;
             }
-        }else if(currTrans < 0){
-            x0 = currTrans;
-            a2 = 0.0;
-            a1 = ACCEL_FACTOR;
-            currTrans = x0 + 0.5*a1*(t-t20)*(t-t20);
-            if(currTrans >=0){
-                currTrans = 0;
+        }else if((*posValue) < 0){
+            (*initPos) = (*posValue);
+            (*bwAccel) = 0.0;
+            (*fwAccel) = ACCEL_FACTOR;
+            (*posValue) = (*initPos) + 0.5*(*fwAccel)*((*time)-(*bwStartTime))*((*time)-(*bwStartTime));
+            if((*posValue) >=0){
+                (*posValue) = 0;
             }
         }
-        else if(currTrans == 0){
-            stopIncrementingTranslation();
-            a1 = 0.0;
-            a2 = 0.0;
-            x0 =0;
-            t10 = 0;
-            t20 = 0;
+        else if((*posValue) == 0){
+            stopIncremF();
+            (*fwAccel) = 0.0;
+            (*bwAccel) = 0.0;
+            (*initPos) =0;
+            (*fwStartTime) = 0;
+            (*bwStartTime) = 0;
         }
     }
+}
+
+void transFunc(bool *front, bool *back){
+    inertiaFunc(front,back, &currTrans, &x0, &a1, &a2, &t, &t10, &t20, startIncrementingTranslation,
+                stopIncrementingTranslation);
     view_matrix = translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
+    frontInc = false;
+    frontDec = false;
 }
 
-void rotHFunc(bool *front, bool* back){
-    if((*front)){
-        if(currRoth == 0){
-            startIncrementingRotationh();
-            ++trh;
-            currRoth = 0.5*rh1*trh*trh;
-        }
-        if(currRoth>=0 && currRoth < 0.5*rh1*MAX_T*MAX_T){
-            rh2 = 0.0;
-            currRoth = rh0+ 0.5*rh1*trh*trh;
-            //x0 = currTrans;
-        } else if(currRoth >=0.5*rh1*MAX_T*MAX_T){
-            rh2 = 0.0;
-            currRoth = rh0+0.5*rh1*MAX_T*MAX_T;
-            //x0 = currTrans;
-        } else{
-            rh2 = 0.0;
-            currRoth = rh0 + 0.5*rh1*(trh-rH20)*(trh-rH20);
-            cout << "x0: " << rh0 << endl;
-            cout << "currTrans: " << currTrans << endl;
+void rotHFunc(bool *front, bool *back){
+    inertiaFunc(front, back, &currRoth, &rh0,&rh1,&rh2, &trh, &rH10, &rH20,
+                startIncrementingRotationh, stopIncrementingRotationh);
 
-        }
-
-
-    } else if((*back)){
-        if(currRoth == 0){
-            startIncrementingRotationh();
-            ++trh;
-            currRoth = 0.5*rh2*trh*trh;
-        }
-        if(currRoth<=0 && currRoth > 0.5*rh2*MAX_T*MAX_T){
-            rh1 = 0.0;
-            currRoth = rh0+ 0.5*rh2*trh*trh;
-            //x0 = currTrans;
-        }else if(currRoth <= 0.5*rh2*MAX_T*MAX_T){
-            rh1 = 0.0;
-            currRoth = rh0+0.5*rh2*MAX_T*MAX_T;
-            //x0 = currTrans;
-        }else{
-            rh1 = 0.0;
-            currRoth=  rh0 + 0.5*rh2*(trh-rH10)*(trh-rH10);
-        }
-
-    }else{
-        if(currRoth > 0){
-            rh0 = currRoth;
-            rh1 = 0.0;
-            rh2 = -ACCEL_FACTOR;
-            currRoth = rh0 + 0.5*rh2*(trh-rH10)*(trh-rH10);
-            if(currRoth <= 0){
-                currRoth = 0;
-            }
-        }else if(currRoth < 0){
-            rh0 = currRoth;
-            rh2 = 0.0;
-            rh1 = ACCEL_FACTOR;
-            currRoth = rh0 + 0.5*rh1*(trh-rH20)*(trh-rH20);
-            if(currRoth >=0){
-                currRoth = 0;
-            }
-        }
-        else if(currRoth == 0){
-            stopIncrementingRotationh();
-            rh1 = 0.0;
-            rh2 = 0.0;
-            rh0 =0;
-            rH10 = 0;
-            rH20 = 0;
-        }
-    }
     view_matrix = rotate(IDENTITY_MATRIX, -currRoth, vec3(1.0,0.0,0.0f))*view_matrix;
+    frontInch = false;
+    frontDech = false;
+
 }
 
-void rotVFunc(bool *front, bool* back){
-    if((*front)){
-        if(currRotv == 0){
-            startIncrementingRotationv();
-            ++trv;
-            currRotv = 0.5*rv1*trv*trv;
-        }
-        if(currRotv>=0 && currRotv < 0.5*rv1*MAX_T*MAX_T){
-            rv2 = 0.0;
-            currRotv = rv0+ 0.5*rv1*trv*trv;
-            //x0 = currTrans;
-        } else if(currRotv >=0.5*rv1*MAX_T*MAX_T){
-            rv2 = 0.0;
-            currRotv = rv0+0.5*rv1*MAX_T*MAX_T;
-            //x0 = currTrans;
-        } else{
-            rv2 = 0.0;
-            currRotv = rv0 + 0.5*rv1*(trv-rV20)*(trv-rV20);
+void rotVFunc(bool *front, bool *back){
+    inertiaFunc(front, back, &currRotv, &rv0, &rv1, &rv2, &trv, &rV10, &rV20,
+                startIncrementingRotationv, stopIncrementingRotationv);
 
-        }
-
-
-    } else if((*back)){
-        if(currRotv == 0){
-            startIncrementingRotationv();
-            ++trv;
-            currRotv = 0.5*rv2*trv*trv;
-        }
-        if(currRotv<=0 && currRotv > 0.5*rv2*MAX_T*MAX_T){
-            rv1 = 0.0;
-            currRotv = rv0+ 0.5*rv2*trv*trv;
-            //x0 = currTrans;
-        }else if(currRotv <= 0.5*rv2*MAX_T*MAX_T){
-            rv1 = 0.0;
-            currRotv = rv0+0.5*rv2*MAX_T*MAX_T;
-            //x0 = currTrans;
-        }else{
-            rv1 = 0.0;
-            currRotv=  rv0 + 0.5*rv2*(trv-rV10)*(trv-rV10);
-        }
-
-    }else{
-        if(currRotv > 0){
-            rv0 = currRotv;
-            rv1 = 0.0;
-            rv2 = -ACCEL_FACTOR;
-            currRotv = rv0 + 0.5*rv2*(trv-rV10)*(trv-rV10);
-            if(currRotv <= 0){
-                currRotv = 0;
-            }
-        }else if(currRotv < 0){
-            rv0 = currRotv;
-            rv2 = 0.0;
-            rv1 = ACCEL_FACTOR;
-            currRotv = rv0 + 0.5*rv1*(trv-rV20)*(trv-rV20);
-            if(currRotv >=0){
-                currRotv = 0;
-            }
-        }
-        else if(currRotv == 0){
-            stopIncrementingRotationv();
-            rv1 = 0.0;
-            rv2 = 0.0;
-            rv0 =0;
-            rV10 = 0;
-            rV20 = 0;
-        }
-    }
     view_matrix = rotate(IDENTITY_MATRIX, -currRotv, vec3(0.0,1.0,0.0f))*view_matrix;
+    frontIncv = false;
+    frontDecv = false;
 }
-
-
 
 // gets called for every frame.
 void Display() {
@@ -401,13 +281,7 @@ void Display() {
     transFunc(&frontInc, &frontDec);
     rotHFunc(&frontInch, &frontDech);
     rotVFunc(&frontIncv, &frontDecv);
-    frontInc = false;
-    frontDec = false;
 
-    frontInch = false;
-    frontDech = false;
-    frontIncv = false;
-    frontDecv = false;
     multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
 
 }
