@@ -30,7 +30,7 @@ void main() {
 
         vec3 p = vpoint_mv.xyz;
 
-        vec3 normal_mv = normalize(normal_t);//normalize(cross(dFdx(p), dFdy(p)));//normalize(texture(normal_map, 4*uv - time/100).xyz);//normalize(cross(dFdx(p), dFdy(p))); // normalize(test);////
+        vec3 normal_mv = normalize(normal_t);
 
         float nDotL = max(dot(normal_mv, light_dir), 0);
 
@@ -39,19 +39,12 @@ void main() {
 
         vec3 c = vec3(0.0, 0.0, .2);
 
-        color.xyz = c * La;
+        color.xyz = c * La + kd * nDotL * Ld + mix(0, 0.5, height*3) * ks * pow(rDotV, alpha) * Ls;
+        color.a = 0.6;
 
         ivec2 window_dim = textureSize(ref, 0);
         vec2 window_rel = vec2(gl_FragCoord.x / window_dim.x, gl_FragCoord.y / window_dim.y);
-        color.xyz = mix(color.xyz, texture(ref, window_rel).rgb, 0.4);
-        color.a = 0.6;
-
-        color.xyz +=  kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;
-
-        //float distance = gl_FragCoord.z;
-        //if (distance > fog_threshold) {
-          //color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
-        //}
+        color = mix(color, texture(ref, window_rel), 0.7-abs(terrainHeight - height));
 
     }
     else {
@@ -59,3 +52,9 @@ void main() {
     }
 
 }
+
+
+//float distance = gl_FragCoord.z;
+//if (distance > fog_threshold) {
+  //color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
+//}

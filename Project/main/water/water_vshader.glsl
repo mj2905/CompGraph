@@ -32,9 +32,7 @@ void main() {
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
 
-    normal_t = mat3(transpose(inverse(view * model))) * texture(normal_map, uv + time/1000).xzy; //xzy
-
-    //test = mat3(transpose(inverse(view * model))) * texture(normal_map, 2*uv + time/1000).xyz;
+    normal_t = mat3(transpose(inverse(view * model))) * texture(normal_map, 2*uv + vec2(0, -time/100)).xyz;
 
     mat4 MV = view * model;
 
