@@ -31,16 +31,43 @@ private:
         }
     }
 
+    const size_t segments;
+    vector<vec3> samples;
+
+    vector<vec3> computeSamples() {
+        double step = 1.0/segments;
+        vector<vec3> segs;
+        for(size_t i = 0; i <= segments; ++i) {
+            double t = i * step;
+            segs.push_back(apply(points, (float)t));
+        }
+        return segs;
+    }
+
+    vec3 interpolationSamples(float t) {
+        size_t segment = t * segments;
+        if(segment >= segments) {
+            return samples[samples.size() - 1];
+        }
+
+        float variable = t * segments - segment;
+
+        return (1-variable) * samples[segment] + variable*samples[segment+1];
+    }
+
 
 public:
 
-    Bezier(vector<vec3>& points) : points(points) {
+    Bezier(vector<vec3>& points, size_t segments = 30) : points(points), segments(segments) {
         assert(this->points.size() >= 2);
+        assert(segments >= 1);
+        samples = computeSamples();
     }
 
     vec3 apply(float t) {
         assert(t >= 0 and t <= 1);
-        return apply(points, t);
+        //return apply(points, t);
+        return interpolationSamples(t);
     }
 
 };
