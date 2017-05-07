@@ -43,13 +43,10 @@ public:
         vec3 zpivot = normalize(center - position);
         vec3 xpivot = normalize(cross(up, zpivot));
 
-        position += zpivot * z;
-        if(x != 0) {
-            position += xpivot * x;
-            center += xpivot * x;
-        }
+        position += zpivot * z + xpivot * x;
+        center += xpivot * x + zpivot * z;
+
         AbstractCamera::Init(position, center, up);
-        cout << position.x << " " << position.y << " " << position.z << " " << center.x << " " << center.y << " " << center.z << endl;
     }
 
     virtual void increaseVelocity() override {}
