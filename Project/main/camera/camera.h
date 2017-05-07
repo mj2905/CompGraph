@@ -52,5 +52,8 @@ public:
         cout << position.x << " " << position.y << " " << position.z << " " << center.x << " " << center.y << " " << center.z << endl;
     }
 
+    virtual void increaseVelocity() override {}
+    virtual void decreaseVelocity() override {}
+
 
 };

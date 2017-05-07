@@ -53,6 +53,9 @@ public:
 
     virtual void move(float x, float z) = 0;
 
+    virtual void increaseVelocity() = 0;
+    virtual void decreaseVelocity() = 0;
+
     mat4 getView() {
         return view_matrix;
     }
