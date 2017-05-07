@@ -15,6 +15,11 @@
 
 #include "multitiles/multitiles.h"
 
+#include "camera/abstractcamera.h"
+#include "camera/beziercamera.h"
+#include "camera/camera.h"
+
+
 constexpr float NB_FPS = 60.0;
 
 
@@ -29,15 +34,13 @@ int window_height = 600;
 using namespace glm;
 
 mat4 projection_matrix;
-mat4 view_matrix;
 
 mat4 quad_model_matrix;
 mat4 quad_model_matrix_base;
 
+AbstractCamera* camera;
+
 float old_x, old_y;
-
-
-float distance_camera = 0;
 
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
@@ -70,36 +73,6 @@ mat4 PerspectiveProjection(float fovy, float aspect, float near, float far) {
     return pro; // we already transposed the matrix (since it's column major!) so no need to transpose it again
 }
 
-mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
-    // we need a function that converts from world coordinates into camera coordiantes.
-    //
-    // cam coords to world coords is given by:
-    // X_world = R * X_cam + eye
-    //
-    // inverting it leads to:
-    //
-    // X_cam = R^T * X_world - R^T * eye
-    //
-    // or as a homogeneous matrix:
-    // [ r_00 r_10 r_20 -r_0*eye
-    //   r_01 r_11 r_21 -r_1*eye
-    //   r_02 r_12 r_22 -r_2*eye
-    //      0    0    0        1 ]
-
-    vec3 z_cam = normalize(eye - center);
-    vec3 x_cam = normalize(cross(up, z_cam));
-    vec3 y_cam = cross(z_cam, x_cam);
-
-    mat3 R(x_cam, y_cam, z_cam);
-    R = transpose(R);
-
-    mat4 look_at(vec4(R[0], 0.0f),
-                 vec4(R[1], 0.0f),
-                 vec4(R[2], 0.0f),
-                 vec4(-R * (eye), 1.0f));
-    return look_at;
-}
-
 void Init() {
     // sets background color
     glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
@@ -112,18 +85,24 @@ void Init() {
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
     // applied in a rotated coordinate frame.
     // uncomment lower line to achieve this.
-    view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
+    /*view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
                          vec3(0.0f, 0.0f, 0.0f),
-                         vec3(0.0f, 1.0f, 0.0f));
-    view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
+                         vec3(0.0f, 1.0f, 0.0f));*/
+    //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
+    //camera = new Camera();
+    camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.2,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2.5, -6)}, {vec3(-1,-1,-1), vec3(1,4,-2), vec3(2,2,-5)});
+
+    camera->Init(vec3(-1.9f, 2.25f, 0.65f), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+
+    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
 
     multitiles.Init(window_width, window_height);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 }
+
 
 // gets called for every frame.
 void Display() {
@@ -132,7 +111,9 @@ void Display() {
 
     glViewport(0, 0, window_width, window_height);
 
-    multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
+    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+
+    camera->animate();
 
 }
 
@@ -178,8 +159,8 @@ void MousePos(GLFWwindow* window, double x, double y) {
             old_y = p.y;
         }
 
-        view_matrix = glm::rotate(IDENTITY_MATRIX, p.x - old_x, vec3(0.0, 1.0, 0.0)) * view_matrix;
-        view_matrix = glm::rotate(IDENTITY_MATRIX, old_y - p.y, vec3(1.0, 0.0, 0.0)) * view_matrix;
+        camera->rotate(old_x - p.x, p.y - old_y);
+
         old_x = p.x;
         old_y = p.y;
     }
@@ -214,16 +195,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 
     if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+        camera->move(0, 0.1);
     }
     if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, -0.1)) * view_matrix;
+        camera->move(0, -0.1);
     }
     if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(0.1, 0, 0)) * view_matrix;
+        camera->move(0.1, 0);
     }
     if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(-0.1, 0, 0)) * view_matrix;
+        camera->move(-0.1, 0);
     }
 }
 
@@ -277,6 +258,11 @@ int main(int argc, char *argv[]) {
 
     cout << "OpenGL" << glGetString(GL_VERSION) << endl;
 
+    //vector<vec3> points = {vec3(0), vec3(1, 1, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0)};
+    //Bezier bezier(points);
+    //float t = 0.2;
+    //cout << bezier.apply(t).x << " " << bezier.apply(t).y << " " << bezier.apply(t).z << endl;
+
     // initialize our OpenGL program
     Init();
 
@@ -302,6 +288,8 @@ int main(int argc, char *argv[]) {
     }
 
     multitiles.Cleanup();
+    delete camera;
+
 
     // close OpenGL window and terminate GLFW
     glfwDestroyWindow(window);

@@ -37,13 +37,13 @@ void main() {
         vec3 r = normalize(reflect(- light_dir, normal_mv));
         float rDotV = max(dot(r, view_dir), 0);
 
-        vec3 c = vec3(0.0, 0.0, .5);
+        vec3 c = vec3(0.0, 0.0, .2);
 
         color.xyz = c * La;
 
         ivec2 window_dim = textureSize(ref, 0);
         vec2 window_rel = vec2(gl_FragCoord.x / window_dim.x, gl_FragCoord.y / window_dim.y);
-        color.xyz = mix(color.xyz, texture(ref, window_rel).rgb, 0.5);
+        color.xyz = mix(color.xyz, texture(ref, window_rel).rgb, 0.4);
         color.a = 0.6;
 
         color.xyz +=  kd * nDotL * Ld + ks * pow(rDotV, alpha) * Ls;

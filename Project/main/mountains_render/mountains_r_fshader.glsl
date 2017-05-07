@@ -81,9 +81,9 @@ void main() {
     }
 
     color =   0.9*(
-              alpha1 * texture(grass, (uv + offset)*20).rgb
+              alpha1 * texture(grass, (uv + offset)*5).rgb
             + alpha2 * texture(rock, (uv + offset)*10).rgb
-            + alpha3 * texture(snow, (uv + offset)*35).rgb
+            + alpha3 * texture(snow, (uv + offset)*10).rgb
             + alpha4 * texture(sand, (uv + offset)*60).rgb
             + kd * nDotL * Ld); //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 

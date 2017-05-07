@@ -43,6 +43,7 @@ class Water {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, -1);
@@ -155,7 +156,7 @@ class Water {
             }
 
             glm::vec3 light_pos = glm::vec3(2.5f, 3, 0.0f);
-            //glm::vec3 light_pos = glm::vec3(0.0, 3, -1.0f);
+            //glm::vec3 light_pos = glm::vec3(-1.0, 3, 0.0f);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
             glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
