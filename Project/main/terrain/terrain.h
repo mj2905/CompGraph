@@ -8,6 +8,7 @@
 #include "../perlin_noise/perlin.h"
 #include "../skybox/skybox.h"
 #include <array>
+#include "../water/screenquad/gaussian_blur.h"
 
 using namespace glm;
 
@@ -20,6 +21,7 @@ class Terrain {
         FrameBufferTerrain framebuffer2;
         Water water;
         Skybox skybox;
+        GaussianBlur blur;
 
         const string skyboxTexture = "miramar";
 
@@ -29,7 +31,8 @@ class Terrain {
             framebuffer.Init(width, height, true);
             framebuffer2.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
-            water.Init(framebuffer.getTextureId(), framebuffer2.getTextureId());
+            blur.Init(width, height, framebuffer2.getTextureId());
+            water.Init(framebuffer.getTextureId(), blur.getTexture());
             skybox.init(skyboxTexture);
         }
 
@@ -55,6 +58,8 @@ class Terrain {
                 skybox.Draw(view * glm::scale(IDENTITY_MATRIX, vec3(1, -1, 1)), projection);
                 mountainsRender.Draw(offsetX, offsetY, true, model * rot, view, projection);
             framebuffer2.Unbind();
+
+            blur.Draw();
 
             skybox.Draw(view, projection);
             mountainsRender.Draw(offsetX, offsetY, false, model, view, projection);

@@ -90,8 +90,8 @@ void Init() {
                          vec3(0.0f, 1.0f, 0.0f));*/
     //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    //camera = new Camera();
-    camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.2,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2.5, -6)}, {vec3(-1,-1,-1), vec3(1,4,-2), vec3(2,2,-5)});
+    camera = new Camera();
+    //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.2,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,-1,-1), vec3(1,4,-2), vec3(2,2,-5)});
 
     camera->Init(vec3(-1.9f, 2.25f, 0.65f), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
 
@@ -117,8 +117,25 @@ void Display() {
 
 }
 
+bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
+
 void Update() {
-    multitiles.incrementY(); //to move with the camera
+    //multitiles.incrementY(); //to move with the camera
+
+    float increment = 0.05f;
+
+    if(upPressed and not downPressed) {
+        camera->move(0, increment);
+    }
+    if(downPressed and not upPressed) {
+        camera->move(0, -increment);
+    }
+    if(leftPressed and not rightPressed) {
+        camera->move(increment, 0);
+    }
+    if(rightPressed and not leftPressed) {
+        camera->move(-increment, 0);
+    }
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.
@@ -189,22 +206,46 @@ void ErrorCallback(int error, const char* description) {
     fputs(description, stderr);
 }
 
+
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
 
-    if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->move(0, 0.1);
+    if (key == GLFW_KEY_UP) {
+        if(action == GLFW_PRESS) {
+            upPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            upPressed = false;
+        }
     }
-    if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->move(0, -0.1);
+
+    if (key == GLFW_KEY_DOWN) {
+        if(action == GLFW_PRESS) {
+            downPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            downPressed = false;
+        }
     }
-    if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->move(0.1, 0);
+
+    if (key == GLFW_KEY_LEFT) {
+        if(action == GLFW_PRESS) {
+            leftPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            leftPressed = false;
+        }
     }
-    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->move(-0.1, 0);
+
+    if (key == GLFW_KEY_RIGHT) {
+        if(action == GLFW_PRESS) {
+            rightPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            rightPressed = false;
+        }
     }
     if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera->increaseVelocity();
@@ -286,7 +327,7 @@ int main(int argc, char *argv[]) {
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
             Display();
-            //Update();
+            Update();
             lastTime = time;
             glfwSwapBuffers(window);
         }

@@ -11,7 +11,7 @@ file(GLOB TEXTURES
 mountains_render/rock.jpg
 mountains_render/snow.jpg
 mountains_render/sand.jpg
-water/normalmap.jpg)
+water/*.jpg)
 copy_files_once(${TEXTURES})
 
 # list all the files you want to copy everytime
@@ -22,7 +22,8 @@ file(GLOB SHADERS
   skybox/*.glsl
   mountains_render/*.glsl
   mountains_create/*.glsl
-  water/*.glsl)
+  water/*.glsl
+  water/screenquad/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})

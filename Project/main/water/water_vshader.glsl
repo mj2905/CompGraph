@@ -16,6 +16,7 @@ const float M_PI = 3.1415926535897932384626433832795;
 
 uniform vec2 offset;
 uniform sampler2D normal_map;
+uniform sampler2D normal_map_2;
 
 uniform float time;
 
@@ -28,11 +29,11 @@ float getHeight(vec2 uv) {
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
     vec2 pos = uv + vec2(mod(offset.x, 1.0), mod(offset.y, 1.0));
-    height = getHeight(uv);
+    height = 0.4;//getHeight(uv);
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
 
-    normal_t = mat3(transpose(inverse(view * model))) * texture(normal_map, 2*uv + vec2(0, -time/100)).xyz;
+    normal_t = mat3(transpose(inverse(view * model))) * (texture(normal_map, uv + vec2(0, -time/100)).xyz + texture(normal_map_2, uv + vec2(time/500, time/200)).xyz);
 
     mat4 MV = view * model;
 

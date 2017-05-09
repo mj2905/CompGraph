@@ -15,11 +15,13 @@ class Water {
         GLuint texture_id_;
         GLuint reflect_id_;
         GLuint normal_id_;
+        GLuint normal_id_2_;
 
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                         // model matrix ID
         GLuint V_id_;                         // view matrix ID
         GLuint P_id_;                         // proj matrix ID
+
 
     public:
 
@@ -152,7 +154,12 @@ class Water {
 
             // load/Assign textures
             {
-                loadImage("normalmap.jpg", "normal_map", 2, normal_id_);
+                loadImage("normal_map_1.jpg", "normal_map", 2, normal_id_);
+            }
+
+            // load/Assign textures
+            {
+                loadImage("normal_map_2.jpg", "normal_map_2", 3, normal_id_2_);
             }
 
             glm::vec3 light_pos = glm::vec3(12.0f, 3, 9.0f);
@@ -208,6 +215,7 @@ class Water {
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteTextures(1, &texture_id_);
             glDeleteTextures(1, &normal_id_);
+            glDeleteTextures(1, &normal_id_2_);
             glDeleteTextures(1, &reflect_id_);
             glDeleteProgram(program_id_);
         }
@@ -238,6 +246,10 @@ class Water {
             // bind textures
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, normal_id_);
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, normal_id_2_);
 
 
             glm::vec2 offset = glm::vec2(offsetX, offsetY);
