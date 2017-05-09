@@ -102,10 +102,20 @@ class ScreenQuad {
             glBindTexture(GL_TEXTURE_2D, 0);
 
             // to avoid the current object being polluted
-            glBindVertexArray(0);
-            glUseProgram(0);
 
             generateG();
+
+            glUniform1i(glGetUniformLocation(program_id_, "is_horizontal"),
+                        this->is_horizontal_);
+
+            glUniform1i(glGetUniformLocation(program_id_, "SIZE_OPT"),
+                        (this->G.size()-1)/2);
+            glUniform1fv(glGetUniformLocation(program_id_, "G"), G.size(), G.data());
+
+            loadDimensions();
+
+            glBindVertexArray(0);
+            glUseProgram(0);
         }
 
         void Cleanup() {
@@ -117,26 +127,23 @@ class ScreenQuad {
             glDeleteTextures(1, &texture_id_);
         }
 
-        void UpdateSize(int screenquad_width, int screenquad_height) {
-            this->screenquad_width_ = screenquad_width;
-            this->screenquad_height_ = screenquad_height;
-        }
-
-        void Draw() {
-            glUseProgram(program_id_);
-            glBindVertexArray(vertex_array_id_);
-
+        void loadDimensions() {
             // window size uniforms
             glUniform1f(glGetUniformLocation(program_id_, "tex_width"),
                         this->screenquad_width_);
             glUniform1f(glGetUniformLocation(program_id_, "tex_height"),
                         this->screenquad_height_);
-            glUniform1i(glGetUniformLocation(program_id_, "is_horizontal"),
-                        this->is_horizontal_);
+        }
 
-            glUniform1i(glGetUniformLocation(program_id_, "SIZE_OPT"),
-                        (this->G.size()-1)/2);
-            glUniform1fv(glGetUniformLocation(program_id_, "G"), G.size(), G.data());
+        void UpdateSize(int screenquad_width, int screenquad_height) {
+            this->screenquad_width_ = screenquad_width;
+            this->screenquad_height_ = screenquad_height;
+            loadDimensions();
+        }
+
+        void Draw() {
+            glUseProgram(program_id_);
+            glBindVertexArray(vertex_array_id_);
 
             // bind texture
             glActiveTexture(GL_TEXTURE0);

@@ -22,23 +22,6 @@ uniform float time;
 
 uniform float fog_threshold;
 
-/*
-vec4 getBluredValue(vec2 uv, ivec2 sizes) {
-
-    vec3 color_tot = vec3(0);
-    float weight_tot = 0;
-    //We choose these boundaries, as they are the same as for basic gaussian blur
-    for(int i = -SIZE_OPT; i <= SIZE_OPT; ++i){
-        float w = G[i + SIZE_OPT];
-        vec3 neigh_color = texture(ref, uv + vec2(i * 1.0f/sizes.x,0)).rgb + texture(ref, uv + vec2(0,i * 1.0f/sizes.y)).rgb;
-        color_tot += w * neigh_color;
-        weight_tot += 2*w;
-    }
-
-    return vec4(color_tot/weight_tot, 1);
-}
-*/
-
 void main() {
 
     float terrainHeight = texture(tex, uv).r;
@@ -62,7 +45,6 @@ void main() {
         ivec2 window_dim = textureSize(ref, 0);
         vec2 window_rel = vec2(gl_FragCoord.x / window_dim.x, gl_FragCoord.y / window_dim.y);
         color = mix(color, texture(ref, window_rel), 0.7-abs(terrainHeight - height));
-        //color = mix(color, getBluredValue(window_rel, window_dim), 0.7-abs(terrainHeight - height));
         color.xyz += kd * nDotL * Ld + mix(0, 0.5, height*3) * ks * pow(rDotV, alpha) * Ls;
 
     }

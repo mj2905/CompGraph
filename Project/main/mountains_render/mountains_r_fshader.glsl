@@ -17,9 +17,6 @@ uniform sampler2D rock;
 uniform sampler2D snow;
 uniform sampler2D sand;
 
-uniform sampler1D colormap;
-
-
 uniform bool clip;
 
 uniform vec2 offset;

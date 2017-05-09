@@ -242,7 +242,6 @@ class Water {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
             glBindTexture(GL_TEXTURE_2D, reflect_id_);
 
-
             // bind textures
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, normal_id_);

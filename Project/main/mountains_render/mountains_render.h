@@ -18,7 +18,6 @@ class MountainsRender {
         GLuint snow_id_;
         GLuint sand_id_;
 
-        GLuint interpolation_id_;               // sampler for the height colors
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                           // model matrix ID
         GLuint V_id_;                           // view matrix ID
@@ -101,24 +100,6 @@ class MountainsRender {
                 texture_id_ = mountain_texture;
             }
 
-            // create 1D texture (colormap)
-            {
-                const int ColormapSize=3;
-                GLfloat tex[3*ColormapSize] = {/*yellow*/    0.3, 0.5, 0.0,
-                                               /*darkgreen*/ 0.0, 0.2, 0.0,
-                                              /*white*/  0.7, 0.7, 0.7};
-                glGenTextures(1, &interpolation_id_);
-                glBindTexture(GL_TEXTURE_1D, interpolation_id_);
-                glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
-                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                GLuint tex_id = glGetUniformLocation(program_id_, "colormap");
-                glUniform1i(tex_id, 1 /*GL_TEXTURE1*/);
-
-                glBindTexture(GL_TEXTURE_1D, 0);
-            }
-
             // lights and shading
             {
                 glm::vec3 light_pos = glm::vec3(2.0f, 2.0f, 0.5f);
@@ -145,10 +126,10 @@ class MountainsRender {
                 glUniform1f(fog_threshold_id, FOG_THRESHOLD);
             }
 
-            loadImage("grass.jpg", "grass", 2, grass_id_);
-            loadImage("rock.jpg", "rock", 3, rock_id_);
-            loadImage("snow.jpg", "snow", 4, snow_id_);
-            loadImage("sand.jpg", "sand", 5, sand_id_);
+            loadImage("grass.jpg", "grass", 1, grass_id_);
+            loadImage("rock.jpg", "rock", 2, rock_id_);
+            loadImage("snow.jpg", "snow", 3, snow_id_);
+            loadImage("sand.jpg", "sand", 4, sand_id_);
 
             // other uniforms
             M_id_ = glGetUniformLocation(program_id_, "model");
@@ -213,7 +194,10 @@ class MountainsRender {
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteProgram(program_id_);
             glDeleteTextures(1, &texture_id_);
-            glDeleteTextures(1, &interpolation_id_);
+            glDeleteTextures(1, &grass_id_);
+            glDeleteTextures(1, &rock_id_);
+            glDeleteTextures(1, &snow_id_);
+            glDeleteTextures(1, &sand_id_);
         }
 
         void Draw(float offsetX, float offsetY, bool underwaterclip,
@@ -230,22 +214,18 @@ class MountainsRender {
 
             // bind textures
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_1D, interpolation_id_);
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, grass_id_);
 
             // bind textures
-            glActiveTexture(GL_TEXTURE3);
+            glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, rock_id_);
 
             // bind textures
-            glActiveTexture(GL_TEXTURE4);
+            glActiveTexture(GL_TEXTURE3);
             glBindTexture(GL_TEXTURE_2D, snow_id_);
 
             // bind textures
-            glActiveTexture(GL_TEXTURE5);
+            glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_2D, sand_id_);
 
             glm::vec2 offset = glm::vec2(offsetX, offsetY);
