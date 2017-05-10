@@ -51,7 +51,7 @@ public:
 
     void rotate(float x, float z) override {}
 
-    void move(float x, float z) override {}
+    void move(float x, float y, float z) override {}
 
     virtual void increaseVelocity() override {
         velocity *= 1.1;

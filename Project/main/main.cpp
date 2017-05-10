@@ -125,16 +125,16 @@ void Update() {
     float increment = 0.05f;
 
     if(upPressed and not downPressed) {
-        camera->move(0, increment);
+        camera->move(0, 0, increment);
     }
     if(downPressed and not upPressed) {
-        camera->move(0, -increment);
+        camera->move(0, 0, -increment);
     }
     if(leftPressed and not rightPressed) {
-        camera->move(increment, 0);
+        camera->move(increment, 0, 0);
     }
     if(rightPressed and not leftPressed) {
-        camera->move(-increment, 0);
+        camera->move(-increment, 0, 0);
     }
 }
 

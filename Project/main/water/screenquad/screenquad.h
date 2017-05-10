@@ -16,7 +16,7 @@ class ScreenQuad {
         bool is_horizontal_;
 
         size_t MAX_SIZE = 400; // /!\ modify too in screenquad_fshader if modified
-        float gaussian_std = 2.0;
+        float gaussian_std = 2;
         vector<float> G;
 
     public:

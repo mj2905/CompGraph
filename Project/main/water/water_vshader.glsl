@@ -20,20 +20,17 @@ uniform sampler2D normal_map_2;
 
 uniform float time;
 
-out vec3 normal_t;
-
-float getHeight(vec2 uv) {
-    return 0.4 + (sin(2*M_PI*12*(uv.x + 2*uv.y) - 2*time)/500 + sin(2*M_PI*12*(2*uv.x + uv.y) -2*time)/500 + sin(2*M_PI*12*(uv.x + uv.y) -2*time)/500);
-}
+out vec3 vnormal_mv;
+uniform sampler2D tex;
 
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
     vec2 pos = uv + vec2(mod(offset.x, 1.0), mod(offset.y, 1.0));
-    height = 0.4;//getHeight(uv);
+    height = 0.4;
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
 
-    normal_t = mat3(transpose(inverse(view * model))) * (texture(normal_map, uv + vec2(0, -time/100)).xyz + texture(normal_map_2, uv + vec2(time/500, time/200)).xyz);
+    vnormal_mv = mat3(transpose(inverse(view * model))) *(texture(normal_map, 2*pos + vec2(0, -time/100)).xyz + texture(normal_map_2, 2*pos + vec2(time/500, time/200)).xyz);
 
     mat4 MV = view * model;
 
@@ -41,6 +38,8 @@ void main() {
     gl_Position = projection * vpoint_mv;
     light_dir = normalize(mat3(MV) * light_pos - vpoint_mv.xyz);
     view_dir = normalize(- vec3(vpoint_mv));
+
+    gl_ClipDistance[0] = height - texture(tex, uv).r; //to cut water
 
 }
 

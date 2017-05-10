@@ -205,8 +205,11 @@ class MountainsRender {
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
 
+            glEnable(GL_CLIP_PLANE0);
+
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
+
 
             // bind textures
             glActiveTexture(GL_TEXTURE0);
@@ -249,5 +252,7 @@ class MountainsRender {
 
             glBindVertexArray(0);
             glUseProgram(0);
+
+            glDisable(GL_CLIP_PLANE0);
         }
 };

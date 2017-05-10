@@ -16,11 +16,15 @@ class Water {
         GLuint reflect_id_;
         GLuint normal_id_;
         GLuint normal_id_2_;
+        GLuint dudv_id_;
 
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                         // model matrix ID
         GLuint V_id_;                         // view matrix ID
         GLuint P_id_;                         // proj matrix ID
+
+        GLuint light_pos_id;
+        glm::vec3 light_pos;
 
 
     public:
@@ -42,10 +46,9 @@ class Water {
 
                 glGenTextures(1, &id);
                 glBindTexture(GL_TEXTURE_2D, id);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, -1);
@@ -162,14 +165,20 @@ class Water {
                 loadImage("normal_map_2.jpg", "normal_map_2", 3, normal_id_2_);
             }
 
-            glm::vec3 light_pos = glm::vec3(12.0f, 3, 9.0f);
+            // load/Assign textures
+            {
+                loadImage("waterdudv_tiled.jpg", "dudv", 4, dudv_id_);
+            }
+
+            //light_pos = glm::vec3(12.0f, 3, 9.0f);
             //glm::vec3 light_pos = glm::vec3(-1.0, 3, 0.0f);
+            light_pos = glm::vec3(2.5,1,2.5);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
             glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
             glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
 
-            GLuint light_pos_id = glGetUniformLocation(program_id_, "light_pos");
+            light_pos_id = glGetUniformLocation(program_id_, "light_pos");
 
             GLuint La_id = glGetUniformLocation(program_id_, "La");
             GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
@@ -185,7 +194,6 @@ class Water {
             GLuint ks_id = glGetUniformLocation(program_id_, "ks");
             GLuint alpha_id = glGetUniformLocation(program_id_, "alpha");
 
-            glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
             glUniform3fv(La_id, 1, glm::value_ptr(La));
             glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
             glUniform3fv(Ls_id, 1, glm::value_ptr(Ls));
@@ -217,6 +225,7 @@ class Water {
             glDeleteTextures(1, &normal_id_);
             glDeleteTextures(1, &normal_id_2_);
             glDeleteTextures(1, &reflect_id_);
+            glDeleteTextures(1, &dudv_id_);
             glDeleteProgram(program_id_);
         }
 
@@ -225,6 +234,7 @@ class Water {
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
             glEnable(GL_BLEND);
+            glEnable(GL_CLIP_PLANE0);
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
@@ -250,6 +260,9 @@ class Water {
             glActiveTexture(GL_TEXTURE3);
             glBindTexture(GL_TEXTURE_2D, normal_id_2_);
 
+            // bind textures
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, dudv_id_);
 
             glm::vec2 offset = glm::vec2(offsetX, offsetY);
 
@@ -261,6 +274,10 @@ class Water {
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
             glUniform1f(glGetUniformLocation(program_id_, "time"), glfwGetTime());
+
+            glm::vec3 rot_light_pos = glm::vec3(0, sin(glfwGetTime()), cos(glfwGetTime()));//glm::vec3(3, 0, 0) + glm::mat3(glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime(), glm::vec3(1,0,0))) * glm::vec3(0,1,0);
+
+            glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.
@@ -274,6 +291,7 @@ class Water {
             glBindVertexArray(0);
             glUseProgram(0);
 
+            glDisable(GL_CLIP_PLANE0);
             glDisable(GL_BLEND);
         }
 };

@@ -17,8 +17,6 @@ uniform sampler2D rock;
 uniform sampler2D snow;
 uniform sampler2D sand;
 
-uniform bool clip;
-
 uniform vec2 offset;
 
 float sq(float x) {
@@ -73,16 +71,13 @@ void main() {
           alpha3=snow_distrib(height, normal.y),
           alpha4=sand_distrib(height, normal.y);
 
-    if(clip && height < 0.4) {
-        discard;
-    }
 
-    color =   0.9*(
+    color =   0.7*(
               alpha1 * texture(grass, (uv + offset)*5).rgb
             + alpha2 * texture(rock, (uv + offset)*10).rgb
             + alpha3 * texture(snow, (uv + offset)*10).rgb
-            + alpha4 * texture(sand, (uv + offset)*60).rgb
-            + kd * nDotL * Ld); //computation of the color : we use the height, and we add the diffuse component so that we have shadings
+            + alpha4 * texture(sand, (uv + offset)*60).rgb)
+            + kd * nDotL * Ld; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 
             //float distance = gl_FragCoord.z;
             //if (distance > fog_threshold) {

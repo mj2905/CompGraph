@@ -51,7 +51,7 @@ public:
 
     virtual void rotate(float x, float z) = 0;
 
-    virtual void move(float x, float z) = 0;
+    virtual void move(float x, float y, float z) = 0;
 
     virtual void increaseVelocity() = 0;
     virtual void decreaseVelocity() = 0;

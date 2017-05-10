@@ -38,13 +38,13 @@ public:
 
     }
 
-    virtual void move(float x, float z) override {
+    virtual void move(float x, float y, float z) override {
 
         vec3 zpivot = normalize(center - position);
         vec3 xpivot = normalize(cross(up, zpivot));
 
-        position += zpivot * z + xpivot * x;
-        center += xpivot * x + zpivot * z;
+        position += zpivot * z + xpivot * x + up*y;
+        center += xpivot * x + zpivot * z + up*y;
 
         AbstractCamera::Init(position, center, up);
     }
