@@ -2,117 +2,80 @@
 
 #include <string.h>
 #include <sstream>
+#include "glm/gtc/type_ptr.hpp"
+#include <vector>
+#include "stack.h"
 
 using namespace glm;
-
+using namespace std;
 /**
  * @brief The Turtle class
  */
 class Turtle {
+private:
+    Stack<vec3> direction, origin, up, left;
+    Stack<vector<int>> baseIndices;
+    Stack<float> width, length;
+    Stack<char> letter;
 
-    private:
-       string tree;
-       GLuint depth_;
-       char axiom;
+public:
+    void pushBackStatesTurtle(vec3 dir, vec3 o, vec3 u, vec3 lef,vector<int> &bI, float w,
+                              float l, char c){
+        this->direction.push_back(dir);
+        this->up.push_back(u);
+        this->left.push_back(lef);
+        this->origin.push_back(o);
+        this->baseIndices.push_back(bI);
+        this->width.push_back(w);
+        this->length.push_back(l);
+        this->letter.push_back(c);
+    }
 
-    public:
-       /**
-        * @brief Init
-        * @param depth The maximum depth of the tree
-        * @param axiom The original axiom (ie: starting letter) of the tree, between A and B
-        */
-       void Init(GLuint depth, char axiom){
-            axiom = axiom;
-            stringstream ss;
-            ss << axiom;
-            ss >> tree;
+    void popStatesTurtle(){
+        direction.popStack();
+        origin.popStack();
+        baseIndices.popStack();
+        width.popStack();
+        length.popStack();
+        letter.popStack();
+        up.popStack();
+        left.popStack();
+    }
 
-            depth_ = depth;
-            initTree();
-       }
+    bool emptyTurtle(){
+        return origin.size() == 0;
+    }
 
+    vector<int> getCurrBaseIds(){
+        return baseIndices.back();
+    }
 
-       static float sqr(float x){
-           return x*x;
-       }
+    vec3 getCurrDir(){
+        return direction.back();
+    }
 
+    vec3 getCurrUp(){
+        return up.back();
+    }
 
-       float norm(vec3 a, vec3 b){
-           return sqrt(sqr(a.x - b.x) + sqr(a.y - b.y) + sqr(a.z - b.z));
-       }
+    vec3 getCurrLeft(){
+        return left.back();
+    }
 
-       int treeLength(){
-           return tree.size();
-       }
+    vec3 getCurrOrigin(){
+        return origin.back();
+    }
 
-       char charAt(int i){
-           return tree.at(i);
-       }
+    float getCurrWidth(){
+        return width.back();
+    }
 
+    float getCurrLength(){
+        return length.back();
+    }
 
-       void printTree(){
-           cout << tree << endl;
-       }
-
-       /**
-        * @brief substituteString, according to a set of rules replaces a character with its children
-        * @param a the character to substitute
-        * @return the substituted string
-        */
-       string substituteString(char a){
-           if(a == 'A'){
-               return "A[AB]";
-           }
-           else if(a == 'B'){
-               return "B[A]";
-           }else if(a == 'C'){
-               return "C[ABC]";
-           }else {
-               stringstream ss;
-               ss << a;
-               string s;
-               ss >> s;
-               return s;
-           }
-       }
-
-       /**
-        * @brief firstExpand, it is the first expansion of the tree, done this way to avoid some bugs with the usual expansion
-        */
-       void firstExpand(){
-           tree.replace(0,1, substituteString(tree.at(0)));
-       }
-
-       /**
-        * @brief expand, rest of the expansion of the tree
-        */
-       void expand(){
-           for(size_t i = 1; i < tree.size()-1; ++i){
-               char ch = tree.at(i);
-               //char chcontr = tree.at(i-1);
-               char chmor = tree.at(i+1);
-               if(chmor != '['){
-                   string s = substituteString(ch);
-                   tree.replace(i, 1, s);
-                   i+= s.size()-1;
-               }
-           }
-       }
-
-
-       /**
-        * @brief initTree
-        * Puts everything together: expands the tree from the axiom and then generates the algae
-        */
-       void initTree(){
-           firstExpand();
-           for(size_t i = 0; i < depth_; ++i){
-                expand();
-            }
-       }
-
-       void Cleanup(){
-           tree.clear();
-       }
+    char getCurrLetter(){
+        return letter.back();
+    }
 
 };

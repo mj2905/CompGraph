@@ -5,7 +5,9 @@
 #include "../framebuffer.h"
 #include "../water/water.h"
 #include "../perlin_noise/perlin.h"
-#include "../L-tree/algae.h"
+//#include "../L-tree/algae.h"
+//#include "../L-tree/plant.h"
+#include "../L-tree/algaemodif.h"
 #include <array>
 
 using namespace glm;
@@ -17,19 +19,23 @@ class Terrain {
         MountainsRender mountainsRender;
         FrameBuffer framebuffer;
         Water water;
-        Algae algae;
+        //Algae algae;
         PerlinNoise perlin;
+        algaeModif algae;
+
+  //      Plant plant;
 
     public:
         void Init(size_t width, size_t height) {
-            mountainsCreator.Init();
+            /*mountainsCreator.Init();
             GLuint i = framebuffer.Init(width, height, true);
             mountainsRender.Init(framebuffer.getTextureId());
-            water.Init(framebuffer.getTextureId());
-            algae.Init(8, 'A', vec3(0,-1.0,0), i);
-            algae.printTurtle();
-            perlin.Init();
-
+            water.Init(framebuffer.getTextureId());*/
+            int id = -1;
+            GLuint tex_id = framebuffer.Init(width, height, true);
+            algae.Init(1, vec3(0.0,1.0,0.0),'A',&id, tex_id );
+            algae.initTree();
+            algae.printTree();
         }
 
         void changeTexture(const array<GLuint, 4>& textures) {
@@ -54,6 +60,7 @@ class Terrain {
                 perlin.Draw(0.0,0.0);
             }
             framebuffer.Unbind();
+            //algae.Draw(model, view, projection);
             algae.Draw(model, view, projection);
         }
 
@@ -62,7 +69,7 @@ class Terrain {
             mountainsRender.Cleanup();
             water.Cleanup();
             framebuffer.Cleanup();
-            algae.Cleanup();
+            //algae.Cleanup();
         }
 
 };

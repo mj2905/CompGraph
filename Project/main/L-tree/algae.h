@@ -9,6 +9,7 @@
 #include "flexigrid.h"
 #include "rng.h"
 #include "turtle.h"
+#include "rulerdrawer.h"
 
 using namespace glm;
 
@@ -163,41 +164,6 @@ public:
     void printTurtle(){
         turtle.printTree();
     }
-
-    void createCubeVolume(vec3 leftBasePoint, vec3 rightBasePoint, vec3 leftUpPoint,
-                          int leftBaseID, int rightBaseID, int leftUpID, int rightUpID){
-
-        vec3 b, d, o, newBasePoint, newUpPoint;
-        b = leftBasePoint - rightBasePoint;
-        newBasePoint = leftBasePoint;
-        newUpPoint = leftUpPoint;
-        float length = turtle.norm(leftBasePoint, rightBasePoint);
-        o = leftUpPoint - leftBasePoint;
-        d = length*normalize(cross(b, o));
-
-        int newBaseIndex, newUpIndex, currLeftIndex, currUpIndex;
-        currLeftIndex = leftBaseID;
-        currUpIndex = leftUpID;
-
-        for(int i =0; i < 2; ++i){
-            newBasePoint = newBasePoint+d;
-            newUpPoint = newUpPoint +d;
-            newBaseIndex = ++index_ ;
-            newUpIndex = ++index_ ;
-            pushToVertices(newBasePoint);
-            pushToVertices(newUpPoint);
-            normalAndPushIDs(newBaseIndex, currLeftIndex, currUpIndex);
-            normalAndPushIDs(currUpIndex, newBaseIndex, newUpIndex);
-            currLeftIndex = newBaseIndex;
-            currUpIndex = newUpIndex;
-            d = length*normalize(cross(d, o));
-        }
-
-        normalAndPushIDs(rightBaseID, currLeftIndex, currUpIndex);
-        normalAndPushIDs(currUpIndex, rightBaseID, rightUpID);
-    }
-
-
 
     /**
         * @brief updateIndicesAndIndexes
