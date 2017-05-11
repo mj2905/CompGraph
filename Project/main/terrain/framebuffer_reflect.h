@@ -1,7 +1,7 @@
 #pragma once
 #include "icg_helper.h"
 
-class FrameBufferTerrain {
+class FrameBufferReflect {
 
     private:
         int width_;

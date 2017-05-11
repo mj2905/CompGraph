@@ -23,6 +23,10 @@ uniform float time;
 out vec3 vnormal_mv;
 uniform sampler2D tex;
 
+vec3 mapXandZ(vec3 v) {
+    return vec3(v.x * 2 - 1, v.y, v.z * 2 - 1);
+}
+
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
     vec2 pos = uv + vec2(mod(offset.x, 1.0), mod(offset.y, 1.0));
@@ -30,7 +34,9 @@ void main() {
 
     vec3 pos_3d = vec3(position.x, height, -position.y);
 
-    vnormal_mv = mat3(transpose(inverse(view * model))) *(texture(normal_map, 2*pos + vec2(0, -time/100)).xyz + texture(normal_map_2, 2*pos + vec2(time/500, time/200)).xyz);
+    float moveFactor = mod(time/50, 1.0);
+    vec3 vnormal = 20*mapXandZ(texture(normal_map, vec2(100*pos.x, 100*pos.y - moveFactor)).rbg) + 20*mapXandZ(texture(normal_map, vec2(-100*pos.x + moveFactor, 100*pos.y + moveFactor)).rbg);
+    vnormal_mv = mat3(transpose(inverse(view * model))) * vnormal;
 
     mat4 MV = view * model;
 

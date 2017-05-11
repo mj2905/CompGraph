@@ -3,7 +3,7 @@
 #include "../mountains_create/mountains_generator.h"
 #include "../mountains_render/mountains_render.h"
 #include "../framebuffer.h"
-#include "framebuffer_terrain.h"
+#include "framebuffer_reflect.h"
 #include "../water/water.h"
 #include "../perlin_noise/perlin.h"
 #include "../skybox/skybox.h"
@@ -19,9 +19,9 @@ class Terrain {
     private:
         MountainsGenerator mountainsCreator;
         MountainsRender mountainsRender;
-        FrameBuffer framebuffer;
-        FrameBufferTerrain framebuffer2;
-        FrameBufferShadow framebuffer3;
+        FrameBuffer framebuffer_terrain;
+        FrameBufferReflect framebuffer_reflect;
+        FrameBufferShadow framebuffer_shadow;
         Water water;
         Skybox skybox;
         GaussianBlur blur;
@@ -32,15 +32,19 @@ class Terrain {
     public:
         void Init(size_t width, size_t height) {
             mountainsCreator.Init();
-            framebuffer.Init(width, height, true);
-            framebuffer2.Init(width, height, true);
-            mountainsRender.Init(framebuffer.getTextureId());
-            blur.Init(width, height, framebuffer2.getTextureId());
-            water.Init(framebuffer.getTextureId(), blur.getTexture());
+            framebuffer_terrain.Init(width, height, true);
+            framebuffer_reflect.Init(width, height, true);
+            mountainsRender.Init(framebuffer_terrain.getTextureId());
+            blur.Init(width, height, framebuffer_reflect.getTextureId());
+            water.Init(framebuffer_terrain.getTextureId(), blur.getTexture());
             skybox.init(skyboxTexture);
 
-            framebuffer3.Init(width, height, true);
-            shadow.Init(framebuffer3.getTextureId());
+            framebuffer_shadow.Init(width, height, true);
+            shadow.Init(framebuffer_shadow.getTextureId());
+        }
+
+        void resize(size_t width, size_t height) {
+
         }
 
         void changeTexture(const array<GLuint, 4>& textures) {
@@ -48,10 +52,10 @@ class Terrain {
         }
 
         void Moved(float offsetX, float offsetY) {
-            framebuffer.ClearContent();
-            framebuffer.Bind();
+            framebuffer_terrain.ClearContent();
+            framebuffer_terrain.Bind();
                 mountainsCreator.Draw(offsetX, offsetY);
-            framebuffer.Unbind();
+            framebuffer_terrain.Unbind();
         }
 
         void Draw(float offsetX, float offsetY,
@@ -62,17 +66,17 @@ class Terrain {
 
             mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100, vec3(0,1,0));
 
-            framebuffer2.ClearContent();
-            framebuffer2.Bind();
+            framebuffer_reflect.ClearContent();
+            framebuffer_reflect.Bind();
                 mat4 rot = glm::translate(glm::rotate(IDENTITY_MATRIX, (float)M_PI, vec3(1,0,0)), vec3(0, -0.8, 0));
                 skybox.Draw(view * glm::scale(IDENTITY_MATRIX, vec3(1, -1, 1)) * skyboxRot, projection);
                 mountainsRender.Draw(offsetX, offsetY, true, model * rot, view, projection);
-            framebuffer2.Unbind();
+            framebuffer_reflect.Unbind();
 
-            framebuffer3.ClearContent();
-            framebuffer3.Bind();
+            framebuffer_shadow.ClearContent();
+            framebuffer_shadow.Bind();
                 mountainsRender.Draw(offsetX, offsetY, false, model, view, projection);
-            framebuffer3.Unbind();
+            framebuffer_shadow.Unbind();
 
             blur.Draw();
 
@@ -87,10 +91,10 @@ class Terrain {
             mountainsCreator.Cleanup();
             mountainsRender.Cleanup();
             water.Cleanup();
-            framebuffer.Cleanup();
-            framebuffer2.Cleanup();
+            framebuffer_terrain.Cleanup();
+            framebuffer_reflect.Cleanup();
             skybox.Cleanup();
-            framebuffer3.Cleanup();
+            framebuffer_shadow.Cleanup();
             shadow.Cleanup();
         }
 
