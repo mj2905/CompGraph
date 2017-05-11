@@ -43,10 +43,6 @@ class Terrain {
             shadow.Init(framebuffer_shadow.getTextureId());
         }
 
-        void resize(size_t width, size_t height) {
-
-        }
-
         void changeTexture(const array<GLuint, 4>& textures) {
             mountainsCreator.changeTexture(textures);
         }

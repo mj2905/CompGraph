@@ -22,6 +22,7 @@ public:
 
     virtual void animate() override {}
 
+    /*
     void rotate(float x, float z) override {
 
         vec3 xpivot = normalize(cross(up, center - position));
@@ -35,6 +36,29 @@ public:
         else {
             AbstractCamera::Init(position, center, up);
         }
+
+    }
+    */
+
+    void rotate(float x, float z) override {
+
+        vec3 xpivot = normalize(cross(up, center - position));
+        vec3 ypivot = normalize(cross(xpivot, center-position));
+        //vec3 oldCenter = center;
+
+        vec3 tmp = (mat3(glm::rotate(IDENTITY_MATRIX, x, ypivot)) * (center - position)) + position;
+
+        if(fmod(angle(normalize(tmp - position), up), M_PI - MIN_DISTANCE_POLE) < MIN_DISTANCE_POLE) {
+            tmp = center;
+        }
+
+        center = (mat3(glm::rotate(IDENTITY_MATRIX, z, xpivot)) * (tmp-position)) + position;
+
+        if(fmod(angle(normalize(center - position), up), M_PI - MIN_DISTANCE_POLE) < MIN_DISTANCE_POLE) {
+            center = tmp;
+        }
+
+        AbstractCamera::Init(position, center, up);
 
     }
 

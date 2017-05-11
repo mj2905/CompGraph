@@ -18,7 +18,7 @@ private:
     Bezier camera_aim;
     float time;
 
-    float velocity = 0.001;
+    float velocity = 0.0001;
     int way = 1;
 
     const float MIN_DISTANCE_POLE = 0.1f;
@@ -34,17 +34,17 @@ public:
         AbstractCamera::Init(camera_path.apply(time), camera_aim.apply(time), up);
     }
 
-
     virtual void animate() override {
 
-        float newTime = time + way*velocity;
+        float segSize = camera_path.getSegmentSize(time + way*velocity);
+        float newTime = time + way*velocity/segSize;
+
         if(newTime > 1 || newTime < 0) {
             way = - way;
         }
         else {
             time = newTime;
         }
-
 
         AbstractCamera::Init(camera_path.apply(time), camera_aim.apply(time), up);
     }

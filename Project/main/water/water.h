@@ -169,7 +169,7 @@ class Water {
             //light_pos = glm::vec3(12.0f, 3, 9.0f);
             //glm::vec3 light_pos = glm::vec3(-1.0, 3, 0.0f);
             //light_pos = glm::vec3(2.5,1,2.5);
-            light_pos = glm::vec3(0.0f, 1, -1.2f);
+            light_pos = glm::vec3(0.0f, 1, -1);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
             glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);

@@ -91,11 +91,11 @@ void Init() {
     //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
     camera = new Camera();
-    //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.2,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,-1,-1), vec3(1,4,-2), vec3(2,2,-5)});
+    //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.2,-2.3), vec3(1, 3, -4.5), vec3(2, 2, -6)}, {vec3(-1,-1,-1), vec3(1,4,-2), vec3(2,2,-5)});
 
     camera->Init(vec3(-1.9f, 2.25f, 0.65f), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
 
-    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,5, 5));
+    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
 
     multitiles.Init(window_width, window_height);
 
@@ -197,6 +197,9 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
     projection_matrix = PerspectiveProjection(45.0f,
                                               (GLfloat)window_width / window_height,
                                               0.1f, 100.0f);
+
+    multitiles.Cleanup();
+    multitiles.Init(width, height);
 
     //GLfloat top = 1.0f;
     //GLfloat right = (GLfloat)window_width / window_height * top;

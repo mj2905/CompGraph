@@ -15,6 +15,7 @@ vec3 operator*(const vec3& a, double b) {
 class Bezier {
 
 private:
+
     const vector<vec3> points;
 
     vec3 apply(const vector<vec3>& points, float t) {
@@ -68,6 +69,14 @@ public:
         assert(t >= 0 and t <= 1);
         //return apply(points, t);
         return interpolationSamples(t);
+    }
+
+    float getSegmentSize(float t) {
+        size_t segment = t * segments;
+        if(segment >= segments) {
+            return 1;
+        }
+        return glm::distance(samples[segment], samples[segment+1]);
     }
 
 };
