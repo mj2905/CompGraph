@@ -60,7 +60,6 @@ class Terrain {
                 perlin.Draw(0.0,0.0);
             }
             framebuffer.Unbind();
-            //algae.Draw(model, view, projection);
             algae.Draw(model, view, projection);
         }
 

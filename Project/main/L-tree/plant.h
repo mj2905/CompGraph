@@ -161,11 +161,13 @@ public:
      * Puts everything together: expands the tree from the axiom and then generates the plant
      */
     void initTree(){
-        firstExpand();
-        if(depth>0){
+        if(depth > 0){
+
+            firstExpand();
+
             for(size_t i = 0; i < (depth -1); ++i){
-                 expand();
-             }
+                expand();
+            }
         }
     }
 

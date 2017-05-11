@@ -59,10 +59,15 @@ private:
         }
 
         // Creates the last one
-        i1 = idsOriginBranch.at(idsOriginBranch.size()-2);
-        i2 = idsOriginBranch.back();
-        i3 = indicesToUpdate.at(indicesToUpdate.size()-2);
-        i4 = indicesToUpdate.back();
+        //i1 = idsOriginBranch.at(idsOriginBranch.size()-2);
+        //i2 = idsOriginBranch.back();
+        //i3 = indicesToUpdate.at(indicesToUpdate.size()-2);
+        //i4 = indicesToUpdate.back();
+
+        i1 = triangleIds.at(triangleIds.size()-1-4);
+        i2 = triangleIds.at(triangleIds.size()-1-13);
+        i3 = triangleIds.at(triangleIds.size()-1-2);
+        i4 = triangleIds.at(triangleIds.size()-1-12);
         pushIndicesAsQuad(i1,i2,i3,i4);
     }
 
@@ -143,6 +148,7 @@ public:
         }
         this->childrenOrigin = -currMin*upVec + origin + trans+normalize(direction)*length;
         this->origin = -currMin*upVec + origin + trans;
+        // takes care of the base
         circleBranch(baseIds, upIndices, triangleIndices, index);
 
         // Now to create the new points from the branch
@@ -187,10 +193,10 @@ public:
     vec3 getUpVec(){
         return normalize(direction);
     }
-
+    /*
     vec3 getLeftPoint(){
         return normalize(upPoints.at(0) - origin);
-    }
+    }*/
 
     void clean(){
         this->upIndices.clear();

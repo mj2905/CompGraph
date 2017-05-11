@@ -48,6 +48,8 @@ public:
             baseIds.push_back(++(this->index));
         }
 
+        trans = vec3(0.0f,0.05f,0.0f);
+
         drawTree();
         Plant::createNormals(points,pointsIds, &normals);
         vector<int> idsTmp = getBranchIds();
