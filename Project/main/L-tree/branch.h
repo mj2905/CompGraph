@@ -124,13 +124,16 @@ public:
             }
 
             dir = vec3(glm::toMat4(quat(rotation))*vec4(currP,1.0f));
-            upPoints.push_back(origin-currP+dir);
+            upPoints.push_back(origin-currP+dir+trans);
         }
 
+
+        // This must be changed. Translatin & rotation are seemingly faulty here.
+
         //Now to translate all points to the origin
-        for(size_t i = 0; i < upPoints.size(); ++i){
+        /*for(size_t i = 0; i < upPoints.size(); ++i){
             upPoints.at(i) = upPoints.at(i) - origin;
-        }
+        }*/
 
         //Next up, we rotate every point with a rotation matrix and put them back up
 
@@ -143,10 +146,10 @@ public:
             currMin = std::min(currMin, dot(upPoints.at(i), normalize(upVec)));
         }
         for(size_t i = 0; i < upPoints.size(); ++i){
-            upPoints.at(i) = upPoints.at(i) - currMin*upVec + origin + trans;
+            upPoints.at(i) = upPoints.at(i) - currMin*upVec/* + origin*/;
             this->pushPoint(upPoints.at(i));
         }
-        this->childrenOrigin = -currMin*upVec + origin + trans+normalize(direction)*length;
+        this->childrenOrigin = /*-currMin*upVec +*/ origin + trans+normalize(direction)*length;
         this->origin = -currMin*upVec + origin + trans;
         // takes care of the base
         circleBranch(baseIds, upIndices, triangleIndices, index);

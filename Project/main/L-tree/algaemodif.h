@@ -26,7 +26,7 @@ public:
 
     void Init(int depth, vec3 origin, char axiom, int *index, GLuint texture_id){
         Plant::Init(depth, origin, axiom,SIDE_NBR, ANGLE_FUNC);
-        addExpansionRule('A', "[//AB\\]");
+        addExpansionRule('A', "[//A\\\\B]");
         alphabet.push_back('A');
         alphabet.push_back('B');
         addExpansionRule('B', "[A]");
