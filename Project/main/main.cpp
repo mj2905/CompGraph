@@ -6,6 +6,7 @@
 #include "icg_helper.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 #include "water/water.h"
 
@@ -14,6 +15,17 @@
 #include "skybox/skybox.h"
 
 #include "multitiles/multitiles.h"
+
+#define WASD_NULL (0)
+#define WASD_W (1)
+#define WASD_A (2)
+#define WASD_S (3)
+#define WASD_D (4)
+
+uint8_t wasd_direction[2] = {WASD_NULL, WASD_NULL};
+
+#define INCREMENT_STEPS (0.006f)
+#define MULTITILES_INCREMENT (0.0001f)
 
 constexpr float NB_FPS = 60.0;
 
@@ -35,10 +47,10 @@ mat4 quad_model_matrix;
 mat4 quad_model_matrix_base;
 
 float old_x, old_y;
-
-
+float global_angle_x = 0.528f;
 float distance_camera = 0;
 
+Terrain* terrain;
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
     assert(right > left);
@@ -112,17 +124,34 @@ void Init() {
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
     // applied in a rotated coordinate frame.
     // uncomment lower line to achieve this.
-    view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
-                         vec3(0.0f, 0.0f, 0.0f),
-                         vec3(0.0f, 1.0f, 0.0f));
-    view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
+
 
     quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
     multitiles.Init(window_width, window_height);
 
+    terrain = multitiles.getTerrain();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+}
+vec3 up = vec3(0.0f, 1.0f, 0.0f);
+vec3 position = vec3(0.0f, -0.25f, -3.2);
+vec3 center = vec3(-1.0f, 1.1f, -1.2f);
+
+mat4 LookAtC(vec3 eye, vec3 center, vec3 up) {
+    vec3 z_cam = normalize(eye - center);
+    vec3 x_cam = normalize(cross(up, z_cam));
+    vec3 y_cam = cross(z_cam, x_cam);
+
+    mat3 R(x_cam, y_cam, z_cam);
+    R = transpose(R);
+
+    mat4 look_at(vec4(R[0], 0.0f),
+                 vec4(R[1], 0.0f),
+                 vec4(R[2], 0.0f),
+                 vec4(-R * (eye), 1.0f));
+    return look_at;
 }
 
 // gets called for every frame.
@@ -132,12 +161,19 @@ void Display() {
 
     glViewport(0, 0, window_width, window_height);
 
+    position.y = terrain->getCurrentHeight()*2;
+
+    view_matrix = LookAtC(position, center, up);
+
+    //handling FPS camera
+
+
     multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
 
 }
 
 void Update() {
-    multitiles.incrementY(); //to move with the camera
+
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.
@@ -162,6 +198,10 @@ void MouseButton(GLFWwindow* window, int button, int action, int mod) {
     old_x = -2;
 }
 
+//mat4 view_matrix;
+
+const float MIN_DISTANCE_POLE = 0.1f;
+
 void MousePos(GLFWwindow* window, double x, double y) {
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         vec2 p = TransformScreenCoords(window, x, y);
@@ -178,12 +218,25 @@ void MousePos(GLFWwindow* window, double x, double y) {
             old_y = p.y;
         }
 
-        view_matrix = glm::rotate(IDENTITY_MATRIX, p.x - old_x, vec3(0.0, 1.0, 0.0)) * view_matrix;
-        view_matrix = glm::rotate(IDENTITY_MATRIX, old_y - p.y, vec3(1.0, 0.0, 0.0)) * view_matrix;
+        float delta_x = old_x - p.x;
+        global_angle_x += old_x - p.x;
+        float delta_y = p.y - old_y;
+
+        //new stuff
+        vec3 angle_x = normalize(cross(up, -center + position));
+        vec3 angle_y = normalize(cross(angle_x, -center+position));
+        vec3 oldCenter = center;
+        center = (mat3(glm::rotate(glm::rotate(IDENTITY_MATRIX, delta_x, angle_y), delta_y, angle_x)) * (center - position)) + position;
+
+
+
+
         old_x = p.x;
         old_y = p.y;
-    }
+   }
 }
+
+
 
 // Gets called when the windows/framebuffer is resized.
 void SetupProjection(GLFWwindow* window, int width, int height) {
@@ -213,18 +266,84 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
 
-    if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+
+
+    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+        wasd_direction[0] = WASD_W;
     }
-    if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, -0.1)) * view_matrix;
+    else if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, -0.1)) * view_matrix;
+        wasd_direction[0] = WASD_S;
     }
     if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(0.1, 0, 0)) * view_matrix;
+        //view_matrix = translate(IDENTITY_MATRIX, vec3(0.1, 0, 0)) * view_matrix;
+        wasd_direction[1] = WASD_A;
     }
-    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        view_matrix = translate(IDENTITY_MATRIX, vec3(-0.1, 0, 0)) * view_matrix;
+    else if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        //view_matrix = translate(IDENTITY_MATRIX, vec3(-0.1, 0, 0)) * view_matrix;
+        wasd_direction[1] = WASD_D;
     }
+}
+
+void update_fps_cam() {
+
+  //if WASD was pressed before the current frame
+  if (wasd_direction[0] != WASD_NULL && wasd_direction[1] != WASD_NULL) {
+
+  size_t factors;
+  float angle_sin = sin(global_angle_x) * INCREMENT_STEPS;
+  float angle_cos = cos(global_angle_x) * INCREMENT_STEPS;
+
+  if (angle_sin <=0.0f) {
+
+    angle_sin*=angle_sin;
+    if (wasd_direction[0] == WASD_W) {
+      multitiles.incrementX(angle_sin);
+    }
+    else {
+      multitiles.decrementX(angle_sin);
+    }
+
+    if (wasd_direction[1] == WASD_A) {
+      multitiles.incrementY(angle_sin);
+    }
+    else {
+      multitiles.decrementY(angle_sin);
+    }
+  }
+
+
+    else {
+      angle_sin*=angle_sin;
+      if (wasd_direction[0] == WASD_W) {
+        multitiles.decrementX(angle_sin);
+      }
+      else {
+        multitiles.incrementX(angle_sin);
+      }
+
+      if (wasd_direction[1] == WASD_A) {
+        multitiles.decrementY(angle_sin);
+      }
+      else {
+        multitiles.incrementY(angle_sin);
+      }
+    }
+
+
+
+
+
+
+
+  wasd_direction = {WASD_NULL, WASD_NULL};
+
+
+
+
+
+}
 }
 
 

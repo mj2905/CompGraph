@@ -20,6 +20,8 @@ class Terrain {
         FrameBufferTerrain framebuffer2;
         Water water;
         Skybox skybox;
+        GLsizei width;
+        GLsizei height;
 
         const string skyboxTexture = "miramar";
 
@@ -31,6 +33,9 @@ class Terrain {
             mountainsRender.Init(framebuffer.getTextureId());
             water.Init(framebuffer.getTextureId(), framebuffer2.getTextureId());
             skybox.init(skyboxTexture);
+            this->width = width;
+            this->height = height;
+
         }
 
         void changeTexture(const array<GLuint, 4>& textures) {
@@ -45,9 +50,13 @@ class Terrain {
         }
 
         float getCurrentHeight() {
+          GLfloat ret = 0.1f;
           framebuffer.Bind();
-
+        //  glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
+          glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
           framebuffer.Unbind();
+
+          return ret;
         }
 
         void Draw(float offsetX, float offsetY,

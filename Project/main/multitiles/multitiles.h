@@ -43,6 +43,7 @@ public:
         }
 
         terrain.Init(width, height);
+
         perlin.Init();
 
         for(int i = 0; i < 4; ++i) {
@@ -59,13 +60,14 @@ public:
         terrain.Draw(x_visible, y_visible, model, view, projection);
     }
 
-    void incrementX() {
+    void incrementX(float increment) {
+      assert(increment <= 0.5);
         //if we are moving a bit to the right from the center, we compute and store the right not visible tiles
-        if(x_visible <= x and x_visible + INCREMENT > x) {
+        if(x_visible <= x and x_visible + increment > x) {
             drawRightTiles();
         }
         //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
-        if(x_visible + INCREMENT >= x + 0.5) {
+        if(x_visible + increment >= x + 0.5) {
 
             GLuint tmp_down = framebuffers_positions[NV_LR_B];
             framebuffers_positions[NV_LR_B] = framebuffers_positions[BL_TILE];
@@ -97,17 +99,18 @@ public:
             }
         }
 
-        x_visible += INCREMENT;
+        x_visible += increment;
         terrain.Moved(x_visible, y_visible);
     }
 
-    void decrementX() {
+    void decrementX(float increment) {
+      assert(increment <= 0.5);
         //if we are moving a bit to the left from the center, we compute and store the left not visible tiles
-        if(x_visible >= x and x_visible - INCREMENT < x) {
+        if(x_visible >= x and x_visible - increment < x) {
             drawLeftTiles();
         }
         //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
-        if(x_visible - INCREMENT <= x - 0.5) {
+        if(x_visible - increment <= x - 0.5) {
 
             GLuint tmp_down = framebuffers_positions[NV_LR_B];
             framebuffers_positions[NV_LR_B] = framebuffers_positions[BR_TILE];
@@ -138,17 +141,18 @@ public:
             }
         }
 
-        x_visible -= INCREMENT;
+        x_visible -= increment;
         terrain.Moved(x_visible, y_visible);
     }
 
-    void incrementY() {
+    void incrementY(float increment) {
+      assert(increment <= 0.5);
         //if we are moving a bit to the top from the center, we compute and store the top not visible tiles
-        if(y_visible <= y and y_visible + INCREMENT > y) {
+        if(y_visible <= y and y_visible + increment > y) {
             drawUpTiles();
         }
         //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
-        if(y_visible + INCREMENT >= y + 0.5) {
+        if(y_visible + increment >= y + 0.5) {
 
             GLuint tmp_right = framebuffers_positions[NV_BT_R];
             framebuffers_positions[NV_BT_R] = framebuffers_positions[BR_TILE];
@@ -179,17 +183,22 @@ public:
             }
         }
 
-        y_visible += INCREMENT;
+        y_visible += increment;
         terrain.Moved(x_visible, y_visible);
     }
 
-    void decrementY() {
+    Terrain* getTerrain() {
+      return &terrain;
+    }
+
+    void decrementY(float increment) {
+      assert(increment <= 0.5);
         //if we are moving a bit to the bottom from the center, we compute and store the bottom not visible tiles
-        if(y_visible >= y and y_visible - INCREMENT < y) {
+        if(y_visible >= y and y_visible - increment < y) {
             drawDownTiles();
         }
         //if we are already in the boundaries of the visible tiles, we rotate tiles so that we have a continuity
-        if(y_visible - INCREMENT <= y - 0.5) {
+        if(y_visible - increment <= y - 0.5) {
 
             GLuint tmp_right = framebuffers_positions[NV_BT_R];
             framebuffers_positions[NV_BT_R] = framebuffers_positions[TR_TILE];
@@ -220,7 +229,7 @@ public:
             }
         }
 
-        y_visible -= INCREMENT;
+        y_visible -= increment;
         terrain.Moved(x_visible, y_visible);
     }
 
@@ -233,7 +242,7 @@ public:
     }
 
 private:
-        const float INCREMENT = 0.005; // the increment step, must be <= 0.5
+        const float INCREMENT = 0.001; // the increment step, must be <= 0.5
         float x, y;
         float x_visible, y_visible;
         Terrain terrain;
