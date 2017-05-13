@@ -15,6 +15,7 @@ private:
     vector<int> branchBaseIndices, endIndices;
     vector<int> triangleIndices;
     vector<float> pointsPush;
+    vector<float> transToCorrect;
     vec3 projOnUp, frontBase, sideBase, sideTrans, origin, direction, upVec, childrenOrigin;
     float width, length;
     bool initialized = false;
@@ -82,19 +83,38 @@ private:
 public:
 
     void translateBranch(vec3 dir, float length){
-        mat4 tr = glm::translate(mat4(1.0f), dir)*length;
+        mat4 tr = glm::translate(mat4(1.0f), dir*length);
         for(size_t i = 0; i < branchBasePoints.size(); ++i){
-            branchBasePoints.at(i) = vec3(tr*vec4(branchBasePoints.at(i),1.0f)); //+ vec3(0.0,- biggerDepth,0.0) + origin+trans;
-            //this->pushPoint(branchBasePoints.at(i));
+            branchBasePoints.at(i) = vec3(tr*vec4(branchBasePoints.at(i),1.0f));
+        }
+    }
+
+    void createEndPointsFromDirAndLength(float length){
+        for(size_t i = 0; i < branchBasePoints.size(); ++i){
+            vec3 p = branchBasePoints.at(i) + vec3(0.0,length,0.0);
+            p.y += this->transToCorrect.at(i);
+            if(p.x == branchBasePoints.at(i).x && p.y == branchBasePoints.at(i).y && p.z == branchBasePoints.at(i).z){
+                cout << "This is a problem" << endl;
+            }
+            endPoints.push_back(p);
         }
     }
 
 
-    void rotateBranch(vec3 axis, float angle){
-        mat4 rot = glm::rotate(mat4(1.0f), angle, axis);
+    void rotateBranch(vec3 rotation){
+        //mat4 rot = glm::rotate(mat4(1.0f), angle, axis);
+        float m;
         for(size_t i = 0; i < branchBasePoints.size(); ++i){
-            branchBasePoints.at(i) = vec3(rot*vec4(branchBasePoints.at(i),1.0f)); //+ vec3(0.0,- biggerDepth,0.0) + origin+trans;
-            //this->pushPoint(branchBasePoints.at(i));
+            m = branchBasePoints.at(i).y;
+            branchBasePoints.at(i) = vec3(glm::toMat4(quat(rotation))*vec4(branchBasePoints.at(i),1.0f));
+            transToCorrect.push_back(branchBasePoints.at(i).y - m);
+          //  branchBasePoints.at(i) = vec3(rot*vec4(branchBasePoints.at(i),1.0f)); //+ vec3(0.0,- biggerDepth,0.0) + origin+trans;
+        }
+    }
+
+    void rotateEndPoints(vec3 rotation){
+        for(size_t i = 0; i< endPoints.size(); ++i){
+            endPoints.at(i) = vec3(glm::toMat4(quat(rotation))*vec4(endPoints.at(i),1.0f));
         }
     }
 
@@ -124,13 +144,15 @@ public:
 
         circleBranch(baseIds, branchBaseIndices, triangleIndices, index);
 
-        for(size_t i = 0; i < branchBasePoints.size(); ++i){
-            vec3 p = branchBasePoints.at(i) + vec3(0.0,length,0.0);
-            if(p.x == branchBasePoints.at(i).x && p.y == branchBasePoints.at(i).y && p.z == branchBasePoints.at(i).z){
-                cout << "This is a problem" << endl;
-            }
-            endPoints.push_back(p);
+        rotation = this->leftVector*angle;//*float(M_PI)/180.0f;
+        float biggerDepth = 0.0f;
+        rotateBranch(rotation);
+        for(size_t i =0; i < branchBasePoints.size(); ++i){
+            biggerDepth = std::min(biggerDepth, dot(branchBasePoints.at(i), vec3(0.0,1.0,0.0)));
         }
+
+        createEndPointsFromDirAndLength(length);
+        rotateEndPoints(rotation);
 
         circleBranch(branchBaseIndices, endIndices, triangleIndices, index);
 
@@ -138,25 +160,17 @@ public:
         fusePointsArray();
 
         //Next up, we rotate every point with a rotation matrix and put them back up
-        rotation = this->leftVector*angle*float(M_PI)/180.0f;
-        float biggerDepth = 0.0f;
-        for(size_t i =0; i < branchBasePoints.size(); ++i){
-            branchBasePoints.at(i) = vec3(glm::toMat4(quat(rotation))*vec4(branchBasePoints.at(i),1.0f));
-            biggerDepth = std::min(biggerDepth, dot(branchBasePoints.at(i), vec3(0.0,1.0,0.0)));
-        }
 
 
-        //translateBranch(vec3(1,0.0,0.0),1.0);
 
-        //rotateBranch(vec3(0.0,1.0,0.0),90);
-        //translateBranch(normalize(origin))
-
-        /*translate(vec3(0.0,1.0,0.0), -biggerDepth);
+        translateBranch(trans, 1.0);
         translateBranch(origin, 1.0);
-        translateBranch(trans, 1.0);*/
-        for(size_t i = 0; i < branchBasePoints.size(); ++i){
+        translateBranch(normalize(upVec), -biggerDepth);
+        cout << "Upvec:" << "x: " << upVec.x << " y: "<< upVec.y << " z: "<<upVec.z<<endl;
+
+        /*for(size_t i = 0; i < branchBasePoints.size(); ++i){
             branchBasePoints.at(i) = branchBasePoints.at(i) + vec3(0.0,- biggerDepth,0.0) + origin+trans;
-        }
+        }*/
 
         for(size_t i = 0; i < branchBasePoints.size();++i){
             pushPoint(branchBasePoints.at(i));
