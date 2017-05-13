@@ -24,7 +24,7 @@ class MountainsRender {
         GLuint P_id_;                           // proj matrix ID
 
     public:
-        void Init(GLuint mountain_texture) {
+        void Init(GLuint mountain_texture, size_t grid_dim = 512) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("mountains_r_vshader.glsl",
                                                   "mountains_r_fshader.glsl");
@@ -44,7 +44,6 @@ class MountainsRender {
                 std::vector<GLuint> indices;
                 // makes a triangle grid with dimension 100x100.
                 // always two subsequent entries in 'vertices' form a 2D vertex position.
-                int grid_dim = 512;
 
                 // the given code below are the vertices for a simple quad.
                 // your grid should have the same dimension as that quad, i.e.,

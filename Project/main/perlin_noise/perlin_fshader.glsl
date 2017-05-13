@@ -7,8 +7,8 @@ out float heightmap;
 const int SIZE_PERM = 512;
 uniform int[SIZE_PERM] p;
 
-int nb_octaves = 8;
-const float persistence = 0.45f;
+const int nb_octaves = 8;
+const float persistence = 0.53f;
 uniform vec2 off;
 
 float f(float t) {
@@ -45,6 +45,9 @@ float perlin(vec2 xy, float nb_subdivisions) {
     return mix(st, uv, fy);
 }
 
+
+
+
 float octavePerlin(vec2 xy, vec2 offset) {
     float total = 0;
     float frequency = 3.2;
@@ -56,9 +59,14 @@ float octavePerlin(vec2 xy, vec2 offset) {
         amplitude *= persistence;
         frequency *= 2;
     }
-    return (total/(2*maxValue) + 0.5); //bet -1/6 and 7/6
+    return (total/(2.5*maxValue) - 0.5); //bet -1/6 and 7/6
+}
+
+float multifractal(vec2 xy, vec2 offset) {
+    return 1 - abs(octavePerlin(xy, offset));
+    //return exp(1- abs(octavePerlin(xy, offset))) - 1;
 }
 
 void main() {
-    heightmap = octavePerlin(uv, off);
+    heightmap = multifractal(uv, off);//octavePerlin(uv, off);
 }

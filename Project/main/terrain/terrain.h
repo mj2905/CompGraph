@@ -8,7 +8,6 @@
 #include "../perlin_noise/perlin.h"
 #include "../skybox/skybox.h"
 #include <array>
-#include "../water/screenquad/gaussian_blur.h"
 #include "../shadow/shadow.h"
 #include "../shadow/framebuffer_shadow.h"
 
@@ -18,13 +17,13 @@ class Terrain {
 
     private:
         MountainsGenerator mountainsCreator;
-        MountainsRender mountainsRender;
+        MountainsRender mountains;
+        MountainsRender reflect;
         FrameBuffer framebuffer_terrain;
         FrameBufferReflect framebuffer_reflect;
         FrameBufferShadow framebuffer_shadow;
         Water water;
         Skybox skybox;
-        GaussianBlur blur;
         Shadow shadow;
 
         const string skyboxTexture = "miramar";
@@ -34,9 +33,10 @@ class Terrain {
             mountainsCreator.Init();
             framebuffer_terrain.Init(width, height, true);
             framebuffer_reflect.Init(width, height, true);
-            mountainsRender.Init(framebuffer_terrain.getTextureId());
-            blur.Init(width, height, framebuffer_reflect.getTextureId());
-            water.Init(framebuffer_terrain.getTextureId(), blur.getTexture());
+
+            mountains.Init(framebuffer_terrain.getTextureId(), 1024);
+            reflect.Init(framebuffer_terrain.getTextureId(), 64);
+            water.Init(framebuffer_terrain.getTextureId(), framebuffer_reflect.getTextureId(), 128);
             skybox.init(skyboxTexture);
 
             framebuffer_shadow.Init(width, height, true);
@@ -66,18 +66,18 @@ class Terrain {
             framebuffer_reflect.Bind();
                 mat4 rot = glm::translate(glm::rotate(IDENTITY_MATRIX, (float)M_PI, vec3(1,0,0)), vec3(0, -0.8, 0));
                 skybox.Draw(view * glm::scale(IDENTITY_MATRIX, vec3(1, -1, 1)) * skyboxRot, projection);
-                mountainsRender.Draw(offsetX, offsetY, true, model * rot, view, projection);
+                reflect.Draw(offsetX, offsetY, true, model * rot, view, projection);
             framebuffer_reflect.Unbind();
 
+            /*
             framebuffer_shadow.ClearContent();
             framebuffer_shadow.Bind();
-                mountainsRender.Draw(offsetX, offsetY, false, model, view, projection);
+                mountains.Draw(offsetX, offsetY, false, model, view, projection);
             framebuffer_shadow.Unbind();
-
-            blur.Draw();
+            */
 
             skybox.Draw(view * skyboxRot, projection);
-            mountainsRender.Draw(offsetX, offsetY, false, model, view, projection);
+            mountains.Draw(offsetX, offsetY, false, model, view, projection);
             water.Draw(offsetX, offsetY, model, view, projection);
 
             //shadow.Draw(model, view, projection);
@@ -85,7 +85,8 @@ class Terrain {
 
         void Cleanup() {
             mountainsCreator.Cleanup();
-            mountainsRender.Cleanup();
+            mountains.Cleanup();
+            reflect.Cleanup();
             water.Cleanup();
             framebuffer_terrain.Cleanup();
             framebuffer_reflect.Cleanup();

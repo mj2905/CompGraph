@@ -27,7 +27,7 @@ void main() {
         gl_ClipDistance[0] = height - 0.4;
     }
 
-    vpoint = vec3(position.x, height, clip ? position.y : -position.y);//-position.y);
+    vpoint = vec3(position.x, height, clip ? position.y : -position.y);
 
     vpoint_mv = view * model * vec4(vpoint, 1.0);
     gl_Position = projection * vpoint_mv;

@@ -72,7 +72,7 @@ class Water {
             }
         }
 
-        void Init(GLuint terrain_texture, GLuint reflect_texture) {
+        void Init(GLuint terrain_texture, GLuint reflect_texture, size_t grid_dim = 512) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("water_vshader.glsl",
                                                   "water_fshader.glsl");
@@ -92,7 +92,6 @@ class Water {
                 std::vector<GLuint> indices;
                 // TODO 5: make a triangle grid with dimension 100x100.
                 // always two subsequent entries in 'vertices' form a 2D vertex position.
-                int grid_dim = 512;
 
                 // the given code below are the vertices for a simple quad.
                 // your grid should have the same dimension as that quad, i.e.,
@@ -170,6 +169,7 @@ class Water {
             //glm::vec3 light_pos = glm::vec3(-1.0, 3, 0.0f);
             //light_pos = glm::vec3(2.5,1,2.5);
             light_pos = glm::vec3(0.0f, 1, -1);
+            //light_pos = glm::vec3(0.0f, 1, -2);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
             glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -184,7 +184,7 @@ class Water {
             glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
             glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
             glm::vec3 ks = glm::vec3(0.7, 0.7, 0.7);
-            float alpha = 20.0f;
+            float alpha = 40.0f;
 
             GLuint ka_id = glGetUniformLocation(program_id_, "ka");
             GLuint kd_id = glGetUniformLocation(program_id_, "kd");

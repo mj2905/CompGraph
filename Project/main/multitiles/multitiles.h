@@ -233,7 +233,7 @@ public:
     }
 
 private:
-        const float INCREMENT = 0.005; // the increment step, must be <= 0.5
+        const float INCREMENT = 0.001; // the increment step, must be <= 0.5
         float x, y;
         float x_visible, y_visible;
         Terrain terrain;

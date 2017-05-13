@@ -39,14 +39,14 @@ float rock_distrib(float height, float n) {
 
 float snow_distrib(float height, float n) {
     if(height >= 0.8) {
-        return mix(n, 0, abs(1 - height) * 5);
+        return mix(n, 0, abs(1 - clamp(height, 0, 1)) * 5);
     }
     return 0;
 }
 
 float sand_distrib(float height, float n) {
     if(height <= 0.5) {
-        return mix(n, 0, height*2)*1.2;
+        return mix(n, 0, clamp(height, 0, 1)*2)*1.2;
     }
     return 0;
 }
@@ -66,14 +66,16 @@ void main() {
 
     float nDotL = max(dot(normal_mv, light_dir), 0);
 
-    float alpha1=grass_distrib(height, normal.y),
-          alpha2=rock_distrib(height, normal.y),
-          alpha3=snow_distrib(height, normal.y),
-          alpha4=sand_distrib(height, normal.y);
+    float normal_y = normal.y*1.5;//int(normal.y*4)/4.0f;
+
+    float alpha1=grass_distrib(height, normal_y),
+          alpha2=rock_distrib(height, normal_y),
+          alpha3=snow_distrib(height, normal_y),
+          alpha4=sand_distrib(height, normal_y);
 
 
     color =   0.7*(
-              alpha1 * texture(grass, (uv + offset)*5).rgb
+              alpha1 * texture(grass, (uv + offset)*20).rgb
             + alpha2 * texture(rock, (uv + offset)*10).rgb
             + alpha3 * texture(snow, (uv + offset)*10).rgb
             + alpha4 * texture(sand, (uv + offset)*60).rgb)
