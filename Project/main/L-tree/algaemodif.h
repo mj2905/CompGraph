@@ -21,15 +21,17 @@ private:
     vector<int> baseIds;
     vector<GLuint> pointsIds;
     vector<GLfloat> points, normals;
+    Branch br;
 
 public:
 
     void Init(int depth, vec3 origin, char axiom, int *index, GLuint texture_id){
         Plant::Init(depth, origin, axiom,SIDE_NBR, ANGLE_FUNC);
-        addExpansionRule('A', "[//A\\\\B]");
+        addExpansionRule('A', "[----A]");
+        addExpansionRule('B', "[A]");
         alphabet.push_back('A');
         alphabet.push_back('B');
-        addExpansionRule('B', "[A]");
+
         (*index) = -1;
         w = 0.2;
         l = 0.5;
@@ -40,42 +42,45 @@ public:
         up = vec3(0.0,1.0,0.0);
         left = vec3(1.0,0.0,0.0);
 
+        //First, initialize the points that constitute the very base
         Plant::createBase(w, points);
 
-        printTree();
-
+        //Then, push them to the indices as "baseIds" denote the id of the base
         for(size_t i = 0; i < SIDE_NBR; ++i){
             baseIds.push_back(++(this->index));
         }
 
-        trans = vec3(0.0f,0.05f,0.0f);
+        //The translation from the base
+        trans = vec3(0.0f,0.01f,0.0f);
 
+        //Expands the tree and then draws it in 3D
         drawTree();
+
+        //Creates the normals for the points
         Plant::createNormals(points,pointsIds, &normals);
-        vector<int> idsTmp = getBranchIds();
-        vector<GLuint> ids;
-        for(size_t i =0; i < idsTmp.size(); ++i){
-            ids.push_back(GLuint(idsTmp.at(i)));
-        }
+
         cout << "#ids:" << pointsIds.size() << endl;
         cout << "#normals: " << normals.size() << endl;
         cout << "#branch: " << points.size() << endl;
-        vector<GLuint> test;
-        test.push_back(0);
-        test.push_back(1);
-        test.push_back(2);
+
+        //And finally pass it all to the appropriate grid
         branchGrid.Init(points, pointsIds, normals, texture_id);
     }
 
-    void drawBranch(char c){
+    void drawBranch(char c, bool update){
         cout << "Drawing algae branch" << endl;
         Branch b;
-        b.createBranch(dir, o,up, left, l, w, baseIds,trans, &index);
+        // Creates a branch
+        b.createBranch(dir,o,up,left,trans,l,w,baseIds,&index);
+        // Stores it
         Plant::putBranch(b);
-        vector<float> a = b.getPointsArray();
-        vector<int> t = b.getTriangleArray();
-        Plant::updatePointsPush(points, a);
-        Plant::updateTriangleIndices(pointsIds,t);
+        if(update){
+            this->br = b;
+        }
+        vector<float> branchPoints = b.getPointsArray();
+        vector<int> branchIndices = b.getTriangleArray();
+        Plant::updatePointsPush(points, branchPoints);
+        Plant::updateTriangleIndices(pointsIds,branchIndices);
     }
 
     void drawLeaf(){
@@ -92,36 +97,54 @@ public:
         char c = ';';
         vec3 endOrigin = vec3(0.0,0.0,0.0);
         vector<int> endIds;
-        vec3 endUp;
+        vec3 endUp, endDir;
         vec3 endLeft;
+        Branch endB;
 
         for(size_t i = 0; i < tree.size(); ++i){
             c = tree.at(i);
             if(inAlphabet(c,alphabet)){ // we need to draw it
+                //When detecting a letter, we have to draw the corresponding branch
+
+
+                //If the turtle is empty (happens for the 1st letter), we must update it
                 if(turtle.emptyTurtle()){
-                    turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c);
+                    drawBranch(c, true);
+                    turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c, br);
+                }else{
+                    drawBranch(c,false); // draw the branch, updates the indices and points to add it to the global array
                 }
-                drawBranch(c); // draw the branch, updates the indices and points to add it to the global array
+                //Finally, we store all end values as the values of the end of the created branch
                 endOrigin = Plant::getBackBranch().getChildrenOrigin();
                 endIds = Plant::getBackBranch().getEndPointIndices();
-                endUp = Plant::getBackBranch().getUpVector();
+                endUp = Plant::getBackBranch().getDirection();
                 endLeft = Plant::getBackBranch().getLeftVector();
+                endB = Plant::getBackBranch();
+                endDir = Plant::getBackBranch().getDirection();
             }
             else if(c == '['){
-                turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c);
+                // If we recurse, then the "base" values are now the values of the mother branch
+                // We save the previous values, and then update our current ones
+                turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c, br);
                 o = endOrigin;
                 up = endUp;
                 left = endLeft;
                 baseIds = endIds;
+                br = endB;
+                dir = endDir;
             }
             else if(c == ']') {
+                // When going out of the recursion, we pop the turtle and then take as value the ones at the end of the stack
                 turtle.popStatesTurtle();
                 o = turtle.getCurrOrigin();
                 up = turtle.getCurrUp();
                 left = turtle.getCurrLeft();
                 baseIds = turtle.getCurrBaseIds();
+                br = turtle.getCurrBranch();
+                dir = turtle.getCurrDir();
             }
             else if(Plant::isRotation(c)){
+                // Update the rotation according to the rules of the L system and the angle of the plant
                 dir = vec3(Plant::getRotation(c)*vec4(dir,1.0f));
             }
 

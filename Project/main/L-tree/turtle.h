@@ -5,6 +5,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include <vector>
 #include "stack.h"
+#include "import_header.h"
 
 using namespace glm;
 using namespace std;
@@ -17,10 +18,11 @@ private:
     Stack<vector<int>> baseIndices;
     Stack<float> width, length;
     Stack<char> letter;
+    Stack<Branch> branch;
 
 public:
     void pushBackStatesTurtle(vec3 dir, vec3 o, vec3 u, vec3 lef,vector<int> &bI, float w,
-                              float l, char c){
+                              float l, char c, Branch branch){
         this->direction.push_back(dir);
         this->up.push_back(u);
         this->left.push_back(lef);
@@ -29,6 +31,7 @@ public:
         this->width.push_back(w);
         this->length.push_back(l);
         this->letter.push_back(c);
+        this->branch.push_back(branch);
     }
 
     void popStatesTurtle(){
@@ -40,10 +43,15 @@ public:
         letter.popStack();
         up.popStack();
         left.popStack();
+        branch.popStack();
     }
 
     bool emptyTurtle(){
         return origin.size() == 0;
+    }
+
+    Branch getCurrBranch(){
+        return branch.back();
     }
 
     vector<int> getCurrBaseIds(){

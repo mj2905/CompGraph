@@ -1,7 +1,7 @@
 #include "rulesystem.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <string.h>
-#include "branch.h"
+#include "import_header.h"
 #include <algorithm>
 //#include <vector>
 
@@ -82,29 +82,30 @@ public:
                 return glm::toMat4(quat(k));
             }
         }
-        return glm::toMat4(quat(k*(float(sign*M_PI)/180.0f*angle)));
+        return glm::toMat4(quat(k*(angle*float(sign*M_PI)/180.0f)));
 
     }
 
     void createBase(float width, vector<GLfloat> &branchPoints){
-        vec3 upVec = vec3(0.0f,1.0f,0.0f);
-        vec3 leftBase = vec3(1.0f,0.0,0.0);
-        vec3 startP = origin + leftBase*0.5f*width;
         float anglePoints = 360.0f/sideNo;
-        vec3 currP = startP;
+        vec3 currP;
         vec3 rotation, dir;
-
+        vector<vec3> tmpP;
         // Creates the points as they should "originally" be.
         for(size_t i = 0; i < sideNo; ++i){
-            currP = normalize(origin - leftBase)*0.5f*width;
-            rotation = i*anglePoints*normalize(upVec);
-            rotation *= M_PI/180.0;
+            currP = vec3(1.0,0.0,0.0)*0.5f*width;
+            rotation = i *anglePoints*vec3(0.0,1.0,0.0);
+            rotation *=M_PI/180.0f;
             dir = vec3(glm::toMat4(quat(rotation))*vec4(currP,1.0f));
-            vec3 p = -currP+dir+origin;
-            points.push_back(p);
-            branchPoints.push_back(p.x);
-            branchPoints.push_back(p.y);
-            branchPoints.push_back(p.z);
+            tmpP.push_back(dir);
+        }
+
+        // Next, translate to the origin of the plant
+        for(size_t i = 0; i < tmpP.size(); ++i){
+            tmpP.at(i) = tmpP.at(i) + origin;
+            branchPoints.push_back(tmpP.at(i).x);
+            branchPoints.push_back(tmpP.at(i).y);
+            branchPoints.push_back(tmpP.at(i).z);
         }
 
     }
@@ -199,7 +200,7 @@ public:
         cout << "Drawing a leaf" << endl;
     }
 
-    virtual void drawBranch(char branchType){
+    virtual void drawBranch(char branchType, bool update){
         cout <<"Drawing a tree" << endl;
     }
 
