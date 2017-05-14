@@ -36,7 +36,7 @@ void main() {
 
     vec3 p = vpoint_mv.xyz;
 
-    float moveFactor = mod(time/300, 1.0);
+    float moveFactor = mod(time/400, 1.0);
     vec3 vnormal = mapXandZ(texture(normal_map, repeatFactor * vec2(pos.x, pos.y - moveFactor)).rbg)
                     + mapXandZ(texture(normal_map, repeatFactor*vec2(-pos.x + moveFactor, pos.y + moveFactor)).rbg);
     vec3 vnormal_mv = normalize(mat3(transpose(inverse(view * model))) * vnormal);

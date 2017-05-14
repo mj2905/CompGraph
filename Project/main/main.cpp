@@ -120,7 +120,7 @@ void Display() {
 bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
 
 void Update() {
-    //multitiles.incrementY(); //to move with the camera
+    multitiles.incrementY(); //to move with the camera
 
     float increment = 0.05f;
 

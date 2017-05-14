@@ -39,7 +39,12 @@ float rock_distrib(float height, float n) {
 
 float snow_distrib(float height, float n) {
     if(height >= 0.8) {
-        return mix(n, 0, abs(1 - clamp(height, 0, 1)) * 5);
+        if(height >= 1) {
+            return 1;
+        }
+        else {
+            return mix(0, 1, (height-0.8)*5);
+        }
     }
     return 0;
 }
@@ -75,9 +80,9 @@ void main() {
 
 
     color =   0.7*(
-              alpha1 * texture(grass, (uv + offset)*20).rgb
-            + alpha2 * texture(rock, (uv + offset)*10).rgb
-            + alpha3 * texture(snow, (uv + offset)*10).rgb
+              alpha1 * texture(grass, (uv + offset)*30).rgb
+            + alpha2 * texture(rock, (uv + offset)*20).rgb
+            + alpha3 * texture(snow, (uv + offset)*30).rgb
             + alpha4 * texture(sand, (uv + offset)*60).rgb)
             + kd * nDotL * Ld; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 
