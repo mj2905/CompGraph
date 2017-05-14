@@ -61,9 +61,11 @@ private:
 
         // Creates the last one
         i1 = triangleIds.at(triangleIds.size()-1-4);
-        i2 = triangleIds.at(triangleIds.size()-1-13);
+        i2 = idsOriginBranch.at(0);
+        //i2 = triangleIds.at(0);
         i3 = triangleIds.at(triangleIds.size()-1-2);
-        i4 = triangleIds.at(triangleIds.size()-1-12);
+        //i4 = triangleIds.at(5);
+        i4 = idsOriginBranch.back()+1;
         pushIndicesAsQuad(triangleIds, i1,i2,i3,i4);
     }
 

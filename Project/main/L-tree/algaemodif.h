@@ -3,7 +3,7 @@
 #include "turtle.h"
 #include "flexigrid.h"
 
-#define SIDE_NBR 4
+#define SIDE_NBR 6
 #define ANGLE_FUNC 22.5
 
 /**
@@ -91,7 +91,7 @@ public:
      void drawTree(){
         Plant::initTree();
         this->tree = Plant::getTree();
-        this->tree = "/A[A]";
+        this->tree = "A";
 
         printTree();
 
@@ -104,10 +104,7 @@ public:
 
         for(size_t i = 0; i < tree.size(); ++i){
             c = tree.at(i);
-            if(inAlphabet(c,alphabet)){ // we need to draw it
-                //When detecting a letter, we have to draw the corresponding branch
-
-
+            if(inAlphabet(c,alphabet)){
                 //If the turtle is empty (happens for the 1st letter), we must update it
                 if(turtle.emptyTurtle()){
                     drawBranch(c, true);
