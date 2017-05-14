@@ -33,7 +33,7 @@ class Terrain {
             water.Init(framebuffer.getTextureId());*/
             int id = -1;
             GLuint tex_id = framebuffer.Init(width, height, true);
-            algae.Init(1, vec3(0.0,0.0,0.0),'A',&id, tex_id );
+            algae.Init(2, vec3(0.0,0.0,0.0),'A',&id, tex_id );
             algae.initTree();
             //algae.printTree();
         }

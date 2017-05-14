@@ -87,6 +87,7 @@ public:
         for(size_t i = 0; i < branchBasePoints.size(); ++i){
             branchBasePoints.at(i) = vec3(tr*vec4(branchBasePoints.at(i),1.0f));
         }
+        this->origin = vec3(tr*vec4(this->origin,1.0f));
     }
 
     void createEndPointsFromDirAndLength(float length){
@@ -110,6 +111,8 @@ public:
             transToCorrect.push_back(branchBasePoints.at(i).y - m);
           //  branchBasePoints.at(i) = vec3(rot*vec4(branchBasePoints.at(i),1.0f)); //+ vec3(0.0,- biggerDepth,0.0) + origin+trans;
         }
+
+        this->origin = vec3(glm::toMat4(quat(rotation))*vec4(this->origin,1.0f));
     }
 
     void rotateEndPoints(vec3 rotation){
@@ -161,9 +164,7 @@ public:
 
         //Next up, we rotate every point with a rotation matrix and put them back up
 
-
-
-        translateBranch(trans, 1.0);
+        //translateBranch(trans, 1.0);
         translateBranch(origin, 1.0);
         translateBranch(normalize(upVec), -biggerDepth);
         cout << "Upvec:" << "x: " << upVec.x << " y: "<< upVec.y << " z: "<<upVec.z<<endl;
@@ -178,7 +179,7 @@ public:
 
 
         this->childrenOrigin = vec3(0.0,-biggerDepth,0.0) + origin + trans+normalize(direction)*length;
-        this->origin = vec3(0.0,-biggerDepth,0.0) + origin + trans;
+        //this->origin = vec3(0.0,-biggerDepth,0.0) + origin + trans;
 
         initialized = true;
     }

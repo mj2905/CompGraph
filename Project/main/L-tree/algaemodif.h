@@ -88,9 +88,10 @@ public:
     }
 
 
-    void drawTree(){
+     void drawTree(){
         Plant::initTree();
         this->tree = Plant::getTree();
+        this->tree = "/A[A]";
 
         printTree();
 
@@ -121,17 +122,22 @@ public:
                 endLeft = Plant::getBackBranch().getLeftVector();
                 endB = Plant::getBackBranch();
                 endDir = Plant::getBackBranch().getDirection();
+
+                cout << "End origin:" << " x:" << endOrigin.x << " y:" << endOrigin.y << " z:" << endOrigin.z << endl;
+                cout << "Origin: " << " x:" << o.x << " y:" << o.y << " z:" << o.z << endl;
+
             }
             else if(c == '['){
                 // If we recurse, then the "base" values are now the values of the mother branch
                 // We save the previous values, and then update our current ones
-                turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c, br);
                 o = endOrigin;
                 up = endUp;
                 left = endLeft;
                 baseIds = endIds;
                 br = endB;
                 dir = endDir;
+                turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c, br);
+
             }
             else if(c == ']') {
                 // When going out of the recursion, we pop the turtle and then take as value the ones at the end of the stack
