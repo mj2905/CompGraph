@@ -91,7 +91,7 @@ public:
      void drawTree(){
         Plant::initTree();
         this->tree = Plant::getTree();
-        this->tree = "-A[A[-A]]";
+        //this->tree = "-A[AB[A]]";
 
         printTree();
 
@@ -118,7 +118,7 @@ public:
                 //Finally, we store all end values as the values of the end of the created branch
                 endOrigin = Plant::getBackBranch().getChildrenOrigin();
                 endIds = Plant::getBackBranch().getEndPointIndices();
-                endUp = Plant::getBackBranch().getDirection();
+                endUp = vec3(0.0,1.0,0.0);//Plant::getBackBranch().getDirection();
                 endLeft = Plant::getBackBranch().getLeftVector();
                 endB = Plant::getBackBranch();
                 endDir = Plant::getBackBranch().getDirection();
