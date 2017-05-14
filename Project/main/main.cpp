@@ -24,7 +24,7 @@
 
 uint8_t wasd_direction[2] = {WASD_NULL, WASD_NULL};
 
-#define INCREMENT_STEPS (0.006f)
+#define INCREMENT_STEPS (0.028f)
 #define MULTITILES_INCREMENT (0.0001f)
 
 constexpr float NB_FPS = 60.0;
@@ -154,6 +154,101 @@ mat4 LookAtC(vec3 eye, vec3 center, vec3 up) {
     return look_at;
 }
 
+void update_fps_cam() {
+
+  //if WASD was pressed before the current frame
+  if (wasd_direction[0] != WASD_NULL || wasd_direction[1] != WASD_NULL) {
+
+    size_t factors;
+    float angle_sin = sin(global_angle_x) * INCREMENT_STEPS;
+    float angle_cos = cos(global_angle_x) * INCREMENT_STEPS;
+
+    bool cos_pos = angle_cos > 0.0f;
+    //angle_cos*=angle_cos;
+
+    if (angle_sin <=0.0f) {
+
+      angle_sin*=angle_sin;
+
+      if (wasd_direction[1] == WASD_D) {
+        multitiles.decrementY(angle_sin);
+      }
+      else if (wasd_direction[1] == WASD_A) {
+        multitiles.incrementY(angle_sin);
+      }
+
+      if (wasd_direction[0] == WASD_W) {
+        multitiles.incrementX(angle_sin);
+      }
+      else if (wasd_direction[0] == WASD_S) {
+        multitiles.decrementX(angle_sin);
+      }
+    }
+
+    else {
+      angle_sin*=angle_sin;
+
+      if (wasd_direction[1] == WASD_D) {
+        multitiles.incrementY(angle_sin);
+      }
+      else if (wasd_direction[1] == WASD_A) {
+        multitiles.decrementY(angle_sin);
+      }
+
+
+      if (wasd_direction[0] == WASD_W) {
+        multitiles.decrementX(angle_sin);
+      }
+      else if (wasd_direction[0] == WASD_S) {
+        multitiles.incrementX(angle_sin);
+      }
+
+
+    }
+
+    if (angle_cos <=0.0f) {
+      angle_cos*=angle_cos;
+
+      if (wasd_direction[1] == WASD_D) {
+        multitiles.incrementX(angle_cos);
+      }
+      else if (wasd_direction[1] == WASD_A) {
+        multitiles.decrementX(angle_cos);
+      }
+
+
+      if (wasd_direction[0] == WASD_W) {
+        multitiles.incrementY(angle_cos);
+      }
+      else if (wasd_direction[0] == WASD_S) {
+        multitiles.decrementY(angle_cos);
+      }
+    }
+
+
+    else {
+      angle_cos*=angle_cos;
+
+      if (wasd_direction[1] == WASD_D) {
+        multitiles.decrementX(angle_cos);
+      }
+      else if (wasd_direction[1] == WASD_A) {
+        multitiles.incrementX(angle_cos);
+      }
+
+      if (wasd_direction[0] == WASD_W) {
+        multitiles.decrementY(angle_cos);
+      }
+      else if (wasd_direction[0] == WASD_S) {
+        multitiles.incrementY(angle_cos);
+      }
+    }
+
+    wasd_direction[0] = WASD_NULL;
+    wasd_direction[1] = WASD_NULL;
+  }
+}
+
 // gets called for every frame.
 void Display() {
 
@@ -166,6 +261,7 @@ void Display() {
     view_matrix = LookAtC(position, center, up);
 
     //handling FPS camera
+    update_fps_cam();
 
 
     multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
@@ -272,79 +368,21 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
         wasd_direction[0] = WASD_W;
     }
-    else if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    else if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, -0.1)) * view_matrix;
         wasd_direction[0] = WASD_S;
     }
-    if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         //view_matrix = translate(IDENTITY_MATRIX, vec3(0.1, 0, 0)) * view_matrix;
         wasd_direction[1] = WASD_A;
     }
-    else if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    else if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         //view_matrix = translate(IDENTITY_MATRIX, vec3(-0.1, 0, 0)) * view_matrix;
         wasd_direction[1] = WASD_D;
     }
 }
 
-void update_fps_cam() {
 
-  //if WASD was pressed before the current frame
-  if (wasd_direction[0] != WASD_NULL && wasd_direction[1] != WASD_NULL) {
-
-  size_t factors;
-  float angle_sin = sin(global_angle_x) * INCREMENT_STEPS;
-  float angle_cos = cos(global_angle_x) * INCREMENT_STEPS;
-
-  if (angle_sin <=0.0f) {
-
-    angle_sin*=angle_sin;
-    if (wasd_direction[0] == WASD_W) {
-      multitiles.incrementX(angle_sin);
-    }
-    else {
-      multitiles.decrementX(angle_sin);
-    }
-
-    if (wasd_direction[1] == WASD_A) {
-      multitiles.incrementY(angle_sin);
-    }
-    else {
-      multitiles.decrementY(angle_sin);
-    }
-  }
-
-
-    else {
-      angle_sin*=angle_sin;
-      if (wasd_direction[0] == WASD_W) {
-        multitiles.decrementX(angle_sin);
-      }
-      else {
-        multitiles.incrementX(angle_sin);
-      }
-
-      if (wasd_direction[1] == WASD_A) {
-        multitiles.decrementY(angle_sin);
-      }
-      else {
-        multitiles.incrementY(angle_sin);
-      }
-    }
-
-
-
-
-
-
-
-  wasd_direction = {WASD_NULL, WASD_NULL};
-
-
-
-
-
-}
-}
 
 
 int main(int argc, char *argv[]) {
