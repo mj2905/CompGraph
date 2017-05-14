@@ -91,7 +91,7 @@ public:
      void drawTree(){
         Plant::initTree();
         this->tree = Plant::getTree();
-        this->tree = "A";
+        this->tree = "-A[A[-A]]";
 
         printTree();
 
@@ -106,9 +106,12 @@ public:
             c = tree.at(i);
             if(inAlphabet(c,alphabet)){
                 //If the turtle is empty (happens for the 1st letter), we must update it
+                cout << "--- Used: ---" << endl;
+                cout << "Direction: x: " << dir.x << " y: " << dir.y << " z : " << dir.z << endl;
+                cout << "Origin: x: " << o.x << " y: " << o.y << " z: " << o.z << endl;
                 if(turtle.emptyTurtle()){
                     drawBranch(c, true);
-                    turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c, br);
+                    turtle.pushBackStatesTurtle(dir, o, vec3(0.0,1.0,0.0), left, baseIds, w, l, c, br);
                 }else{
                     drawBranch(c,false); // draw the branch, updates the indices and points to add it to the global array
                 }
@@ -120,8 +123,8 @@ public:
                 endB = Plant::getBackBranch();
                 endDir = Plant::getBackBranch().getDirection();
 
-                cout << "End origin:" << " x:" << endOrigin.x << " y:" << endOrigin.y << " z:" << endOrigin.z << endl;
-                cout << "Origin: " << " x:" << o.x << " y:" << o.y << " z:" << o.z << endl;
+                //cout << "End origin:" << " x:" << endOrigin.x << " y:" << endOrigin.y << " z:" << endOrigin.z << endl;
+                //cout << "Origin: " << " x:" << o.x << " y:" << o.y << " z:" << o.z << endl;
 
             }
             else if(c == '['){
@@ -133,7 +136,7 @@ public:
                 baseIds = endIds;
                 br = endB;
                 dir = endDir;
-                turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c, br);
+                turtle.pushBackStatesTurtle(dir, o, vec3(0.0,1.0,0.0), left, baseIds, w, l, c, br);
 
             }
             else if(c == ']') {

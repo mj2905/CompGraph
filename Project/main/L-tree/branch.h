@@ -62,9 +62,7 @@ private:
         // Creates the last one
         i1 = triangleIds.at(triangleIds.size()-1-4);
         i2 = idsOriginBranch.at(0);
-        //i2 = triangleIds.at(0);
         i3 = triangleIds.at(triangleIds.size()-1-2);
-        //i4 = triangleIds.at(5);
         i4 = idsOriginBranch.back()+1;
         pushIndicesAsQuad(triangleIds, i1,i2,i3,i4);
     }
@@ -101,6 +99,7 @@ public:
             }
             endPoints.push_back(p);
         }
+        this->childrenOrigin = this->origin + vec3(0.0,length,0.0);
     }
 
 
@@ -121,6 +120,7 @@ public:
         for(size_t i = 0; i< endPoints.size(); ++i){
             endPoints.at(i) = vec3(glm::toMat4(quat(rotation))*vec4(endPoints.at(i),1.0f));
         }
+        this->childrenOrigin = vec3(glm::toMat4(quat(rotation))*vec4(this->childrenOrigin,1.0f));
     }
 
     void createBranch(vec3 direction, vec3 origin, vec3 upVec, vec3 leftBase, vec3 trans,
@@ -166,22 +166,18 @@ public:
 
         //Next up, we rotate every point with a rotation matrix and put them back up
 
-        //translateBranch(trans, 1.0);
+        translateBranch(trans, 1.0);
+        this->childrenOrigin = this->childrenOrigin + trans;
         translateBranch(origin, 1.0);
+        this->childrenOrigin = this->childrenOrigin + origin;
         translateBranch(normalize(upVec), -biggerDepth);
+        this->childrenOrigin = this->childrenOrigin + normalize(upVec)*(-biggerDepth);
         cout << "Upvec:" << "x: " << upVec.x << " y: "<< upVec.y << " z: "<<upVec.z<<endl;
 
-        /*for(size_t i = 0; i < branchBasePoints.size(); ++i){
-            branchBasePoints.at(i) = branchBasePoints.at(i) + vec3(0.0,- biggerDepth,0.0) + origin+trans;
-        }*/
 
         for(size_t i = 0; i < branchBasePoints.size();++i){
             pushPoint(branchBasePoints.at(i));
         }
-
-
-        this->childrenOrigin = vec3(0.0,-biggerDepth,0.0) + origin + trans+normalize(direction)*length;
-        //this->origin = vec3(0.0,-biggerDepth,0.0) + origin + trans;
 
         initialized = true;
     }
