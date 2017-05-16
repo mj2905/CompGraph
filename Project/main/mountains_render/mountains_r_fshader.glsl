@@ -31,20 +31,16 @@ float grass_distrib(float height, float n) {
 }
 
 float rock_distrib(float height, float n) {
-        if(height >= 0.65 && height <= 0.85) {
-            return mix(0.4, -n + 1, abs(height - 0.75) * 10);
+        if(height >= 0.6 && height <= 0.8) {
+            return mix(0.4, -n + 1, abs(height - 0.7) * 10);
         }
         return -n +1;
 }
 
 float snow_distrib(float height, float n) {
-    if(height >= 0.8) {
-        if(height >= 1) {
-            return 1;
-        }
-        else {
-            return mix(0, 1, (height-0.8)*5);
-        }
+    if(height >= 0.7) {
+       float r = mod(n, 0.1)*2-0.1;
+       return mix(0, 1, clamp((height-0.75)*20+r, 0, n));
     }
     return 0;
 }

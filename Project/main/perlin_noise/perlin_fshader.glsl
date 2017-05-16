@@ -8,7 +8,7 @@ const int SIZE_PERM = 512;
 uniform int[SIZE_PERM] p;
 
 const int nb_octaves = 8;
-const float persistence = 0.51f;
+const float persistence = 0.4;//0.51f;
 uniform vec2 off;
 
 float f(float t) {
