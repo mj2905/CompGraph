@@ -109,7 +109,7 @@ class MountainsRender {
 
                 GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
 
-                glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
+                glm::vec3 kd = glm::vec3(0.2f);
                 float alpha = 60.0f;
 
                 GLuint kd_id = glGetUniformLocation(program_id_, "kd");

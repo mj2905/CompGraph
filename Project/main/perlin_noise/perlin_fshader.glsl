@@ -8,11 +8,15 @@ const int SIZE_PERM = 512;
 uniform int[SIZE_PERM] p;
 
 const int nb_octaves = 8;
-const float persistence = 0.4;//0.51f;
+const float persistence = 0.49;//0.51f;
 uniform vec2 off;
 
 float f(float t) {
     return t*t*t*((t*(t*6.0 - 15.0)) + 10.0);
+}
+
+float sq(float t) {
+    return t;
 }
 
 float grad(int hash, vec2 v)
@@ -65,7 +69,7 @@ float octavePerlin(vec2 xy, vec2 offset) {
 
 
 float modifyFbM(vec2 xy, vec2 offset) {
-    return 1 - abs(octavePerlin(xy, offset));
+    return sq(1 - abs(octavePerlin(xy, offset)));
 }
 
 void main() {

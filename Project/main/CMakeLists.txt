@@ -7,10 +7,7 @@ file(GLOB_RECURSE HEADERS "*.h")
 file(GLOB TEXTURES
     skybox/miramar
     skybox/ely_cloudtop
-    mountains_render/grass.jpg
-mountains_render/rock.jpg
-mountains_render/snow.jpg
-mountains_render/sand.jpg
+    mountains_render/*.jpg
 water/*.jpg
 water/test/*.jpg)
 copy_files_once(${TEXTURES})
