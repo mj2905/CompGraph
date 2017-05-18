@@ -30,7 +30,7 @@ float rock_distrib(float height, float n) {
 }
 
 float snow_distrib(float height, float n) {
-    return mix(1, 0, clamp(abs(0.9-height)*MULT*3, 0, 1));
+    return mix(1, 0, clamp(abs(1-height)*MULT, 0, 1));
 }
 
 float sand_distrib(float height, float n) {
@@ -115,7 +115,7 @@ void main() {
             + distribs[0] * texture(rock, (uv + offset)*20).rgb
             + distribs[2] * texture(snow, (uv + offset)*30).rgb
             + distribs[3] * texture(sand, (uv + offset)*60).rgb)
-            + kd * nDotL * Ld - 0.1; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
+            + kd * nDotL * Ld; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 
             //float distance = gl_FragCoord.z;
             //if (distance > fog_threshold) {
