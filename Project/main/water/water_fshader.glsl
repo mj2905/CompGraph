@@ -59,7 +59,7 @@ void main() {
     window_rel = clamp(window_rel + distorsion, 0, 1);
     vec4 reflection = texture(ref, window_rel);
 
-    color = mix(color, reflection, 0.7f);
+    color = mix(color, reflection, 0.9f);
     color.xyz += kd * nDotL * Ld + mix(height*3, 0, 0.5) * ks * pow(rDotV, alpha) * Ls;
     color.a = 0.7;
 }

@@ -79,7 +79,7 @@ void main() {
 
     color =
             (
-              vec3(1, 1, 1.2) * distribs[1] * texture(grass, (uv + offset)*60).rgb
+              vec3(1, 1, 1.2) * distribs[1] * texture(grass, (uv + offset)*80).rgb
             + distribs[0] * texture(rock, (uv + offset)*40).rgb
             + 0.8*distribs[2] * texture(snow, (uv + offset)*30).rgb
             + distribs[3] * texture(sand, (uv + offset)*60).rgb)

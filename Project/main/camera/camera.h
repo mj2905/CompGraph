@@ -53,9 +53,6 @@ public:
 
     virtual void move(float x, float y, float z) override {
 
-        x /= 10;
-        z /= 10;
-
         vec3 zpivot = normalize(center - position);
         vec3 xpivot = normalize(cross(up, zpivot));
 
@@ -64,24 +61,7 @@ public:
         position += zpivot * z + xpivot * x + up*y;
         center += xpivot * x + zpivot * z + up*y;
 
-        AbstractCamera::Init(position, center, up);
-
-        if(INFINITE_TERRAIN) {
-            vec3 diffPos =  (oldPosition - position);
-            if(diffPos.x < 0) {
-                multitiles.incrementX(-diffPos.x);
-            }
-            else if(diffPos.x > 0) {
-                multitiles.decrementX(diffPos.x);
-            }
-
-            if(diffPos.z > 0) {
-                multitiles.incrementY(diffPos.z);
-            }
-            else if(diffPos.z < 0) {
-                multitiles.decrementY(-diffPos.z);
-            }
-        }
+            AbstractCamera::Init(position, center, up);
 
     }
 
