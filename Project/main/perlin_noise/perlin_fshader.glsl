@@ -63,7 +63,7 @@ float octavePerlin(vec2 xy, vec2 offset) {
         amplitude *= persistence;
         frequency *= 2.1;
     }
-    return (total/(2.5*maxValue) - 0.4); //bet -0.9 and -0.1
+    return (total/(2.5*maxValue) - 0.4); //bet -1 and 0
 }
 
 
