@@ -15,11 +15,16 @@ class Water {
         GLuint texture_id_;
         GLuint reflect_id_;
         GLuint normal_id_;
+        GLuint dudv_id_;
 
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                         // model matrix ID
         GLuint V_id_;                         // view matrix ID
         GLuint P_id_;                         // proj matrix ID
+
+        GLuint light_pos_id;
+        glm::vec3 light_pos;
+
 
     public:
 
@@ -40,8 +45,8 @@ class Water {
 
                 glGenTextures(1, &id);
                 glBindTexture(GL_TEXTURE_2D, id);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
@@ -67,7 +72,7 @@ class Water {
             }
         }
 
-        void Init(GLuint terrain_texture, GLuint reflect_texture) {
+        void Init(GLuint terrain_texture, GLuint reflect_texture, size_t grid_dim = 512) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("water_vshader.glsl",
                                                   "water_fshader.glsl");
@@ -87,7 +92,6 @@ class Water {
                 std::vector<GLuint> indices;
                 // TODO 5: make a triangle grid with dimension 100x100.
                 // always two subsequent entries in 'vertices' form a 2D vertex position.
-                int grid_dim = 256;
 
                 // the given code below are the vertices for a simple quad.
                 // your grid should have the same dimension as that quad, i.e.,
@@ -151,17 +155,27 @@ class Water {
 
             // load/Assign textures
             {
-                loadImage("normalmap.jpg", "normal_map", 2, normal_id_);
+                //loadImage("normal_map_1.jpg", "normal_map", 2, normal_id_);
+                loadImage("normal.jpg", "normal_map", 2, normal_id_);
             }
 
-            glm::vec3 light_pos = glm::vec3(2.5f, 3, 0.0f);
-            //glm::vec3 light_pos = glm::vec3(0.0, 3, -1.0f);
+            // load/Assign textures
+            {
+                //loadImage("waterdudv_tiled.jpg", "dudv", 4, dudv_id_);
+                loadImage("waterdudv.jpg", "dudv", 3, dudv_id_);
+            }
+
+            //light_pos = glm::vec3(12.0f, 3, 9.0f);
+            //glm::vec3 light_pos = glm::vec3(-1.0, 3, 0.0f);
+            //light_pos = glm::vec3(2.5,1,2.5);
+            light_pos = glm::vec3(0.0f, 1, -1);
+            //light_pos = glm::vec3(0.0f, 1, -2);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
             glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
-            glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
+            glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 0.8f);
 
-            GLuint light_pos_id = glGetUniformLocation(program_id_, "light_pos");
+            light_pos_id = glGetUniformLocation(program_id_, "light_pos");
 
             GLuint La_id = glGetUniformLocation(program_id_, "La");
             GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
@@ -170,14 +184,13 @@ class Water {
             glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
             glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
             glm::vec3 ks = glm::vec3(0.7, 0.7, 0.7);
-            float alpha = 60.0f;
+            float alpha = 50.0f;
 
             GLuint ka_id = glGetUniformLocation(program_id_, "ka");
             GLuint kd_id = glGetUniformLocation(program_id_, "kd");
             GLuint ks_id = glGetUniformLocation(program_id_, "ks");
             GLuint alpha_id = glGetUniformLocation(program_id_, "alpha");
 
-            glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
             glUniform3fv(La_id, 1, glm::value_ptr(La));
             glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
             glUniform3fv(Ls_id, 1, glm::value_ptr(Ls));
@@ -208,6 +221,7 @@ class Water {
             glDeleteTextures(1, &texture_id_);
             glDeleteTextures(1, &normal_id_);
             glDeleteTextures(1, &reflect_id_);
+            glDeleteTextures(1, &dudv_id_);
             glDeleteProgram(program_id_);
         }
 
@@ -216,6 +230,7 @@ class Water {
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
             glEnable(GL_BLEND);
+            glEnable(GL_CLIP_PLANE0);
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
@@ -233,11 +248,13 @@ class Water {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
             glBindTexture(GL_TEXTURE_2D, reflect_id_);
 
-
             // bind textures
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, normal_id_);
 
+            // bind textures
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, dudv_id_);
 
             glm::vec2 offset = glm::vec2(offsetX, offsetY);
 
@@ -249,6 +266,10 @@ class Water {
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
             glUniform1f(glGetUniformLocation(program_id_, "time"), glfwGetTime());
+
+            glm::vec3 rot_light_pos =  glm::mat3(glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100-1, glm::vec3(0,1,0))) * light_pos;
+
+            glUniform3fv(light_pos_id, 1, glm::value_ptr(rot_light_pos));
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.
@@ -262,6 +283,7 @@ class Water {
             glBindVertexArray(0);
             glUseProgram(0);
 
+            glDisable(GL_CLIP_PLANE0);
             glDisable(GL_BLEND);
         }
 };
