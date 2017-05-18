@@ -55,7 +55,7 @@ public:
         }
 
         //The translation from the base
-        trans = vec3(0.0f,0.51f,0.0f);
+        trans = vec3(0.0f,0.01f,0.0f);
 
         //Expands the tree and then draws it in 3D
         drawTree();
@@ -91,9 +91,10 @@ public:
 
      void drawTree(){
         Plant::initTree();
-        //this->tree = Plant::getTree();
+//        this->tree = Plant::getTree();
 
-        this->tree = "-A";
+        this->tree = "A[A]";
+
         printTree();
 
         char c = ';';
@@ -107,7 +108,6 @@ public:
             c = tree.at(i);
             if(inAlphabet(c,alphabet)){
                 //If the turtle is empty (happens for the 1st letter), we must update it
-                cout << "Using origin: " << o.x << "," << o.y <<" , " << o.z << endl;
                 if(turtle.emptyTurtle()){
                     drawBranch(c, true);
                     turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c, br);
@@ -121,9 +121,6 @@ public:
                 endLeft = Plant::getBackBranch().getLeftVector();
                 endB = Plant::getBackBranch();
                 endDir = Plant::getBackBranch().getDirection();
-
-                //cout << "End origin:" << " x:" << endOrigin.x << " y:" << endOrigin.y << " z:" << endOrigin.z << endl;
-                //cout << "Origin: " << " x:" << o.x << " y:" << o.y << " z:" << o.z << endl;
 
             }
             else if(c == '['){

@@ -38,6 +38,40 @@ private:
         indicesToUpdate.push_back(ul);
     }
 
+    void connectBase(vector<int> idsOriginBranch, vector<int> &indicesToUpdate,
+                      vector<int> &triangleIds, int *index){
+
+        // Creates first quad
+        vector<int> tab;
+        for(size_t i =0; i < idsOriginBranch.size(); ++i){
+            tab.push_back(idsOriginBranch.at((i+idsOriginBranch.size()/2)%idsOriginBranch.size()));
+        }
+        int i1 = tab.at(0);
+        int i2 = tab.at(1);
+        int i3 = ++(*index);
+        int i4 = ++(*index);
+        indicesToUpdate.push_back(i3);
+        indicesToUpdate.push_back(i4);
+        pushIndicesAsQuad(triangleIds,i1,i2,i3,i4);
+
+        // Creates the remaining "quads" except the last one
+        for(size_t i =1; i < idsOriginBranch.size()-1; i++){
+            i1 = tab.at(i);
+            i2 = tab.at(i+1);
+            i3 = triangleIds.at(triangleIds.size()-3);
+            i4 = ++(*index);
+            indicesToUpdate.push_back(i4);
+            pushIndicesAsQuad(triangleIds, i1,i2,i3,i4);
+        }
+
+        // Creates the last one
+        i1 = triangleIds.at(triangleIds.size()-1-4);
+        i2 = tab.at(0);
+        i3 = triangleIds.at(triangleIds.size()-1-2);
+        i4 = tab.back()+1;
+        pushIndicesAsQuad(triangleIds, i1,i2,i3,i4);
+    }
+
     void circleBranch(vector<int> idsOriginBranch, vector<int> &indicesToUpdate,
                       vector<int> &triangleIds, int *index){
 
@@ -75,38 +109,7 @@ private:
     }
 
 
-
 public:
-
-    /*void translateBranch(vec3 dir, float length){
-        mat4 tr = glm::translate(mat4(1.0f), dir*length);
-        for(size_t i = 0; i < branchBasePoints.size(); ++i){
-            branchBasePoints.at(i) = vec3(tr*vec4(branchBasePoints.at(i),1.0f));
-        }
-    }
-
-    void createEndPointsFromDirAndLength(vec3 dir, float length){
-        for(size_t i = 0; i < branchBasePoints.size(); ++i){
-            vec3 p = branchBasePoints.at(i) + vec3(0.0, length,0.0);
-            endPoints.push_back(p);
-        }
-    }
-*/
-
-/*    void rotateBranch(vec3 rotation){
-        for(size_t i = 0; i < branchBasePoints.size(); ++i){
-            branchBasePoints.at(i) = vec3(glm::toMat4(quat(rotation))*vec4(branchBasePoints.at(i),1.0f));
-        }
-
-        this->origin = vec3(glm::toMat4(quat(rotation))*vec4(this->origin,1.0f));
-    }
-
-    void rotateEndPoints(vec3 rotation){
-        for(size_t i = 0; i< endPoints.size(); ++i){
-            endPoints.at(i) = vec3(glm::toMat4(quat(rotation))*vec4(endPoints.at(i),1.0f));
-        }
-        this->childrenOrigin = vec3(glm::toMat4(quat(rotation))*vec4(this->childrenOrigin,1.0f));
-    }*/
 
     void printVector(vec3 v, string name){
         cout << name << ": " <<  v.x << "," << v.y <<"," << v.z << endl;
@@ -117,9 +120,13 @@ public:
 
         branchBasePoints.clear();
 
-        upVec = vec3(0.0,1.0,0.0);
-        direction = vec3(0.0,0.0,1.0);
-        vec3 rotAxis = vec3(1.0f,0.0f,0.0f);
+        vec3 rotAxis;
+        if(upVec != direction){
+            rotAxis = normalize(cross(upVec, direction));
+        }else{
+            rotAxis = vec3(1.0,0.0,0.0);
+        }
+
         this->direction = direction;
 
         if(upVec.x != direction.x || upVec.y != direction.y || upVec.z != direction.z){
@@ -131,18 +138,14 @@ public:
         float angle = acos(dot(normalize(direction), normalize(upVec)));
         float anglePoints = 360.0f/baseIds.size();
 
-
-
         vec3 currP, rotation, dir;
         if(direction != upVec){
             currP = direction - dot(direction, upVec)/dot(upVec,upVec)*upVec;
             currP = float(0.5*width)*normalize(currP);
-            //currP = float(0.5*width)*normalize(direction-dot(direction, normalize(upVec))*normalize(upVec));
         }
         else{
             currP = vec3(0.5*width,0.0,0.0);
         }
-
 
         // Creates the points as they should "originally" be.
         printVector(currP, "currP");
@@ -157,8 +160,8 @@ public:
 
         cout << "angle:" << angle << endl;
         for(size_t i =0; i<branchBasePoints.size(); ++i){
-
-            branchBasePoints.at(i) = vec3(rotate(mat4(1.0f), angle, normalize(rotAxis))*vec4(branchBasePoints.at(i),1.0f));
+            branchBasePoints.at(i) = vec3(rotate(mat4(1.0f), angle, normalize(rotAxis))*vec4(branchBasePoints.at(i),1.0f)) +
+                    origin + trans;
         }
 
 
@@ -167,54 +170,32 @@ public:
         }
 
 
-        //vec3 v1 = normalize(branchBasePoints.at(0)-branchBasePoints.at(1));
         vec3 v1 = branchBasePoints.at(1) - branchBasePoints.at(0);
         vec3 v2 = branchBasePoints.at(3) - branchBasePoints.at(0);
 
         vec3 u1 = v1;
         vec3 u2 = v2 - dot(v2,u1)/dot(u1,u1)*u1;
         vec3 v3 = cross(v1,v2);
-       // vec3 u3 = v3 - dot(v3,u1)/dot(u1,u1)*u1 - dot(v3,u2)/dot(u2,u2)*u2;
         vec3 e1 = normalize(u1);
         vec3 e2 = normalize(u2);
         vec3 e3 = normalize(v3);
-        printVector(e1, "e1");
-        printVector(e2, "e2");
-        printVector(e3, "e3");
-
 
         vec3 transDir = e3;
         printVector(transDir, "transDir");
 
         for(size_t i = 0; i < branchBasePoints.size(); ++i){
-            vec3 t = branchBasePoints.at(i) + transDir;
+            vec3 t = branchBasePoints.at(i) + transDir*length;
             endPoints.push_back(t);
         }
 
-        for(size_t i =0; i <branchBasePoints.size(); ++i){
-            branchBaseIndices.push_back(++(*index));
-        }
-        //circleBranch(baseIds,branchBaseIndices, triangleIndices, index);
+        circleBranch(baseIds,branchBaseIndices, triangleIndices, index);
         circleBranch(branchBaseIndices,endIndices, triangleIndices,index);
         fusePointsArray();
 
-        this->childrenOrigin = this->origin + normalize(direction)*length+
-                normalize(direction)*std::sqrt(trans.x*trans.x + trans.y*trans.y + trans.z*trans.z);
+
+        this->childrenOrigin = this->origin + transDir*length+origin + trans;
 
         for(size_t i = 0; i < branchBasePoints.size(); ++i) pushPoint(branchBasePoints.at(i));
-
-        // TO START AGAIN SO THAT IT WORKS
-        // BASE OF THE ALGORITHM:
-        /*
-         * Create the base as points at the origin
-         * Create a second base, that will be the end base
-         * Link them (create the triangle ids)
-         * Rotate both of them
-         * Translate both of them to the origin of the mother branch
-         * Translate both of them again by a ||trans|| norm vector so that it doesn't touch (much) with
-         * mother branch (overlaps are bad for Z-buffer).
-         * Finally translate the end base by a ||length|| vector of direction direction (from i/2 to end)
-         * */
 
     }
 
