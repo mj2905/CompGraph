@@ -113,9 +113,9 @@ void main() {
             (
               distribs[1] * texture(grass, (uv + offset)*30).rgb
             + distribs[0] * texture(rock, (uv + offset)*20).rgb
-            + distribs[2] * texture(snow, (uv + offset)*30).rgb
+            + 0.8*distribs[2] * texture(snow, (uv + offset)*30).rgb
             + distribs[3] * texture(sand, (uv + offset)*60).rgb)
-            + kd * nDotL * Ld; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
+            + kd * nDotL * Ld + 0.1; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 
             //float distance = gl_FragCoord.z;
             //if (distance > fog_threshold) {
