@@ -93,9 +93,8 @@ public:
         vector<vec3> tmpP;
         // Creates the points as they should "originally" be.
         for(size_t i = 0; i < sideNo; ++i){
-            currP = vec3(1.0,0.0,0.0)*0.5f*width;
-            rotation = i *anglePoints*vec3(0.0,1.0,0.0);
-            rotation *=M_PI/180.0f;
+            currP = vec3(0.5f*width,0.0,0.0);
+            rotation = vec3(0.0,i *anglePoints*M_PI/180.0f,0.0);
             dir = vec3(glm::toMat4(quat(rotation))*vec4(currP,1.0f));
             tmpP.push_back(dir);
         }

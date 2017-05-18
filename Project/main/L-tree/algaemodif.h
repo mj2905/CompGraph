@@ -3,6 +3,10 @@
 #include "turtle.h"
 #include "flexigrid.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 #define SIDE_NBR 6
 #define ANGLE_FUNC 22.5
 
@@ -51,7 +55,7 @@ public:
         }
 
         //The translation from the base
-        trans = vec3(0.0f,0.01f,0.0f);
+        trans = vec3(0.0f,0.51f,0.0f);
 
         //Expands the tree and then draws it in 3D
         drawTree();
@@ -68,11 +72,8 @@ public:
     }
 
     void drawBranch(char c, bool update){
-        cout << "Drawing algae branch" << endl;
         Branch b;
-        // Creates a branch
         b.createBranch(dir,o,up,left,trans,l,w,baseIds,&index);
-        // Stores it
         Plant::putBranch(b);
         if(update){
             this->br = b;
@@ -90,9 +91,9 @@ public:
 
      void drawTree(){
         Plant::initTree();
-        this->tree = Plant::getTree();
-        //this->tree = "-A[AB[A]]";
+        //this->tree = Plant::getTree();
 
+        this->tree = "-A";
         printTree();
 
         char c = ';';
@@ -106,19 +107,17 @@ public:
             c = tree.at(i);
             if(inAlphabet(c,alphabet)){
                 //If the turtle is empty (happens for the 1st letter), we must update it
-                cout << "--- Used: ---" << endl;
-                cout << "Direction: x: " << dir.x << " y: " << dir.y << " z : " << dir.z << endl;
-                cout << "Origin: x: " << o.x << " y: " << o.y << " z: " << o.z << endl;
+                cout << "Using origin: " << o.x << "," << o.y <<" , " << o.z << endl;
                 if(turtle.emptyTurtle()){
                     drawBranch(c, true);
-                    turtle.pushBackStatesTurtle(dir, o, vec3(0.0,1.0,0.0), left, baseIds, w, l, c, br);
+                    turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c, br);
                 }else{
                     drawBranch(c,false); // draw the branch, updates the indices and points to add it to the global array
                 }
                 //Finally, we store all end values as the values of the end of the created branch
                 endOrigin = Plant::getBackBranch().getChildrenOrigin();
                 endIds = Plant::getBackBranch().getEndPointIndices();
-                endUp = vec3(0.0,1.0,0.0);//Plant::getBackBranch().getDirection();
+                endUp = Plant::getBackBranch().getDirection();
                 endLeft = Plant::getBackBranch().getLeftVector();
                 endB = Plant::getBackBranch();
                 endDir = Plant::getBackBranch().getDirection();
@@ -136,7 +135,7 @@ public:
                 baseIds = endIds;
                 br = endB;
                 dir = endDir;
-                turtle.pushBackStatesTurtle(dir, o, vec3(0.0,1.0,0.0), left, baseIds, w, l, c, br);
+                turtle.pushBackStatesTurtle(dir, o, up, left, baseIds, w, l, c, br);
 
             }
             else if(c == ']') {

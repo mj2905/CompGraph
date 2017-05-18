@@ -131,7 +131,7 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
-    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
+    mat4 scale = glm::scale(IDENTITY_MATRIX, vec3(5,5, 5));
 
     multitiles.Draw(trackball_matrix * quad_model_matrix * scale, view_matrix, projection_matrix);
 }
