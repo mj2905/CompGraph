@@ -184,7 +184,7 @@ class Water {
             glm::vec3 ka = glm::vec3(0.1f, 0.1f, 0.1f);
             glm::vec3 kd = glm::vec3(0.3f, 0.3f, 0.3f);
             glm::vec3 ks = glm::vec3(0.7, 0.7, 0.7);
-            float alpha = 40.0f;
+            float alpha = 50.0f;
 
             GLuint ka_id = glGetUniformLocation(program_id_, "ka");
             GLuint kd_id = glGetUniformLocation(program_id_, "kd");

@@ -18,6 +18,9 @@ class MountainsRender {
         GLuint snow_id_;
         GLuint sand_id_;
 
+        GLuint light_pos_id;
+        glm::vec3 light_pos;
+
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                           // model matrix ID
         GLuint V_id_;                           // view matrix ID
@@ -101,24 +104,21 @@ class MountainsRender {
 
             // lights and shading
             {
-                glm::vec3 light_pos = glm::vec3(2.0f, 2.0f, 0.5f);
+                light_pos = glm::vec3(0.0f, 1, -1);
 
                 glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
 
-                GLuint light_pos_id = glGetUniformLocation(program_id_, "light_pos");
+                light_pos_id = glGetUniformLocation(program_id_, "light_pos");
 
                 GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
 
-                glm::vec3 kd = glm::vec3(0.2f);
-                float alpha = 60.0f;
+                glm::vec3 kd = glm::vec3(0.3f);
 
                 GLuint kd_id = glGetUniformLocation(program_id_, "kd");
-                GLuint alpha_id = glGetUniformLocation(program_id_, "alpha");
 
                 glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
                 glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
                 glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
-                glUniform1f(alpha_id, alpha);
 
 
                 GLuint fog_threshold_id = glGetUniformLocation(program_id_, "fog_threshold");
@@ -234,6 +234,10 @@ class MountainsRender {
 
             glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
             glUniform1i(glGetUniformLocation(program_id_, "clip"), underwaterclip);
+
+            glm::vec3 rot_light_pos =  glm::mat3(glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100-1, glm::vec3(0,1,0))) * light_pos;
+
+            glUniform3fv(light_pos_id, 1, glm::value_ptr(rot_light_pos));
 
             // setup MVP
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));

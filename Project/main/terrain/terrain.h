@@ -35,7 +35,7 @@ class Terrain {
             framebuffer_reflect.Init(width, height, true);
 
             mountains.Init(framebuffer_terrain.getTextureId(), 1024);
-            reflect.Init(framebuffer_terrain.getTextureId(), 64);
+            reflect.Init(framebuffer_terrain.getTextureId(), 128);
             water.Init(framebuffer_terrain.getTextureId(), framebuffer_reflect.getTextureId(), 128);
             skybox.init(skyboxTexture);
 

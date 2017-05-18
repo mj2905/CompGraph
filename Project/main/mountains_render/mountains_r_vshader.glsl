@@ -29,8 +29,10 @@ void main() {
 
     vpoint = vec3(position.x, height, clip ? position.y : -position.y);
 
-    vpoint_mv = view * model * vec4(vpoint, 1.0);
+    mat4 MV = view * model;
+
+    vpoint_mv = MV * vec4(vpoint, 1.0);
     gl_Position = projection * vpoint_mv;
-    light_dir = normalize(light_pos - vec3(vpoint_mv));
+    light_dir = normalize(mat3(MV) * light_pos - vec3(vpoint_mv));
 }
 

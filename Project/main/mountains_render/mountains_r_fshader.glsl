@@ -26,7 +26,7 @@ float grass_distrib(float height, float n) {
 }
 
 float rock_distrib(float height, float n) {
-    return clamp(1-n + mix(1, 0, clamp(abs(0.7-height)*MULT*2, 0, 1)), 0, 1);
+    return clamp(1-n + mix(1, 0, clamp(abs(0.65-height)*MULT*2, 0, 1)), 0, 1);
 }
 
 float snow_distrib(float height, float n) {
@@ -34,7 +34,7 @@ float snow_distrib(float height, float n) {
 }
 
 float sand_distrib(float height, float n) {
-    return mix(2, 0, clamp(abs(height-0.1)*MULT, 0, 1));
+    return mix(2, 0, clamp(abs(height)*MULT, 0, 1));
 }
 
 float[4] distributions(float height, float n) {
@@ -45,44 +45,12 @@ float[4] distributions(float height, float n) {
     result[2] = snow_distrib(height, n);
     result[3] = sand_distrib(height, n);
 
-    float tot = result[1] + result[2] + result[3];
+    float tot = result[0] + result[1] + result[2] + result[3];
     result[1] *= other/tot;
     result[2] *= other/tot;
     result[3] *= other/tot;
     return result;
 }
-
-
-/*
-float grass_distrib(float height, float n) {
-    if(height >= 0.3 && height <= 0.7) {
-        return mix(n, 0, abs(height - 0.5) * 5);
-    }
-    return 0;
-}
-
-float rock_distrib(float height, float n) {
-        if(height >= 0.6 && height <= 0.8) {
-            return mix(1, -n + 1, abs(height - 0.7) * 10);
-        }
-        return 1-n;
-}
-
-float snow_distrib(float height, float n) {
-    if(height >= 0.7) {
-       float r = mod(n, 0.1)*2-0.1;
-       return mix(0, 0.9, clamp((height-0.7)*10 + r, 0, 1));
-    }
-    return 0;
-}
-
-float sand_distrib(float height, float n) {
-    if(height <= 0.5) {
-        return mix(n, 0, clamp(height, 0, 1)*2);
-    }
-    return 0;
-}
-*/
 
 uniform float fog_threshold;
 
@@ -111,8 +79,8 @@ void main() {
 
     color =
             (
-              distribs[1] * texture(grass, (uv + offset)*30).rgb
-            + distribs[0] * texture(rock, (uv + offset)*20).rgb
+              vec3(1, 1, 1.2) * distribs[1] * texture(grass, (uv + offset)*60).rgb
+            + distribs[0] * texture(rock, (uv + offset)*40).rgb
             + 0.8*distribs[2] * texture(snow, (uv + offset)*30).rgb
             + distribs[3] * texture(sand, (uv + offset)*60).rgb)
             + kd * nDotL * Ld + 0.1; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
