@@ -22,7 +22,8 @@ file(GLOB SHADERS
   mountains_create/*.glsl
   water/*.glsl
   water/screenquad/*.glsl
-  shadow/*.glsl)
+  shadow/*.glsl
+  *.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})

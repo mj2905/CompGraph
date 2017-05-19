@@ -19,6 +19,7 @@
 #include "camera/abstractcamera.h"
 #include "camera/beziercamera.h"
 #include "camera/camera.h"
+#include "lightscatterer.h"
 
 
 constexpr float NB_FPS = 60.0;
@@ -26,6 +27,20 @@ constexpr float NB_FPS = 60.0;
 
 const unsigned int OFFSET_X = 256;
 const unsigned int OFFSET_Y = 257;
+
+
+unsigned int glsl_loc_light;
+unsigned int glsl_loc_exposure;
+unsigned int glsl_loc_decay;
+unsigned int glsl_loc_density;
+unsigned int glsl_loc_weight;
+unsigned int glsl_loc_myTexture;
+
+
+float uniformExposure;
+float uniformDecay;
+float uniformDensity;
+float uniformWeight;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 LightSource light;
@@ -44,6 +59,7 @@ mat4 projection_matrix;
 mat4 quad_model_matrix;
 mat4 quad_model_matrix_base;
 FrameBuffer frameBuffer;
+LightScatterer lightScatter;
 
 AbstractCamera* camera;
 
@@ -98,9 +114,13 @@ void Init() {
     //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
     light.Init(0.0,1.0,-1.0);
+    lightScatter.Init();
 
     camera = new Camera(multitiles);
     //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
+
+  /*  frameBuffer.Init(window_width,window_height, true);
+    fboTexId = frameBuffer.getTextureId();*/
 
     camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
 
@@ -114,210 +134,30 @@ void Init() {
 
 
 
+
+// This method was largely inspired from the source code from here: http://fabiensanglard.net/lightScattering/
+// It was adapted to our needs, but remains largely similar
 void ScatterDisplay(GLFWwindow* window){
-    int renderWidth, renderHeight;
-    double modelView[16]={quad_model_matrix[0][0], quad_model_matrix[0][1], quad_model_matrix[0][2],quad_model_matrix[0][3],
-                         quad_model_matrix[1][0], quad_model_matrix[1][1], quad_model_matrix[1][2],quad_model_matrix[1][3],
-                         quad_model_matrix[2][0], quad_model_matrix[2][1], quad_model_matrix[2][2],quad_model_matrix[2][3],
-                         quad_model_matrix[3][0], quad_model_matrix[3][1], quad_model_matrix[3][2],quad_model_matrix[3][3]};
-
-    double projection[16] = {
-        projection_matrix[0][0], projection_matrix[0][1], projection_matrix[0][2], projection_matrix[0][3],
-        projection_matrix[1][0], projection_matrix[1][1], projection_matrix[1][2], projection_matrix[1][3],
-        projection_matrix[2][0], projection_matrix[2][1], projection_matrix[2][2], projection_matrix[2][3],
-        projection_matrix[3][0], projection_matrix[3][1], projection_matrix[3][2], projection_matrix[3][3],
-    };
-
-    GLint viewport[4];
-    double depthRange[2];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    glGetDoublev(GL_DEPTH_RANGE, depthRange);
-
-
-    glfwGetFramebufferSize(window,&renderWidth, &renderHeight);
-
-
-
-    // render light + obstruction
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId);
-    glClear ( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
-    glColor4f(1,1,1,1);
-    glViewport(0,0,window_width/*/OFF_SCREEN_RENDER_RATIO*/,window_height/*/OFF_SCREEN_RENDER_RATIO*/);
-    glDisable(GL_TEXTURE_2D);
-        glPushMatrix();
-            //glTranslatef(light->lightPosition[0],light->lightPosition[1],light->lightPosition[2]);
-            glTranslatef(light.getPosition().at(0), light.getPosition().at(1), light.getPosition().at(2));
-            //light->render();
-        glPopMatrix();
-        GLdouble winX=0, winY =0, winZ = 0;
-
-        gluProject(light.getPosition().at(0), light.getPosition().at(1), light.getPosition().at(2),
-                        modelView,
-                        projection,
-                        viewport,
-                        &winX,
-                        &winY,
-                        &winZ);
-
-
-            uniformLightX = winX/((float)renderWidth/*/OFF_SCREEN_RENDER_RATIO*/);
-            uniformLightY = winY/((float)renderHeight/*/OFF_SCREEN_RENDER_RATIO*/) ;
-
-/*
-    // Draw occluding source black with light
-                glUseProgramObjectARB(0);
-
-
-                glEnable(GL_TEXTURE_2D);
-                glColor4f(0,0,0,1);
-                glPushMatrix();
-                    tenso->render();
-                glPopMatrix();
-
-               glPushMatrix();
-                    glTranslatef(ikal->position.x,ikal->position.y,ikal->position.z);
-                    glRotatef(180,0,1,0);
-                    glRotatef(ikal->eulerRotation.z,0,0,1);
-                    ikal->render();
-               glPopMatrix();
-               // Make sky a bit more visible
-               //glColor4f(0.19f,0.19f,0.19f,1);
-               //sky1->render();
-              // glPushMatrix();
-            //		glRotatef(180,1,0,0);
-            //		sky1->render();
-            //	glPopMatrix();
-
-
-            // Save screen or Switch to normal rendering
-            if (fboUsed)
-                glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-            else
-                copyFrameBufferToTexture();
-
-    glViewport(0,0,renderWidth,renderHeight);
-    glEnable(GL_TEXTURE_2D);
-
-  /*
-    // Render the scene with no light scattering
-
-    glClear (GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
-
-                glColor4f(1,1,1,1);
-                glPushMatrix();
-                    tenso->render();
-               glPopMatrix();
-
-               glPushMatrix();
-                    glTranslatef(ikal->position.x,ikal->position.y,ikal->position.z);
-                    glRotatef(180,0,1,0);
-                    glRotatef(ikal->eulerRotation.z,0,0,1);
-                    ikal->render();
-                glPopMatrix();
-
-               //sky1->render();
-               glPushMatrix();
-                    glRotatef(180,1,0,0);
-                    sky1->render();
-                glPopMatrix();
-
-        //glDisable(GL_BLEND);
-
-
-        // Paint the light scaterring effect
-
-                glMatrixMode(GL_PROJECTION);
-                glLoadIdentity();
-                glOrtho( -renderWidth/2,renderWidth/2, -renderHeight/2, renderHeight/2, 000, 50000.0 );
-                glMatrixMode(GL_MODELVIEW);
-                glLoadIdentity();
-                glClear (GL_DEPTH_BUFFER_BIT );
-
-
-
-                glActiveTextureARB(GL_TEXTURE0_ARB);
-                if (!fboUsed)
-                    glBindTexture(GL_TEXTURE_2D, screenCopyTextureId);
-                else
-                    glBindTexture(GL_TEXTURE_2D, fboTextureId);
-
-
-
-                glUseProgramObjectARB(shader);
-                glUniform2fARB(glsl_loc_light,uniformLightX,uniformLightY);
-                glUniform1fARB(glsl_loc_exposure,uniformExposure);
-                glUniform1fARB(glsl_loc_decay,uniformDecay);
-                glUniform1fARB(glsl_loc_density,uniformDensity);
-                glUniform1fARB(glsl_loc_weight,uniformWeight);
-                glUniform1iARB(glsl_loc_myTexture,0);
-
-                glEnable(GL_TEXTURE_2D);
-                glEnable(GL_BLEND);
-
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-                 glBegin(GL_QUADS);
-                         glTexCoord2f(0,0);
-                         glVertex2f(-renderWidth/2,-renderHeight/2);
-
-                        glTexCoord2f(1,0);
-                        glVertex2f(renderWidth/2,-renderHeight/2);
-
-                        glTexCoord2f(1,1);
-                        glVertex2f(renderWidth/2,renderHeight/2);
-
-                        glTexCoord2f(0,1);
-                        glVertex2f(-renderWidth/2,renderHeight/2);
-                glEnd();
-
-
-        glUseProgramObjectARB(0);
-
-        // DRAWING TEXT
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho( -renderWidth/2,renderWidth/2, -renderHeight/2, renderHeight/2, 00.1f, 600.0f );
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glTranslated(0,0,-500);
-
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        //glClear ( GL_DEPTH_BUFFER_BIT );
-        glDisable(GL_BLEND);
-        glDisable(GL_LIGHTING);
-        glDisable(GL_TEXTURE_2D);
-        glDisable(GL_DEPTH_TEST);
-
-        sprintf(fps,"fps: %.0f",Timer::fps );
-        sprintf(polyCount,"polygones rendered: %d",polygonRendered );
-        sprintf(s_textSwitchs,"textures switches: %d",textureSwitchs );
-        drawString(fps,renderWidth/2-250,-renderHeight/2+60);
-        drawString(polyCount,renderWidth/2-250,-renderHeight/2+40);
-
-        drawString(s_textSwitchs,renderWidth/2-250,-renderHeight/2+20);
-        //drawString(s_extensions,-renderWidth/2+10,renderHeight/2-80);
-
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
-       // END DRAWING TEXT
-*/
-
-}
-
-// gets called for every frame.
-void Display() {
-    //
-    glEnable(GL_TEXTURE_2D);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     glViewport(0, 0, window_width, window_height);
+    lightScatter.ScatterWithMethod(window,
+                                   quad_model_matrix, projection_matrix,
+                                   quad_model_matrix, camera->getView(), projection_matrix);
 
-    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+    glPushMatrix();
+        multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+    glPopMatrix();
+
+    lightScatter.ScatterSecondStep();
+    glPushMatrix();
+        multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+    glPopMatrix();
+    lightScatter.ScatterThirdstep();
 
     camera->animate();
 
 }
+
+
 
 bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
 
@@ -533,7 +373,7 @@ int main(int argc, char *argv[]) {
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
             ScatterDisplay(window);
-            Display();
+           // Display();
             Update();
             lastTime = time;
             glfwSwapBuffers(window);
