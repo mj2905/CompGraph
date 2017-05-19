@@ -1,10 +1,14 @@
 #pragma once
-#include "constants.h"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include "../constants.h"
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
-#include "framebuffer.h"
-#include "multitiles/multitiles.h"
+#include "../framebuffer.h"
+#include "../multitiles/multitiles.h"
+#include "framebuffer_scattering.h"
+
 
 using namespace glm;
 using namespace std;
@@ -27,21 +31,19 @@ private:
     float uniformDecay;
     float uniformDensity;
     float uniformWeight;
-    FrameBuffer frameBuffer;
+    //FrameBuffer frameBuffer;
+    FrameBufferScattering frameBufferScattering;
 
     int window_width = 800;
     int window_height = 600;
-    int fboId;
+    bool fboUsed;
 
-    GLuint fboTexId;
+    GLuint fboTexId, fboId;
 
     float uniformLightX ;
     float uniformLightY ;
 
     GLuint screenCopyTextureId;
-
-
-
     GLuint light_pos_id;
 
     //glm::vec3 light_pos;
@@ -53,6 +55,8 @@ private:
     GLuint P_id_;                           // proj matrix ID
 
 public:
+
+
     void Init() {
         // compile the shaders.
         program_id_ = icg_helper::LoadShaders("scattering_vshader.glsl",
@@ -69,69 +73,29 @@ public:
 
         glUseProgram(program_id_);
 
+        frameBufferScattering.Init(window_width, window_height);
+
         // vertex one vertex array
         glGenVertexArrays(1, &vertex_array_id_);
         glBindVertexArray(vertex_array_id_);
 
+
         // vertex coordinates and indices
         {
-            std::vector<GLfloat> vertices;
-            std::vector<GLuint> indices;
-            // makes a triangle grid with dimension 100x100.
-            // always two subsequent entries in 'vertices' form a 2D vertex position.
-
-            // the given code below are the vertices for a simple quad.
-            // your grid should have the same dimension as that quad, i.e.,
-            // reach from [-1, -1] to [1, 1].
-
-
-
-            // position buffer
-            glGenBuffers(1, &vertex_buffer_object_position_);
-            glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object_position_);
-            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat),
-                         &vertices[0], GL_STATIC_DRAW);
-
-            // vertex indices
-            glGenBuffers(1, &vertex_buffer_object_index_);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_buffer_object_index_);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint),
-                         &indices[0], GL_STATIC_DRAW);
-
             // position shader attribute
-            GLuint loc_position = glGetAttribLocation(program_id_, "position");
+            GLuint loc_position = glGetAttribLocation(program_id_, "vtexcoord");
             glEnableVertexAttribArray(loc_position);
-            glVertexAttribPointer(loc_position, 2, GL_FLOAT, DONT_NORMALIZE,
-                                  ZERO_STRIDE, ZERO_BUFFER_OFFSET);
-        }
-
-        // load/Assign textures
-        {
-            glUniform1i(glGetUniformLocation(program_id_, "tex"), 0 /*GL_TEXTURE0*/);
-            frameBuffer.Init(window_width,window_height, true);
-            fboTexId = frameBuffer.getTextureId();
         }
 
         // lights and shading
         {
-            light.Init(0,1,-1);
-            //light_pos = glm::vec3(0.0f, 1, -1);
-
+            light.Init(0.0,1.0,-1.0);
             glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 0.8f);
-
-            //light_pos_id = glGetUniformLocation(program_id_, "light_pos");
-
             GLuint Ld_id = glGetUniformLocation(program_id_, "Ld");
-
             glm::vec3 kd = glm::vec3(0.3f);
-
             GLuint kd_id = glGetUniformLocation(program_id_, "kd");
-
-            //glUniform3fv(light_pos_id, 1, glm::value_ptr(light_pos));
             glUniform3fv(Ld_id, 1, glm::value_ptr(Ld));
             glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
-
-
             GLuint fog_threshold_id = glGetUniformLocation(program_id_, "fog_threshold");
             glUniform1f(fog_threshold_id, FOG_THRESHOLD);
         }
@@ -155,8 +119,6 @@ public:
         glUniform1iARB(glsl_loc_myTexture,screenCopyTextureId);
 
 
-
-
         // other uniforms
         M_id_ = glGetUniformLocation(program_id_, "model");
         V_id_ = glGetUniformLocation(program_id_, "view");
@@ -168,9 +130,25 @@ public:
         glUseProgram(0);
     }
 
+    FrameBufferScattering getFBO(){
+        return frameBufferScattering;
+    }
+
+    void putFBOToTexture(){
+        glBindTexture(GL_TEXTURE_2D,screenCopyTextureId);
+        glCopyTexSubImage2D(GL_TEXTURE_2D,0,0,0,0,0,renderWidth,renderHeight);
+    }
+
     void ScatterWithMethod(GLFWwindow* window,
                            mat4 quad_model_matrix, mat4 projection_matrix,
                            mat4 mat, mat4 getView, mat4 projMatrix){
+
+        /*glm::vec3 rot_light_pos =  glm::mat3(glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100-1, glm::vec3(0,1,0))) * light.getPosition();
+
+        glUniform3fv(light_pos_id, 1, glm::value_ptr(rot_light_pos));*/
+
+
+
         int renderWidth, renderHeight;
         double modelView[16]={quad_model_matrix[0][0], quad_model_matrix[0][1], quad_model_matrix[0][2],quad_model_matrix[0][3],
                               quad_model_matrix[1][0], quad_model_matrix[1][1], quad_model_matrix[1][2],quad_model_matrix[1][3],
@@ -186,9 +164,13 @@ public:
 
         GLint viewport[4];
         double depthRange[2];
+        glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
+        glGetDoublev(GL_PROJECTION_MATRIX, projection);
         glGetIntegerv(GL_VIEWPORT, viewport);
         glGetDoublev(GL_DEPTH_RANGE, depthRange);
 
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
 
         glfwGetFramebufferSize(window,&renderWidth, &renderHeight);
 
@@ -201,12 +183,13 @@ public:
         glDisable(GL_TEXTURE_2D);
         glPushMatrix();
         //glTranslatef(light->lightPosition[0],light->lightPosition[1],light->lightPosition[2]);
-        glTranslatef(light.getPosition().at(0), light.getPosition().at(1), light.getPosition().at(2));
+        glTranslatef(light.getPosition().x, light.getPosition().y, light.getPosition().z);
+        light.drawLight();
         //light->render();
         glPopMatrix();
         GLdouble winX=0, winY =0, winZ = 0;
 
-        gluProject(light.getPosition().at(0), light.getPosition().at(1), light.getPosition().at(2),
+        gluProject(light.getPosition().x, light.getPosition().y, light.getPosition().z,
                    modelView,
                    projection,
                    viewport,
@@ -215,23 +198,27 @@ public:
                    &winZ);
 
 
-        uniformLightX = winX/((float)renderWidth/*/OFF_SCREEN_RENDER_RATIO*/);
-        uniformLightY = winY/((float)renderHeight/*/OFF_SCREEN_RENDER_RATIO*/) ;
+        uniformLightX = winX/ float(renderWidth/2.0/*OFF_SCREEN_RENDER_RATIO*/) ;
+        uniformLightY = winY/ float(renderHeight/2.0/*OFF_SCREEN_RENDER_RATIO*/)  ;
 
 
         // Draw occluding source black with light
         //glUseProgramObjectARB(0);
         glUseProgram(0);
 
-
         glEnable(GL_TEXTURE_2D);
         glColor4f(0,0,0,1);
 
     }
 
-    void ScatterSecondStep(){
-        frameBuffer.Bind();
+    void DrawSphere(){
+        light.drawLight();
+    }
 
+    void ScatterSecondStep(){
+        //frameBuffer.Bind();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0,0,renderWidth,renderHeight);
         glEnable(GL_TEXTURE_2D);
 
@@ -243,20 +230,6 @@ public:
     }
 
     void ScatterThirdstep(){
-        /*
-                       glPushMatrix();
-                            glTranslatef(ikal->position.x,ikal->position.y,ikal->position.z);
-                            glRotatef(180,0,1,0);
-                            glRotatef(ikal->eulerRotation.z,0,0,1);
-                            ikal->render();
-                        glPopMatrix();
-
-                       //sky1->render();
-                       glPushMatrix();
-                            glRotatef(180,1,0,0);
-                            sky1->render();
-                        glPopMatrix();*/
-
         //glDisable(GL_BLEND);
 
         // Paint the light scaterring effect
@@ -271,6 +244,8 @@ public:
 
         glActiveTextureARB(GL_TEXTURE0_ARB);
         glBindTexture(GL_TEXTURE_2D, fboTexId);
+
+        glBindTexture(GL_TEXTURE_2D, screenCopyTextureId);
 
 
         /*Utiliser ce qui suit pour le shader (à coder)*/
@@ -346,11 +321,5 @@ public:
         glDeleteTextures(1, &fboTexId);
     }
 
-    void Draw(float offsetX, float offsetY, bool underwaterclip,
-              const glm::mat4 &model = IDENTITY_MATRIX,
-              const glm::mat4 &view = IDENTITY_MATRIX,
-              const glm::mat4 &projection = IDENTITY_MATRIX) {
-
-    }
 
 };

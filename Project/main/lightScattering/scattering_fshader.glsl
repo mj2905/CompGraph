@@ -27,12 +27,12 @@ void main()
 
                         sample *= illuminationDecay * weight;
 
-                        //color += sample;
+                        color += sample;
 
                         illuminationDecay *= decay;
         }
 
 
-        color = texture(tex, textCoo);
-        //color *= exposure;
+        //color = texture(tex, textCoo);
+        color *= exposure;
 }

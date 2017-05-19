@@ -23,7 +23,7 @@ file(GLOB SHADERS
   water/*.glsl
   water/screenquad/*.glsl
   shadow/*.glsl
-  *.glsl)
+  lightScattering/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})

@@ -78,7 +78,7 @@ class Water {
             program_id_ = icg_helper::LoadShaders("water_vshader.glsl",
                                                   "water_fshader.glsl");
             this->light = light;
-            light_pos = glm::vec3(light.getPosition().at(0), light.getPosition().at(1), light.getPosition().at(2));
+            light_pos = glm::vec3(light.getPosition().x, light.getPosition().y, light.getPosition().z);
             if(!program_id_) {
                 exit(EXIT_FAILURE);
             }

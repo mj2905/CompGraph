@@ -19,8 +19,8 @@
 #include "camera/abstractcamera.h"
 #include "camera/beziercamera.h"
 #include "camera/camera.h"
-#include "lightscatterer.h"
-
+/*#include "lightScattering/lightscatterer.h"
+#include "lightScattering/solidsphere.h"*/
 
 constexpr float NB_FPS = 60.0;
 
@@ -44,6 +44,7 @@ float uniformWeight;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 LightSource light;
+SolidSphere sphere;
 
 int window_width = 800;
 int window_height = 600;
@@ -59,11 +60,14 @@ mat4 projection_matrix;
 mat4 quad_model_matrix;
 mat4 quad_model_matrix_base;
 FrameBuffer frameBuffer;
-LightScatterer lightScatter;
+//LightScatterer lightScatter;
 
 AbstractCamera* camera;
 
 float old_x, old_y;
+
+#define CLEAN_COLOR 0.2f,0.2f,0.28f
+GLfloat fogColor[4] = {CLEAN_COLOR, 1.0};
 
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
@@ -113,13 +117,24 @@ void Init() {
                          vec3(0.0f, 1.0f, 0.0f));*/
     //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    light.Init(0.0,1.0,-1.0);
+    /*light.Init(1.0,0.8,0.0);
     lightScatter.Init();
+    sphere.Init(0.3,3,3);*/
+    /*glFogi(GL_FOG_MODE, GL_LINEAR);		// Fog Mode
+    glFogfv (GL_FOG_COLOR,fogColor);			// Set Fog Color
+    glFogf(GL_FOG_DENSITY, 0.90f);				// How Dense Will The Fog Be
+    glHint(GL_FOG_HINT, GL_FASTEST);			// Fog Hint Value
+    glFogf(GL_FOG_START, -600.0f);				// Fog Start Depth
+    glFogf(GL_FOG_END, 10000.0f);				// Fog End Depth
+    glEnable(GL_FOG);*/
 
+
+
+    sphere.Init(0.5,3,3);
     camera = new Camera(multitiles);
     //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
 
-  /*  frameBuffer.Init(window_width,window_height, true);
+    /*  frameBuffer.Init(window_width,window_height, true);
     fboTexId = frameBuffer.getTextureId();*/
 
     camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
@@ -138,20 +153,37 @@ void Init() {
 // This method was largely inspired from the source code from here: http://fabiensanglard.net/lightScattering/
 // It was adapted to our needs, but remains largely similar
 void ScatterDisplay(GLFWwindow* window){
+    glEnable(GL_TEXTURE_2D);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
-    lightScatter.ScatterWithMethod(window,
+
+    sphere.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+
+
+   /* lightScatter.DrawSphere();
+    lightScatter.getFBO().ClearContent();*/
+    /*lightScatter.ScatterWithMethod(window,
                                    quad_model_matrix, projection_matrix,
-                                   quad_model_matrix, camera->getView(), projection_matrix);
+                                   quad_model_matrix, camera->getView(), projection_matrix);*/
 
-    glPushMatrix();
-        multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
-    glPopMatrix();
 
-    lightScatter.ScatterSecondStep();
-    glPushMatrix();
+
+/*    lightScatter.getFBO().ClearContent();
+    lightScatter.getFBO().Bind();{
         multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
-    glPopMatrix();
-    lightScatter.ScatterThirdstep();
+    }
+    lightScatter.getFBO().Unbind();
+    lightScatter.putFBOToTexture();*/
+
+/*    lightScatter.ScatterSecondStep();
+
+    lightScatter.getFBO().ClearContent();
+    lightScatter.getFBO().Bind();{
+        multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+    }
+    lightScatter.getFBO().Unbind();
+    lightScatter.putFBOToTexture();
+    lightScatter.ScatterThirdstep();*/
 
     camera->animate();
 
@@ -373,7 +405,6 @@ int main(int argc, char *argv[]) {
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
             ScatterDisplay(window);
-           // Display();
             Update();
             lastTime = time;
             glfwSwapBuffers(window);
