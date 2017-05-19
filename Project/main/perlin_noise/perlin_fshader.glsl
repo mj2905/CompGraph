@@ -26,7 +26,7 @@ float grad(int hash, vec2 v)
     else if(hashMasked == 0x1) return  v.y - v.x; // (-1, 1) bet -1 and 1
     else if(hashMasked == 0x2) return  v.x - v.y; // (1, -1) bet -1 and 1
     else if(hashMasked == 0x3) return  -v.x - v.y + 1; // (-1, -1) bet -1 and 1
-    else                       return 0;
+    else                       return 0.0;
 }
 
 int inc(int num) {
