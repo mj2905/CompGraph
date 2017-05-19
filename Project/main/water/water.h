@@ -23,6 +23,7 @@ class Water {
         GLuint P_id_;                         // proj matrix ID
 
         GLuint light_pos_id;
+        LightSource light;
         glm::vec3 light_pos;
 
 
@@ -72,10 +73,12 @@ class Water {
             }
         }
 
-        void Init(GLuint terrain_texture, GLuint reflect_texture, size_t grid_dim = 512) {
+        void Init(GLuint terrain_texture, GLuint reflect_texture, LightSource light, size_t grid_dim = 512) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("water_vshader.glsl",
                                                   "water_fshader.glsl");
+            this->light = light;
+            light_pos = glm::vec3(light.getPosition().at(0), light.getPosition().at(1), light.getPosition().at(2));
             if(!program_id_) {
                 exit(EXIT_FAILURE);
             }
@@ -168,7 +171,7 @@ class Water {
             //light_pos = glm::vec3(12.0f, 3, 9.0f);
             //glm::vec3 light_pos = glm::vec3(-1.0, 3, 0.0f);
             //light_pos = glm::vec3(2.5,1,2.5);
-            light_pos = glm::vec3(0.0f, 1, -1);
+            //light_pos = glm::vec3(0.0f, 1, -1);
             //light_pos = glm::vec3(0.0f, 1, -2);
 
             glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);

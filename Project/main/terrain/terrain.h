@@ -10,6 +10,7 @@
 #include <array>
 #include "../shadow/shadow.h"
 #include "../shadow/framebuffer_shadow.h"
+#include "../constants.h"
 
 using namespace glm;
 
@@ -29,14 +30,14 @@ class Terrain {
         const string skyboxTexture = "miramar";
 
     public:
-        void Init(size_t width, size_t height) {
+        void Init(size_t width, size_t height, LightSource light) {
             mountainsCreator.Init();
             framebuffer_terrain.Init(width, height, true);
             framebuffer_reflect.Init(width, height, true);
 
             mountains.Init(framebuffer_terrain.getTextureId(), 1024);
             reflect.Init(framebuffer_terrain.getTextureId(), 128);
-            water.Init(framebuffer_terrain.getTextureId(), framebuffer_reflect.getTextureId(), 128);
+            water.Init(framebuffer_terrain.getTextureId(), framebuffer_reflect.getTextureId(), light, 128);
             skybox.init(skyboxTexture);
 
             framebuffer_shadow.Init(width, height, true);
