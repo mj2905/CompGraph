@@ -23,8 +23,13 @@ file(GLOB SHADERS
   water/*.glsl
   water/screenquad/*.glsl
   shadow/*.glsl
-  lightScattering/*.glsl)
+  lightScattering/*.glsl
+  mesh/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
+
+file(GLOB OBJ_FILES
+    mesh/*.obj)
+copy_files_once(${OBJ_FILES})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})
 target_link_libraries(${EXERCISENAME} ${COMMON_LIBS})

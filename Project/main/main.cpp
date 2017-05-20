@@ -19,6 +19,7 @@
 #include "camera/abstractcamera.h"
 #include "camera/beziercamera.h"
 #include "camera/camera.h"
+#include "mesh/mesh.h"
 /*#include "lightScattering/lightscatterer.h"
 #include "lightScattering/solidsphere.h"*/
 
@@ -45,6 +46,7 @@ float uniformWeight;
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 LightSource light;
 SolidSphere sphere;
+Mesh mesh;
 
 int window_width = 800;
 int window_height = 600;
@@ -108,6 +110,8 @@ void Init() {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
+    mesh.Init("sphere.obj");
+
     // TODO 3: once you use the trackball, you should use a view matrix that
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
     // applied in a rotated coordinate frame.
@@ -157,7 +161,9 @@ void ScatterDisplay(GLFWwindow* window){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
-    sphere.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+    mesh.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+
+    //sphere.Draw(quad_model_matrix, camera->getView(), projection_matrix);
 
 
    /* lightScatter.DrawSphere();
@@ -413,6 +419,7 @@ int main(int argc, char *argv[]) {
     }
 
     multitiles.Cleanup();
+    mesh.Cleanup();
     delete camera;
 
 

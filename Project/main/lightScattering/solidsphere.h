@@ -20,7 +20,6 @@ protected:
     std::vector<GLushort> indices;
     GLuint program_id_;
     GLuint MVP_id_;
-    GLuint numb;
 
 public:
     void Init(float radius, unsigned int rings, unsigned int sectors)
@@ -41,13 +40,13 @@ public:
         float const S = 1./(float)(sectors-1);
         int r, s;
 
-       /* vertices.resize(rings * sectors * 3);
+        vertices.resize(rings * sectors * 3);
         normals.resize(rings * sectors * 3);
         texcoords.resize(rings * sectors * 2);
         std::vector<GLfloat>::iterator v = vertices.begin();
        // std::vector<GLfloat>::iterator n = normals.begin();
         std::vector<GLfloat>::iterator t = texcoords.begin();
-        /*for(r = 0; r < rings; r++) for(s = 0; s < sectors; s++) {
+        for(r = 0; r < rings; r++) for(s = 0; s < sectors; s++) {
                 float const y = sin( -M_PI_2 + M_PI * r * R );
                 float const x = cos(2*M_PI * s * S) * sin( M_PI * r * R );
                 float const z = sin(2*M_PI * s * S) * sin( M_PI * r * R );
@@ -62,42 +61,20 @@ public:
          /*       *n++ = x;
                 *n++ = y;
                 *n++ = z;*/
-        //}
+        }
 
-        /*indices.resize(rings * sectors * 4);
+        indices.resize(rings * sectors * 4);
         std::vector<GLushort>::iterator i = indices.begin();
         for(r = 0; r < rings-1; r++) for(s = 0; s < sectors-1; s++) {
                 *i++ = r * sectors + s;
                 *i++ = r * sectors + (s+1);
                 *i++ = (r+1) * sectors + (s+1);
                 *i++ = (r+1) * sectors + s;
-        }*/
-
-        const GLfloat position[] = {-1.0f, -1.0f,  1.0f, // left, bottom, front
-                                    1.0f, -1.0f,  1.0f,  // right, bottom, front
-                                    1.0f,  1.0f,  1.0f,  // right, top, front
-                                    -1.0f,  1.0f,  1.0f, // left, top, front
-                                    -1.0f, -1.0f, -1.0f, // left, bottom, back
-                                    1.0f, -1.0f, -1.0f,  // right, bottom, back
-                                    1.0f,  1.0f, -1.0f,  // right, top, back
-                                    -1.0f,  1.0f, -1.0f};// left, top, back
+        }
 
         glGenBuffers(1, &vertex_buffer_object_position);
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object_position);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(position), position,GL_STATIC_DRAW);
-
-        const GLuint index[] = {0, 1, 2,  // front face triangle 1
-                                0, 2, 3,  // front face triangle 2
-                                1, 5, 6,  // right face triangle 1
-                                1, 6, 2,  // right face triangle 2
-                                5, 4, 7,  // back face triangle 1
-                                5, 7, 6,  // back face triangle 2
-                                4, 0, 3,  // left face triangle 1
-                                4, 3, 7,  // left face triangle 2
-                                3, 2, 6,  // top face triangle 1
-                                3, 6, 7,  // top face triangle 2
-                                1, 0, 4,  // bottom face triangle 1
-                                1, 4, 5}; // bottom face triangle 2
+        glBufferData(GL_ARRAY_BUFFER, vertices.size(), &vertices,GL_STATIC_DRAW);
 
         //
         GLuint loc_position = glGetAttribLocation(program_id_, "position");
@@ -105,13 +82,11 @@ public:
         glVertexAttribPointer(loc_position, 3, GL_FLOAT, DONT_NORMALIZE,
                               ZERO_STRIDE, ZERO_BUFFER_OFFSET);
 
-        numb = sizeof(index)/sizeof(GLuint);
-
         // index buffer
 
         glGenBuffers(1, &vertex_buffer_object_index);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_buffer_object_index);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size(), &indices, GL_STATIC_DRAW);
 
         // other uniforms
         MVP_id_ = glGetUniformLocation(program_id_, "MVP");
@@ -121,19 +96,17 @@ public:
         glUseProgram(0);
     }
 
-    void Draw(glm::mat4 projection=IDENTITY_MATRIX,
-              glm::mat4 view=IDENTITY_MATRIX,
-              glm::mat4 model=IDENTITY_MATRIX)
+    void draw()
     {
         glUseProgram(program_id_);
         glBindVertexArray(vertex_array_id_);
 
         // setup MVP
-        glm::mat4 MVP = projection*view*model;
-        glUniformMatrix4fv(MVP_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(MVP));
+       /* glm::mat4 MVP = projection*view*model;
+        glUniformMatrix4fv(MVP_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(MVP));*/
 
         // draw
-        glDrawElements(GL_TRIANGLES, numb, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
         glUseProgram(0);

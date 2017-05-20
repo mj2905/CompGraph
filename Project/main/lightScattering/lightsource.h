@@ -48,7 +48,7 @@ public:
     }
 
     void drawLight(){
-        sphere.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
+        //sphere.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
 
  //       glCallList(dList);
     }
