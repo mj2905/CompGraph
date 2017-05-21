@@ -16,6 +16,10 @@
 
 #include "multitiles/multitiles.h"
 
+#include "globals.h"
+
+#include "shadowmap/shadowmap.h"
+
 #define WASD_NULL (0)
 #define WASD_W (1)
 #define WASD_A (2)
@@ -43,12 +47,21 @@ using namespace glm;
 mat4 projection_matrix;
 mat4 view_matrix;
 
+
 mat4 quad_model_matrix;
 mat4 quad_model_matrix_base;
+
 
 float old_x, old_y;
 float global_angle_x = 0.528f;
 float distance_camera = 0;
+
+const mat4 shadowmaps_biasMatrix(
+0.5, 0.0, 0.0, 0.0,
+0.0, 0.5, 0.0, 0.0,
+0.0, 0.0, 0.5, 0.0,
+0.5, 0.5, 0.5, 1.0
+);
 
 Terrain* terrain;
 mat4 OrthographicProjection(float left, float right, float bottom,
@@ -116,6 +129,17 @@ void Init() {
     // sets background color
     glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
 
+    vec3 shadow_light_dir = vec3(0.5f,2,2);
+
+    shadow_projection = glm::ortho<float>(-10,10,-10,10,-10,20);
+    shadow_view = glm::lookAt(glm::vec3(2.0f, 2.0f, 0.5f),
+                                  glm::vec3( 0.0f, 0.0f,  0.0f),
+                                  glm::vec3( 0.0f, 1.0f,  0.0f));
+  //  shadow_view = glm::lookAt(shadow_light_dir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+
+    GLuint shadowmap_id = global_shadowmap.init(window_width, window_height);
+
+
     // enable depth test.
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -124,7 +148,6 @@ void Init() {
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
     // applied in a rotated coordinate frame.
     // uncomment lower line to achieve this.
-
 
     quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
 
@@ -203,7 +226,6 @@ void update_fps_cam() {
         multitiles.incrementX(angle_sin);
       }
 
-
     }
 
     if (angle_cos <=0.0f) {
@@ -263,6 +285,10 @@ void Display() {
     //handling FPS camera
     update_fps_cam();
 
+    //generating real-time shadow maps
+    global_shadowmap.bind(quad_model_matrix, shadow_view, shadow_projection, shadow_projection*shadow_view*quad_model_matrix);
+    multitiles.Draw(quad_model_matrix, shadow_view, shadow_projection);
+    global_shadowmap.unbind();
 
     multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
 
@@ -324,9 +350,6 @@ void MousePos(GLFWwindow* window, double x, double y) {
         vec3 oldCenter = center;
         center = (mat3(glm::rotate(glm::rotate(IDENTITY_MATRIX, delta_x, angle_y), delta_y, angle_x)) * (center - position)) + position;
 
-
-
-
         old_x = p.x;
         old_y = p.y;
    }
@@ -381,9 +404,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         wasd_direction[1] = WASD_D;
     }
 }
-
-
-
 
 int main(int argc, char *argv[]) {
     // GLFW Initialization

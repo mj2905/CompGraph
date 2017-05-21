@@ -8,9 +8,12 @@ out vec3 light_dir;
 out float height;
 out vec2 uv;
 
+out vec4 shadow_pos_mvp;
+
 uniform mat4 projection;
 uniform mat4 model;
 uniform mat4 view;
+uniform mat4 shadow_mvp;
 uniform vec3 light_pos;
 
 uniform sampler2D tex;
@@ -27,6 +30,6 @@ void main() {
     vpoint_mv = view * model * vec4(vpoint, 1.0);
     gl_Position = projection * vpoint_mv;
     light_dir = normalize(light_pos - vec3(vpoint_mv));
+    shadow_pos_mvp = shadow_mvp * vec4(vpoint, 1.0);
 
 }
-

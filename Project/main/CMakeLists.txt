@@ -22,7 +22,8 @@ file(GLOB SHADERS
   skybox/*.glsl
   mountains_render/*.glsl
   mountains_create/*.glsl
-  water/*.glsl)
+  water/*.glsl
+  shadowmap/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})

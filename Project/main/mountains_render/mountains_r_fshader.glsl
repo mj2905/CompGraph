@@ -8,6 +8,8 @@ in vec3 vpoint;
 in vec2 uv;
 in float height;
 
+in vec4 shadow_pos_mvp;
+
 uniform vec3 Ld;
 uniform vec3 kd;
 uniform float alpha;
@@ -19,6 +21,7 @@ uniform sampler2D sand;
 
 uniform sampler1D colormap;
 
+uniform sampler2D shadowmap;
 
 uniform bool clip;
 
@@ -80,7 +83,18 @@ void main() {
         discard;
     }
 
-    color =   0.9*(
+    // perform perspective divide
+    vec3 projCoords = shadow_pos_mvp.xyz / shadow_pos_mvp.w;
+    // Transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowmap, projCoords.xy).r;
+    // Get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // Check whether current frag pos is in shadow
+    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
+    color =   shadow * 0.9*(
               alpha1 * texture(grass, (uv + offset)*20).rgb
             + alpha2 * texture(rock, (uv + offset)*10).rgb
             + alpha3 * texture(snow, (uv + offset)*35).rgb

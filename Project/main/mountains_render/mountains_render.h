@@ -1,5 +1,6 @@
 #pragma once
 #include "../constants.h"
+#include "../globals.h"
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
@@ -23,6 +24,8 @@ class MountainsRender {
         GLuint M_id_;                           // model matrix ID
         GLuint V_id_;                           // view matrix ID
         GLuint P_id_;                           // proj matrix ID
+
+        GLuint shadow_mvp;
 
     public:
         void Init(GLuint mountain_texture) {
@@ -150,6 +153,11 @@ class MountainsRender {
             loadImage("snow.jpg", "snow", 4, snow_id_);
             loadImage("sand.jpg", "sand", 5, sand_id_);
 
+            //shadow map
+            glUniform1i(glGetUniformLocation(program_id_, "shadowmap"), 6);
+            shadow_mvp = glGetUniformLocation(program_id_, "shadow_mvp");
+
+
             // other uniforms
             M_id_ = glGetUniformLocation(program_id_, "model");
             V_id_ = glGetUniformLocation(program_id_, "view");
@@ -257,6 +265,11 @@ class MountainsRender {
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
+
+            glm::mat4 sh_mvp = shadow_projection * shadow_view * model;
+
+            glUniformMatrix4fv(shadow_mvp, ONE, DONT_TRANSPOSE, glm::value_ptr(sh_mvp));
+
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.
