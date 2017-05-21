@@ -244,8 +244,7 @@ void update_fps_cam() {
       }
     }
 
-    wasd_direction[0] = WASD_NULL;
-    wasd_direction[1] = WASD_NULL;
+
   }
 }
 
@@ -364,21 +363,33 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 
 
-    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_W && action == GLFW_PRESS) {
         //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
         wasd_direction[0] = WASD_W;
     }
-    else if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, -0.1)) * view_matrix;
+    else if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
+        wasd_direction[0] = WASD_NULL;
+    }
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+        //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
         wasd_direction[0] = WASD_S;
     }
-    if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        //view_matrix = translate(IDENTITY_MATRIX, vec3(0.1, 0, 0)) * view_matrix;
+    else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+        wasd_direction[0] = WASD_NULL;
+    }
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+        //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
         wasd_direction[1] = WASD_A;
     }
-    else if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        //view_matrix = translate(IDENTITY_MATRIX, vec3(-0.1, 0, 0)) * view_matrix;
+    else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+        wasd_direction[1] = WASD_NULL;
+    }
+    if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+        //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
         wasd_direction[1] = WASD_D;
+    }
+    else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+        wasd_direction[1] = WASD_NULL;
     }
 }
 
