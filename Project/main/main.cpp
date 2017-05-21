@@ -2,7 +2,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "constants.h"
 // contains helper functions such as shader compiler
 #include "icg_helper.h"
 
@@ -19,9 +18,7 @@
 #include "camera/abstractcamera.h"
 #include "camera/beziercamera.h"
 #include "camera/camera.h"
-#include "mesh/mesh.h"
-/*#include "lightScattering/lightscatterer.h"
-#include "lightScattering/solidsphere.h"*/
+
 
 constexpr float NB_FPS = 60.0;
 
@@ -29,31 +26,10 @@ constexpr float NB_FPS = 60.0;
 const unsigned int OFFSET_X = 256;
 const unsigned int OFFSET_Y = 257;
 
-
-unsigned int glsl_loc_light;
-unsigned int glsl_loc_exposure;
-unsigned int glsl_loc_decay;
-unsigned int glsl_loc_density;
-unsigned int glsl_loc_weight;
-unsigned int glsl_loc_myTexture;
-
-
-float uniformExposure;
-float uniformDecay;
-float uniformDensity;
-float uniformWeight;
-
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
-LightSource light;
-SolidSphere sphere;
-Mesh mesh;
 
 int window_width = 800;
 int window_height = 600;
-int fboId, fboTexId;
-
-float uniformLightX ;
-float uniformLightY ;
 
 using namespace glm;
 
@@ -61,15 +37,10 @@ mat4 projection_matrix;
 
 mat4 quad_model_matrix;
 mat4 quad_model_matrix_base;
-FrameBuffer frameBuffer;
-//LightScatterer lightScatter;
-
+LightSource light;
 AbstractCamera* camera;
 
 float old_x, old_y;
-
-#define CLEAN_COLOR 0.2f,0.2f,0.28f
-GLfloat fogColor[4] = {CLEAN_COLOR, 1.0};
 
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
@@ -106,11 +77,11 @@ void Init() {
     // sets background color
     glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
 
+    light.Init(0.0,1.0,-1.0);
+
     // enable depth test.
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-
-    mesh.Init("sphere.obj");
 
     // TODO 3: once you use the trackball, you should use a view matrix that
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
@@ -121,25 +92,8 @@ void Init() {
                          vec3(0.0f, 1.0f, 0.0f));*/
     //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    /*light.Init(1.0,0.8,0.0);
-    lightScatter.Init();
-    sphere.Init(0.3,3,3);*/
-    /*glFogi(GL_FOG_MODE, GL_LINEAR);		// Fog Mode
-    glFogfv (GL_FOG_COLOR,fogColor);			// Set Fog Color
-    glFogf(GL_FOG_DENSITY, 0.90f);				// How Dense Will The Fog Be
-    glHint(GL_FOG_HINT, GL_FASTEST);			// Fog Hint Value
-    glFogf(GL_FOG_START, -600.0f);				// Fog Start Depth
-    glFogf(GL_FOG_END, 10000.0f);				// Fog End Depth
-    glEnable(GL_FOG);*/
-
-
-
-    sphere.Init(0.5,3,3);
     camera = new Camera(multitiles);
     //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
-
-    /*  frameBuffer.Init(window_width,window_height, true);
-    fboTexId = frameBuffer.getTextureId();*/
 
     camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
 
@@ -152,50 +106,18 @@ void Init() {
 }
 
 
+// gets called for every frame.
+void Display() {
 
-
-// This method was largely inspired from the source code from here: http://fabiensanglard.net/lightScattering/
-// It was adapted to our needs, but remains largely similar
-void ScatterDisplay(GLFWwindow* window){
-    glEnable(GL_TEXTURE_2D);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glViewport(0, 0, window_width, window_height);
 
-    mesh.Draw(quad_model_matrix, camera->getView(), projection_matrix);
-
-    //sphere.Draw(quad_model_matrix, camera->getView(), projection_matrix);
-
-
-   /* lightScatter.DrawSphere();
-    lightScatter.getFBO().ClearContent();*/
-    /*lightScatter.ScatterWithMethod(window,
-                                   quad_model_matrix, projection_matrix,
-                                   quad_model_matrix, camera->getView(), projection_matrix);*/
-
-
-
-/*    lightScatter.getFBO().ClearContent();
-    lightScatter.getFBO().Bind();{
-        multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
-    }
-    lightScatter.getFBO().Unbind();
-    lightScatter.putFBOToTexture();*/
-
-/*    lightScatter.ScatterSecondStep();
-
-    lightScatter.getFBO().ClearContent();
-    lightScatter.getFBO().Bind();{
-        multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
-    }
-    lightScatter.getFBO().Unbind();
-    lightScatter.putFBOToTexture();
-    lightScatter.ScatterThirdstep();*/
+    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
 
     camera->animate();
 
 }
-
-
 
 bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
 
@@ -410,7 +332,7 @@ int main(int argc, char *argv[]) {
 
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
-            ScatterDisplay(window);
+            Display();
             Update();
             lastTime = time;
             glfwSwapBuffers(window);
@@ -419,7 +341,6 @@ int main(int argc, char *argv[]) {
     }
 
     multitiles.Cleanup();
-    mesh.Cleanup();
     delete camera;
 
 

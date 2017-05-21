@@ -56,8 +56,8 @@ public:
     void Draw(
               const mat4 &model = IDENTITY_MATRIX,
               const mat4 &view = IDENTITY_MATRIX,
-              const mat4 &projection = IDENTITY_MATRIX) {
-        terrain.Draw(x_visible, y_visible, model, view, projection);
+              const mat4 &projection = IDENTITY_MATRIX, int drawBlack = 1) {
+        terrain.Draw(x_visible, y_visible, model, view, projection, drawBlack);
     }
 
     void incrementX(float INCREMENT) {

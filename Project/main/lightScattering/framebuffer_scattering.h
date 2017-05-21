@@ -5,6 +5,7 @@
 
 class FrameBufferScattering{
 
+
 private:
     int width_;
     int height_;
@@ -13,51 +14,58 @@ private:
     GLuint color_texture_id_;
 
 public:
-
     // warning: overrides viewport!!
     void Bind() {
+
         glViewport(0, 0, width_, height_);
+
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
-        const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
-        glDrawBuffers(1 /*length of buffers[]*/, buffers);
+        const GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
+        glDrawBuffers(1, buffers);
+
     }
 
     void Unbind() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    GLuint getTextureId() {
-        return color_texture_id_;
-    }
+    int Init(int image_width, int image_height, bool use_interpolation = false) {
+        this->width_ = image_width;
+        this->height_ = image_height;
 
-    void Init(int image_width, int image_height) {
-
-        width_ = image_width/OFF_SCREEN_RENDER_RATIO;
-        height_ = image_height/OFF_SCREEN_RENDER_RATIO;
-
+        // create color attachment
         {
             glGenTextures(1, &color_texture_id_);
             glBindTexture(GL_TEXTURE_2D, color_texture_id_);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+            if(use_interpolation){
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            } else {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            }
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            //    glBindTexture(GL_TEXTURE_2D, 0);
+            // create texture for the color attachment
+            // see Table.2 on
+            // khronos.org/opengles/sdk/docs/man3/docbook4/xhtml/glTexImage2D.xml
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width_, height_, 0,
+                         GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            // how to load from buffer
+            glBindTexture(GL_TEXTURE_2D,0);
         }
 
-        // create a renderbuffer object to store depth info
-
+        // create render buffer (for depth channel)
         {
             glGenRenderbuffers(1, &depth_render_buffer_id_);
             glBindRenderbuffer(GL_RENDERBUFFER, depth_render_buffer_id_);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32,width_, height_);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, width_, height_);
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
         }
 
-
-        //tie it all together
+        // tie it all together
         {
             glGenFramebuffers(1, &framebuffer_object_id_);
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
@@ -67,21 +75,25 @@ public:
                                    0 /*level*/);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                       GL_RENDERBUFFER, depth_render_buffer_id_);
+
             if (glCheckFramebufferStatus(GL_FRAMEBUFFER) !=
-                    GL_FRAMEBUFFER_COMPLETE) {
+                GL_FRAMEBUFFER_COMPLETE) {
                 cerr << "!!!ERROR: Framebuffer not OK :(" << endl;
             }
+            glBindFramebuffer(GL_FRAMEBUFFER, 0); // avoid pollution
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+        return color_texture_id_;
     }
 
-    void ClearContent() {
+    void Clear() {
         glViewport(0, 0, width_, height_);
+        const GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
-        glClearColor(0.4294117647f, 0.7078431373f, 0.9803921569f, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glDrawBuffers(1, buffers);
+            //glDrawBuffer(GL_COLOR_ATTACHMENT0);
+            glClearColor(1, 1.0, 1.0, 1.0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 

@@ -44,5 +44,5 @@ void main()
         illuminationDecay *= decay;
     }
 
-    color =  mix(vec4(c*exposure, 1.0f), texture(tex2,uv),0.4);
+    color =  mix(vec4(c*exposure, 1.0f), texture(tex2,uv),0.6);
 }

@@ -1,4 +1,5 @@
-#ifndef LIGHTSCATTERING_H
-#define LIGHTSCATTERING_H
-
-#endif // LIGHTSCATTERING_H
+#include "mesh/mesh.h"
+#include "quad/quad.h"
+#include "screenquad/screenquad.h"
+#include "framebuffer_scattering.h"
+#include "../constants.h"
