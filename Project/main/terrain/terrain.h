@@ -29,20 +29,22 @@ private:
     Shadow shadow;
     FrameBufferScattering fboScatter1, fboScatter2;
     ScreenQuad screenQuad;
+    Mesh sun;
 
     const string skyboxTexture = "miramar";
 
 public:
-    void Init(size_t width, size_t height, LightSource light) {
+    void Init(size_t width, size_t height, LightSource &light) {
         mountainsCreator.Init();
         framebuffer_terrain.Init(width, height, true);
         framebuffer_reflect.Init(width, height, true);
+        sun.Init("sphere.obj");
 
         int frameId1, frameId2;
         frameId1 = fboScatter1.Init(width, height, true);
         frameId2 = fboScatter2.Init(width, height);
 
-        screenQuad.Init(width, height, frameId1, frameId2);
+        screenQuad.Init(width, height, frameId1, frameId2, light);
 
 
         mountains.Init(framebuffer_terrain.getTextureId(), 1024);
@@ -72,6 +74,7 @@ public:
               int drawBlack = 1) {
 
 
+
         mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100, vec3(0,1,0));
         fboScatter1.Clear();
         fboScatter2.Clear();
@@ -83,20 +86,22 @@ public:
         reflect.Draw(offsetX, offsetY, true, model * rot, view, projection);
         framebuffer_reflect.Unbind();
 
+        //sun.Draw(model, view, projection);
+
 
         fboScatter1.Bind();{
             mountains.Draw(offsetX, offsetY, false, model, view, projection, 0);
         }
         fboScatter1.Unbind();
         fboScatter2.Bind();{
-
             skybox.Draw(view * skyboxRot, projection);
             mountains.Draw(offsetX, offsetY, false, model, view, projection, 1);
             water.Draw(offsetX, offsetY, model, view, projection);
+            sun.Draw(model, view, projection);
         }
         fboScatter2.Unbind();
 
-        screenQuad.Draw();
+        screenQuad.Draw(model, view, projection);
 
 
     }
@@ -111,6 +116,7 @@ public:
         skybox.Cleanup();
         framebuffer_shadow.Cleanup();
         shadow.Cleanup();
+        sun.Cleanup();
     }
 
 };

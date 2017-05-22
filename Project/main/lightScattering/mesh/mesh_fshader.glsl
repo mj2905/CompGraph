@@ -11,5 +11,5 @@ uniform sampler2D tex2D;
 in vec4 vpoint_mv;
 
 void main() {    
-    color = vec3(1.0,1.0,1.0);
+    color = vec3(1.0,1.0,0.0);
 }

@@ -13,6 +13,8 @@ uniform float tex_width;
 uniform float tex_height;
 uniform int pass;
 
+uniform vec2 light_position;
+
 const float exposure = 0.0034f;
 const float decay = 0.98;
 const float density = 0.65f;
@@ -24,8 +26,7 @@ const int NUM_SAMPLES = 100;
 
 void main()
 {
-    vec2 deltaTextCoord =uv - vec2(0.5,0.5);
-
+    vec2 deltaTextCoord =uv - light_position;//vec2(0.5,0.5);
     vec2 textCoord = uv;
     deltaTextCoord *= 1.0 /  float(NUM_SAMPLES) * density;
     float illuminationDecay = 1.0;

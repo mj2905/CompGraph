@@ -73,7 +73,7 @@ class Water {
             }
         }
 
-        void Init(GLuint terrain_texture, GLuint reflect_texture, LightSource light, size_t grid_dim = 512) {
+        void Init(GLuint terrain_texture, GLuint reflect_texture, LightSource &light, size_t grid_dim = 512) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("water_vshader.glsl",
                                                   "water_fshader.glsl");

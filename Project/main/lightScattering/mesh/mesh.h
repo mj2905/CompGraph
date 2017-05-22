@@ -225,10 +225,10 @@ public:
               const glm::mat4 &view = IDENTITY_MATRIX,
               const glm::mat4 &projection = IDENTITY_MATRIX) {
 
-        float scale = 1.0;
+        float scale = 0.1;
         glm::mat4 M = model;
-        M = glm::translate(M, glm::vec3(0.0f, 0.0f, 0.5f));
-        M = glm::rotate(M, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        M = glm::translate(M, glm::vec3(1.0f, 1.0f, -1.0f));
+        //M = glm::rotate(M, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
         M = glm::scale(M, glm::vec3(scale));
 
         BindShader(active_program_id_, texture_2d_id_);
@@ -236,12 +236,6 @@ public:
         Material::Setup(active_program_id_);
         Light::Setup(active_program_id_);
 
-        // set up spot light if needed
-        GLint spot_dir_id = glGetUniformLocation(active_program_id_, "spot_dir");
-        if (spot_dir_id >=0) {
-            glm::vec3 spot_dir = light_pos;
-            glUniform3fv(spot_dir_id, ONE, glm::value_ptr(spot_dir));
-        }
         // setup matrix stack
         GLint model_id = glGetUniformLocation(active_program_id_,
                                               "model");

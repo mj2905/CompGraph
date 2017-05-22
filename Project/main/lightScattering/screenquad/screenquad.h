@@ -2,6 +2,7 @@
 #include "icg_helper.h"
 
 #include <vector>
+#include "../../constants.h"
 
 class ScreenQuad {
 
@@ -13,17 +14,15 @@ class ScreenQuad {
 
         float screenquad_width_;
         float screenquad_height_;
-        bool is_horizontal_;
-
-        vector<float> G;
+        LightSource light;
 
     public:
 
         void Init(float screenquad_width, float screenquad_height,
-                  GLuint texture, GLuint texture2, bool is_horizontal = true) {
+                  GLuint texture, GLuint texture2, LightSource &light) {
 
-            is_horizontal_ = is_horizontal;
-            // set screenquad size
+            this->light = light;
+
             this->screenquad_width_ = screenquad_width;
             this->screenquad_height_ = screenquad_height;
 
@@ -113,11 +112,10 @@ class ScreenQuad {
             this->screenquad_height_ = screenquad_height;
         }
 
-        void changeG(vector<float> G){
-            this->G = G;
-        }
-
-        void Draw() {
+        void Draw(const glm::mat4 &model,
+                  const glm::mat4 &view,
+                  const glm::mat4 &pro
+                  ) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
@@ -127,7 +125,27 @@ class ScreenQuad {
             glUniform1f(glGetUniformLocation(program_id_, "tex_height"),
                         this->screenquad_height_);
 
-            glUniform1fv(glGetUniformLocation(program_id_, "G"), G.size(), G.data());
+
+            glm::mat4 projection = pro;
+
+            glm::mat4 mv =view*model;
+            GLint viewport[4];
+
+            glGetIntegerv(GL_VIEWPORT, viewport);
+
+            cout << "viewport:" << viewport[0] << ","<<  viewport[1] << ","<< viewport[2] << ","<< viewport[3] << endl;
+
+            glm::vec3 k = light.getPosition();
+            k = glm::vec3(projection*mv*glm::vec4(k,1.0));
+
+            glm::vec2 l = glm::vec2(float(k.x/viewport[2]), float(k.y/viewport[3]));
+
+            glUniform2f(glGetUniformLocation(program_id_, "light_position"), l.x, l.y);
+
+            cout << "pos x:" << l.x<< endl;
+            cout << "pos y:" << l.y << endl;
+            cout << "---" << endl;
+
 
             // bind texture
             glActiveTexture(GL_TEXTURE0);

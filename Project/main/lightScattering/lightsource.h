@@ -11,4 +11,8 @@ public:
     glm::vec3 getPosition(){
         return pos;
     }
+
+    void update(glm::vec3 updateVector){
+        this->pos = updateVector;
+    }
 };

@@ -35,7 +35,7 @@ public:
 
     }
 
-    void Init(size_t width, size_t height, LightSource light) {
+    void Init(size_t width, size_t height, LightSource &light) {
 
         assert(INCREMENT <= 0.5);
 
