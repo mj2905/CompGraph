@@ -16,6 +16,11 @@
 
 #include "multitiles/multitiles.h"
 
+#include "camera/abstractcamera.h"
+#include "camera/beziercamera.h"
+#include "camera/camera.h"
+#include "camera/fps_camera.h"
+
 #define WASD_NULL (0)
 #define WASD_W (1)
 #define WASD_A (2)
@@ -26,6 +31,9 @@ uint8_t wasd_direction[2] = {WASD_NULL, WASD_NULL};
 
 #define INCREMENT_STEPS (0.028f)
 #define MULTITILES_INCREMENT (0.0001f)
+
+
+
 
 constexpr float NB_FPS = 60.0;
 
@@ -40,15 +48,18 @@ int window_height = 600;
 
 using namespace glm;
 
-mat4 projection_matrix;
 mat4 view_matrix;
 
+mat4 projection_matrix;
 mat4 quad_model_matrix;
 mat4 quad_model_matrix_base;
 
 float old_x, old_y;
-float global_angle_x = 0.528f;
+GLfloat global_angle_x = 0.528f;
 float distance_camera = 0;
+AbstractCamera* current_cam;
+Camera* regular_cam;
+fps_camera* fps_cam;
 
 Terrain* terrain;
 mat4 OrthographicProjection(float left, float right, float bottom,
@@ -82,36 +93,6 @@ mat4 PerspectiveProjection(float fovy, float aspect, float near, float far) {
     return pro; // we already transposed the matrix (since it's column major!) so no need to transpose it again
 }
 
-mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
-    // we need a function that converts from world coordinates into camera coordiantes.
-    //
-    // cam coords to world coords is given by:
-    // X_world = R * X_cam + eye
-    //
-    // inverting it leads to:
-    //
-    // X_cam = R^T * X_world - R^T * eye
-    //
-    // or as a homogeneous matrix:
-    // [ r_00 r_10 r_20 -r_0*eye
-    //   r_01 r_11 r_21 -r_1*eye
-    //   r_02 r_12 r_22 -r_2*eye
-    //      0    0    0        1 ]
-
-    vec3 z_cam = normalize(eye - center);
-    vec3 x_cam = normalize(cross(up, z_cam));
-    vec3 y_cam = cross(z_cam, x_cam);
-
-    mat3 R(x_cam, y_cam, z_cam);
-    R = transpose(R);
-
-    mat4 look_at(vec4(R[0], 0.0f),
-                 vec4(R[1], 0.0f),
-                 vec4(R[2], 0.0f),
-                 vec4(-R * (eye), 1.0f));
-    return look_at;
-}
-
 void Init() {
     // sets background color
     glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
@@ -125,8 +106,18 @@ void Init() {
     // applied in a rotated coordinate frame.
     // uncomment lower line to achieve this.
 
+    /*view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
+                         vec3(0.0f, 0.0f, 0.0f),
+                         vec3(0.0f, 1.0f, 0.0f));*/
+    //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,2, 5));
+    regular_cam = new Camera(multitiles);
+    //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
+    current_cam = regular_cam;
+
+    current_cam->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+
+    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
 
     multitiles.Init(window_width, window_height);
 
@@ -203,7 +194,6 @@ void update_fps_cam() {
         multitiles.incrementX(angle_sin);
       }
 
-
     }
 
     if (angle_cos <=0.0f) {
@@ -263,12 +253,31 @@ void Display() {
     update_fps_cam();
 
 
-    multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
+    multitiles.Draw(quad_model_matrix, current_cam->getView(), projection_matrix);
+
+    current_cam->animate();
 
 }
 
-void Update() {
+bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
 
+void Update() {
+    //multitiles.incrementY(); //to move with the camera
+
+    float increment = 0.05f;
+
+    if(upPressed and not downPressed) {
+        current_cam->move(0, 0, increment);
+    }
+    if(downPressed and not upPressed) {
+        current_cam->move(0, 0, -increment);
+    }
+    if(leftPressed and not rightPressed) {
+        current_cam->move(increment, 0, 0);
+    }
+    if(rightPressed and not leftPressed) {
+        current_cam->move(-increment, 0, 0);
+    }
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.
@@ -313,6 +322,7 @@ void MousePos(GLFWwindow* window, double x, double y) {
             old_y = p.y;
         }
 
+        //fps
         float delta_x = old_x - p.x;
         global_angle_x += old_x - p.x;
         float delta_y = p.y - old_y;
@@ -324,6 +334,9 @@ void MousePos(GLFWwindow* window, double x, double y) {
         center = (mat3(glm::rotate(glm::rotate(IDENTITY_MATRIX, delta_x, angle_y), delta_y, angle_x)) * (center - position)) + position;
 
 
+
+        //normal
+        current_cam->rotate(old_x - p.x, p.y - old_y);
 
 
         old_x = p.x;
@@ -347,6 +360,10 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
     projection_matrix = PerspectiveProjection(45.0f,
                                               (GLfloat)window_width / window_height,
                                               0.1f, 100.0f);
+
+    multitiles.Cleanup();
+    multitiles.Init(width, height);
+
     //GLfloat top = 1.0f;
     //GLfloat right = (GLfloat)window_width / window_height * top;
     //projection_matrix = OrthographicProjection(-right, right, -top, top, -10.0, 10.0f);
@@ -356,6 +373,7 @@ void ErrorCallback(int error, const char* description) {
     fputs(description, stderr);
 }
 
+
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
@@ -363,6 +381,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 
 
+    //FPS
     if (key == GLFW_KEY_W && action == GLFW_PRESS) {
         //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
         wasd_direction[0] = WASD_W;
@@ -390,6 +409,53 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
         wasd_direction[1] = WASD_NULL;
+      }
+
+
+
+
+        //rest
+
+    if (key == GLFW_KEY_UP) {
+        if(action == GLFW_PRESS) {
+            upPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            upPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_DOWN) {
+        if(action == GLFW_PRESS) {
+            downPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            downPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_LEFT) {
+        if(action == GLFW_PRESS) {
+            leftPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            leftPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_RIGHT) {
+        if(action == GLFW_PRESS) {
+            rightPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            rightPressed = false;
+        }
+    }
+    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        current_cam->increaseVelocity();
+    }
+    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        current_cam->decreaseVelocity();
     }
 }
 
@@ -445,6 +511,11 @@ int main(int argc, char *argv[]) {
 
     cout << "OpenGL" << glGetString(GL_VERSION) << endl;
 
+    //vector<vec3> points = {vec3(0), vec3(1, 1, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0)};
+    //Bezier bezier(points);
+    //float t = 0.2;
+    //cout << bezier.apply(t).x << " " << bezier.apply(t).y << " " << bezier.apply(t).z << endl;
+
     // initialize our OpenGL program
     Init();
 
@@ -462,7 +533,7 @@ int main(int argc, char *argv[]) {
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
             Display();
-            //Update();
+            Update();
             lastTime = time;
             glfwSwapBuffers(window);
         }
@@ -470,6 +541,8 @@ int main(int argc, char *argv[]) {
     }
 
     multitiles.Cleanup();
+    delete current_cam;
+
 
     // close OpenGL window and terminate GLFW
     glfwDestroyWindow(window);

@@ -60,8 +60,10 @@ public:
         terrain.Draw(x_visible, y_visible, model, view, projection);
     }
 
+
     void incrementX(float increment) {
       assert(increment <= 0.5);
+
         //if we are moving a bit to the right from the center, we compute and store the right not visible tiles
         if(x_visible <= x and x_visible + increment > x) {
             drawRightTiles();
@@ -103,8 +105,10 @@ public:
         terrain.Moved(x_visible, y_visible);
     }
 
+
     void decrementX(float increment) {
       assert(increment <= 0.5);
+
         //if we are moving a bit to the left from the center, we compute and store the left not visible tiles
         if(x_visible >= x and x_visible - increment < x) {
             drawLeftTiles();
@@ -145,8 +149,10 @@ public:
         terrain.Moved(x_visible, y_visible);
     }
 
+
     void incrementY(float increment) {
       assert(increment <= 0.5);
+
         //if we are moving a bit to the top from the center, we compute and store the top not visible tiles
         if(y_visible <= y and y_visible + increment > y) {
             drawUpTiles();
@@ -193,6 +199,7 @@ public:
 
     void decrementY(float increment) {
       assert(increment <= 0.5);
+
         //if we are moving a bit to the bottom from the center, we compute and store the bottom not visible tiles
         if(y_visible >= y and y_visible - increment < y) {
             drawDownTiles();

@@ -12,22 +12,21 @@
 
 using namespace glm;
 
-class fps_camera : public AbstractCamera {
+class Camera : public AbstractCamera {
 
 private:
 
     const float MIN_DISTANCE_POLE = 0.1f;
     MultiTiles& multitiles;
-    GLfloat& global_x_angle;
 
 
 public:
 
-    fps_camera(MultiTiles& multitiles, GLfloat& global_x_angle) : multitiles(multitiles), global_x_angle(global_x_angle) {
+    Camera(MultiTiles& multitiles) : multitiles(multitiles) {
 
     }
 
-    virtual ~fps_camera() {}
+    virtual ~Camera() {}
 
     virtual void animate() override {}
 
