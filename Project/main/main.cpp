@@ -451,10 +451,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             rightPressed = false;
         }
     }
-    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_E && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         current_cam->increaseVelocity();
     }
-    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    if (key == GLFW_KEY_Q && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         current_cam->decreaseVelocity();
     }
 }
