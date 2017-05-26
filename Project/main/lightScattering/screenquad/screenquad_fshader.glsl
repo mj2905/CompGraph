@@ -9,8 +9,6 @@ out vec4 color;
 
 uniform sampler2D tex;
 uniform sampler2D tex2;
-uniform float tex_width;
-uniform float tex_height;
 uniform int pass;
 
 uniform vec2 light_position;
@@ -45,5 +43,6 @@ void main()
         illuminationDecay *= decay;
     }
 
-    color =  mix(vec4(c*exposure, 1.0f), texture(tex2,uv),0.6);
+    //color = vec4(c*exposure, 1.0f);
+    color =  mix(vec4(c*exposure, 1.0f), texture(tex2,uv),0.65);
 }

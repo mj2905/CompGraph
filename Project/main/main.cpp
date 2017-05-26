@@ -100,8 +100,7 @@ void Init() {
     quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
 
 
-    vec3 light_init = vec3(1000.0,1.0,-1.0); // we put the light of the sun roughly "to infinity"
-    //light_init = vec3(quad_model_matrix*/*camera->getView()**/projection_matrix*vec4(light_init,1.0));
+    vec3 light_init = vec3(1.0,1.0,-1.0); // NOTE: IT IS NOT ALIGNED WITH THE SUN OF THE SKYBOX
     light.Init(light_init.x, light_init.y, light_init.z);
 
     multitiles.Init(window_width, window_height, light);

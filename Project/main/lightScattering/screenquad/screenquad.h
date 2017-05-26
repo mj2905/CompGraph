@@ -114,7 +114,7 @@ class ScreenQuad {
 
         void Draw(const glm::mat4 &model,
                   const glm::mat4 &view,
-                  const glm::mat4 &pro
+                  const glm::mat4 &projection
                   ) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
@@ -126,25 +126,15 @@ class ScreenQuad {
                         this->screenquad_height_);
 
 
-            glm::mat4 projection = pro;
+            glm::vec4 k = projection*view*glm::vec4(light.getPosition(),1.0);
+            k /= k.z;
+            k += glm::vec4(1.0,1.0,0.0,0.0);
+            k /= 2.0;
 
-            glm::mat4 mv =view*model;
-            GLint viewport[4];
 
-            glGetIntegerv(GL_VIEWPORT, viewport);
-
-            cout << "viewport:" << viewport[0] << ","<<  viewport[1] << ","<< viewport[2] << ","<< viewport[3] << endl;
-
-            glm::vec3 k = light.getPosition();
-            k = glm::vec3(projection*mv*glm::vec4(k,1.0));
-
-            glm::vec2 l = glm::vec2(float(k.x/viewport[2]), float(k.y/viewport[3]));
+            glm::vec2 l = glm::vec2(float(k.x/*/viewport[2]*/), float(k.y/*/viewport[3]*/));
 
             glUniform2f(glGetUniformLocation(program_id_, "light_position"), l.x, l.y);
-
-            cout << "pos x:" << l.x<< endl;
-            cout << "pos y:" << l.y << endl;
-            cout << "---" << endl;
 
 
             // bind texture

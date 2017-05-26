@@ -203,7 +203,7 @@ class MountainsRender {
                   const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX,
-                  int drawBlack=1) {
+                  int drawBlack=0) {
 
             glEnable(GL_CLIP_PLANE0);
 

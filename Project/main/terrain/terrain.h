@@ -29,7 +29,6 @@ private:
     Shadow shadow;
     FrameBufferScattering fboScatter1, fboScatter2;
     ScreenQuad screenQuad;
-    Mesh sun;
 
     const string skyboxTexture = "miramar";
 
@@ -38,7 +37,6 @@ public:
         mountainsCreator.Init();
         framebuffer_terrain.Init(width, height, true);
         framebuffer_reflect.Init(width, height, true);
-        sun.Init("sphere.obj");
 
         int frameId1, frameId2;
         frameId1 = fboScatter1.Init(width, height, true);
@@ -71,7 +69,7 @@ public:
               const glm::mat4 &model,
               const glm::mat4 &view,
               const glm::mat4 &projection,
-              int drawBlack = 1) {
+              int drawBlack = 0) {
 
 
 
@@ -86,18 +84,15 @@ public:
         reflect.Draw(offsetX, offsetY, true, model * rot, view, projection);
         framebuffer_reflect.Unbind();
 
-        //sun.Draw(model, view, projection);
-
 
         fboScatter1.Bind();{
-            mountains.Draw(offsetX, offsetY, false, model, view, projection, 0);
+            mountains.Draw(offsetX, offsetY, false, model, view, projection);
         }
         fboScatter1.Unbind();
         fboScatter2.Bind();{
             skybox.Draw(view * skyboxRot, projection);
             mountains.Draw(offsetX, offsetY, false, model, view, projection, 1);
             water.Draw(offsetX, offsetY, model, view, projection);
-            sun.Draw(model, view, projection);
         }
         fboScatter2.Unbind();
 
@@ -116,7 +111,6 @@ public:
         skybox.Cleanup();
         framebuffer_shadow.Cleanup();
         shadow.Cleanup();
-        sun.Cleanup();
     }
 
 };
