@@ -15,8 +15,10 @@
 
 #include "multitiles/multitiles.h"
 
-#define ACCEL_FACTOR 0.000005
-#define MAX_T 30
+#include "camera/abstractcamera.h"
+#include "camera/beziercamera.h"
+#include "camera/camera.h"
+#include "camera/inertiacamera.h"
 
 constexpr float NB_FPS = 60.0;
 
@@ -29,27 +31,18 @@ MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 int window_width = 800;
 int window_height = 600;
 
-float a1(0.0), a2(0.0), currTrans, x0(0.0);
-float rh1(0.0), rh2(0.0), currRoth, rh0(0.0);
-float rv1(0.0), rv2(0.0), currRotv, rv0(0.0);
-int t(0), trh(0), trv(0);
-bool frontInc(false), frontDec(false);
-bool frontIncv(false), frontDecv(false);
-bool frontInch(false), frontDech(false);
-int t10(0), t20(0);
-int rH10(0), rH20(0);
-int rV10(0), rV20(0);
-bool increment(false), incrementrh(false), incrementrv(false);
+
 
 using namespace glm;
 
 mat4 projection_matrix;
-mat4 view_matrix;
+
 mat4 quad_model_matrix;
+mat4 quad_model_matrix_base;
+LightSource light;
+AbstractCamera* camera;
 
 float old_x, old_y;
-
-float distance_camera = -2.5;
 
 mat4 OrthographicProjection(float left, float right, float bottom,
                             float top, float near, float far) {
@@ -112,7 +105,8 @@ mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
     return look_at;
 }
 
-void Init() {    // sets background color
+void Init() {
+    // sets background color
     glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
 
     // enable depth test.
@@ -123,151 +117,28 @@ void Init() {    // sets background color
     // looks straight down the -z axis. Otherwise the trackball's rotation gets
     // applied in a rotated coordinate frame.
     // uncomment lower line to achieve this.
-    view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
+    /*view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
                          vec3(0.0f, 0.0f, 0.0f),
-                         vec3(0.0f, 1.0f, 0.0f));
-    view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, 0.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
+                         vec3(0.0f, 1.0f, 0.0f));*/
+    //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,5, 5));
+    //camera = new Camera(multitiles);
+    camera = new InertiaCamera();
+    //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
 
-    multitiles.Init(window_width, window_height);
+    camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+
+    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
+
+    vec3 light_init = vec3(1.0,1.0,-1.0); // NOTE: IT IS NOT ALIGNED WITH THE SUN OF THE SKYBOX
+    light.Init(light_init.x, light_init.y, light_init.z);
+
+    multitiles.Init(window_width, window_height, light);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 }
 
-
-
-
-
-void startIncrementingTranslation(){
-    increment = true;
-    t = 0;
-}
-
-void startIncrementingRotationh(){
-    incrementrh = true;
-    trh = 0;
-}
-
-void startIncrementingRotationv(){
-    incrementrv = true;
-    trv = 0;
-}
-
-void stopIncrementingTranslation(){
-    increment = false;
-    t = 0;
-}
-
-void stopIncrementingRotationh(){
-    incrementrh = false;
-    trh=0;
-
-}
-
-void stopIncrementingRotationv(){
-    incrementrv = false;
-    trv =0;
-}
-
-
-void inertiaFunc(bool *front, bool* back,
-                 float *posValue, float *initPos,
-                 float *fwAccel, float *bwAccel,
-                 int *time, int *fwStartTime, int *bwStartTime,
-                 void (*startIncremF)(), void (*stopIncremF)()){
-    if((*front)){
-        if((*posValue) == 0){
-            startIncremF();
-            ++(*time);
-            (*posValue) = 0.5*(*fwAccel)*(*time)*(*time);
-        }
-        if((*posValue)>=0 && (*posValue) < 0.5*(*fwAccel)*MAX_T*MAX_T){
-            (*bwAccel) = 0.0;
-            (*posValue) = (*initPos)+ 0.5*(*fwAccel)*(*time)*(*time);
-        } else if((*posValue) >=0.5*(*fwAccel)*MAX_T*MAX_T){
-            (*bwAccel) = 0.0;
-            (*posValue) = (*initPos)+0.5*(*fwAccel)*MAX_T*MAX_T;
-        } else{
-            (*bwAccel) = 0.0;
-            (*posValue) = (*initPos) + 0.5*(*fwAccel)*((*time)-(*bwStartTime))*((*time)-(*bwStartTime));
-
-        }
-
-
-    } else if((*back)){
-        if((*posValue) == 0){
-            startIncremF();
-            ++(*time);
-            (*posValue) = 0.5*(*bwAccel)*(*time)*(*time);
-        }
-        if((*posValue)<=0 && (*posValue) > 0.5*(*bwAccel)*MAX_T*MAX_T){
-            (*fwAccel) = 0.0;
-            (*posValue) = (*initPos)+ 0.5*(*bwAccel)*(*time)*(*time);
-        }else if((*posValue) <= 0.5*(*bwAccel)*MAX_T*MAX_T){
-            (*fwAccel) = 0.0;
-            (*posValue) = (*initPos)+0.5*(*bwAccel)*MAX_T*MAX_T;
-        }else{
-            (*fwAccel) = 0.0;
-            (*posValue)=  (*initPos) + 0.5*(*bwAccel)*((*time)-(*fwStartTime))*((*time)-(*fwStartTime));
-        }
-
-    }else{
-        if((*posValue) > 0){
-            (*initPos) = (*posValue);
-            (*fwAccel) = 0.0;
-            (*bwAccel) = -ACCEL_FACTOR;
-            (*posValue) = (*initPos) + 0.5*(*bwAccel)*((*time)-(*fwStartTime))*((*time)-(*fwStartTime));
-            if((*posValue) <= 0){
-                (*posValue) = 0;
-            }
-        }else if((*posValue) < 0){
-            (*initPos) = (*posValue);
-            (*bwAccel) = 0.0;
-            (*fwAccel) = ACCEL_FACTOR;
-            (*posValue) = (*initPos) + 0.5*(*fwAccel)*((*time)-(*bwStartTime))*((*time)-(*bwStartTime));
-            if((*posValue) >=0){
-                (*posValue) = 0;
-            }
-        }
-        else if((*posValue) == 0){
-            stopIncremF();
-            (*fwAccel) = 0.0;
-            (*bwAccel) = 0.0;
-            (*initPos) =0;
-            (*fwStartTime) = 0;
-            (*bwStartTime) = 0;
-        }
-    }
-}
-
-void transFunc(bool *front, bool *back){
-    inertiaFunc(front,back, &currTrans, &x0, &a1, &a2, &t, &t10, &t20, startIncrementingTranslation,
-                stopIncrementingTranslation);
-    view_matrix = translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
-    frontInc = false;
-    frontDec = false;
-}
-
-void rotHFunc(bool *front, bool *back){
-    inertiaFunc(front, back, &currRoth, &rh0,&rh1,&rh2, &trh, &rH10, &rH20,
-                startIncrementingRotationh, stopIncrementingRotationh);
-
-    view_matrix = rotate(IDENTITY_MATRIX, -currRoth, vec3(1.0,0.0,0.0f))*view_matrix;
-    frontInch = false;
-    frontDech = false;
-
-}
-
-void rotVFunc(bool *front, bool *back){
-    inertiaFunc(front, back, &currRotv, &rv0, &rv1, &rv2, &trv, &rV10, &rV20,
-                startIncrementingRotationv, stopIncrementingRotationv);
-
-    view_matrix = rotate(IDENTITY_MATRIX, -currRotv, vec3(0.0,1.0,0.0f))*view_matrix;
-    frontIncv = false;
-    frontDecv = false;
-}
 
 // gets called for every frame.
 void Display() {
@@ -275,19 +146,31 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glViewport(0, 0, window_width, window_height);
-    if(increment) t++;
-    if(incrementrh) trh++;
-    if(incrementrv) trv++;
-    transFunc(&frontInc, &frontDec);
-    rotHFunc(&frontInch, &frontDech);
-    rotVFunc(&frontIncv, &frontDecv);
 
-    multitiles.Draw(quad_model_matrix, view_matrix, projection_matrix);
+    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
 
+    camera->animate();
 }
 
+bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
+
 void Update() {
-    multitiles.incrementY(); //to move with the camera
+    //multitiles.incrementY(); //to move with the camera
+
+    float increment = 0.05f;
+
+    if(upPressed and not downPressed) {
+        camera->move(0, 0, increment);
+    }
+    if(downPressed and not upPressed) {
+        camera->move(0, 0, -increment);
+    }
+    if(leftPressed and not rightPressed) {
+        camera->move(increment, 0, 0);
+    }
+    if(rightPressed and not leftPressed) {
+        camera->move(-increment, 0, 0);
+    }
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.
@@ -328,8 +211,8 @@ void MousePos(GLFWwindow* window, double x, double y) {
             old_y = p.y;
         }
 
-        view_matrix = glm::rotate(IDENTITY_MATRIX, p.x - old_x, vec3(0.0, 1.0, 0.0)) * view_matrix;
-        view_matrix = glm::rotate(IDENTITY_MATRIX, old_y - p.y, vec3(1.0, 0.0, 0.0)) * view_matrix;
+        camera->rotate(old_x - p.x, p.y - old_y);
+
         old_x = p.x;
         old_y = p.y;
     }
@@ -349,6 +232,10 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
     projection_matrix = PerspectiveProjection(45.0f,
                                               (GLfloat)window_width / window_height,
                                               0.1f, 100.0f);
+
+    multitiles.Cleanup();
+    multitiles.Init(width, height, light);
+
     //GLfloat top = 1.0f;
     //GLfloat right = (GLfloat)window_width / window_height * top;
     //projection_matrix = OrthographicProjection(-right, right, -top, top, -10.0, 10.0f);
@@ -358,40 +245,72 @@ void ErrorCallback(int error, const char* description) {
     fputs(description, stderr);
 }
 
+
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
-
-    if(key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)){
-        frontInc = true;
-        a1 = ACCEL_FACTOR;
-        t10 = t;
+    if(key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginFwAccel();
     }
-    if(key == GLFW_KEY_S &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        frontDec = true;
-        a2 = -ACCEL_FACTOR;
-        t20 = t;
+    if(key == GLFW_KEY_K &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginBwAccel();
     }
     if(key == GLFW_KEY_Q &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        frontInch = true;
-        rh1 = ACCEL_FACTOR;
-        rH10 = trh;
+        camera->beginYawAccel();
     }
     if(key == GLFW_KEY_E &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        frontDech = true;
-        rh2 = -ACCEL_FACTOR;
-        rH20 = trh;
+        camera->beginReverseYawAccel();
+
     }
-    if(key == GLFW_KEY_A &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        frontIncv = true;
-        rv1 = ACCEL_FACTOR;
-        rV10 = trv;
+    if(key == GLFW_KEY_J &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginPitchAccel();
+
     }
-    if(key == GLFW_KEY_D &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        frontDecv = true;
-        rv2 = -ACCEL_FACTOR;
-        rV20 = trv;
+    if(key == GLFW_KEY_L &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginReversePitchAccel();
+
+    }
+    if (key == GLFW_KEY_UP) {
+        if(action == GLFW_PRESS) {
+            upPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            upPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_DOWN) {
+        if(action == GLFW_PRESS) {
+            downPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            downPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_LEFT) {
+        if(action == GLFW_PRESS) {
+            leftPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            leftPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_RIGHT) {
+        if(action == GLFW_PRESS) {
+            rightPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            rightPressed = false;
+        }
+    }
+    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        camera->increaseVelocity();
+    }
+    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        camera->decreaseVelocity();
     }
 }
 
@@ -446,6 +365,11 @@ int main(int argc, char *argv[]) {
 
     cout << "OpenGL" << glGetString(GL_VERSION) << endl;
 
+    //vector<vec3> points = {vec3(0), vec3(1, 1, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0)};
+    //Bezier bezier(points);
+    //float t = 0.2;
+    //cout << bezier.apply(t).x << " " << bezier.apply(t).y << " " << bezier.apply(t).z << endl;
+
     // initialize our OpenGL program
     Init();
 
@@ -463,7 +387,7 @@ int main(int argc, char *argv[]) {
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
             Display();
-            //Update();
+            Update();
             lastTime = time;
             glfwSwapBuffers(window);
         }
@@ -471,6 +395,8 @@ int main(int argc, char *argv[]) {
     }
 
     multitiles.Cleanup();
+    delete camera;
+
 
     // close OpenGL window and terminate GLFW
     glfwDestroyWindow(window);

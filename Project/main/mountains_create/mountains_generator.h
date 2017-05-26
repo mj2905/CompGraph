@@ -1,4 +1,5 @@
 #pragma once
+#include "../constants.h"
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
@@ -19,7 +20,7 @@ class MountainsGenerator {
         GLuint num_indices_;                    // number of vertices to render
 
     public:
-        void Init() {
+        void Init(size_t grid_dim = 512) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("mountains_g_vshader.glsl",
                                                   "mountains_g_fshader.glsl");
@@ -39,7 +40,6 @@ class MountainsGenerator {
                 std::vector<GLuint> indices;
                 // makes a triangle grid with dimension 100x100.
                 // always two subsequent entries in 'vertices' form a 2D vertex position.
-                int grid_dim = 1024;
 
                 // the given code below are the vertices for a simple quad.
                 // your grid should have the same dimension as that quad, i.e.,

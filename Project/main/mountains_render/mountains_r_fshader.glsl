@@ -17,43 +17,45 @@ uniform sampler2D rock;
 uniform sampler2D snow;
 uniform sampler2D sand;
 
-uniform sampler1D colormap;
-
-uniform bool clip;
+uniform int drawBlack;
 
 uniform vec2 offset;
 
-float sq(float x) {
-    return x*x;
-}
+const float MULT = 2.5;
 
 float grass_distrib(float height, float n) {
-    if(height >= 0.3 && height <= 0.7) {
-        return mix(n, 0, abs(height - 0.5) * 5)*1.3;
-    }
-    return 0;
+    return mix(1, 0, clamp(abs(height - 0.4)*MULT, 0.2, 1));
 }
 
 float rock_distrib(float height, float n) {
-        if(height >= 0.65 && height <= 0.85) {
-            return mix(0.4, -n + 1, abs(height - 0.75) * 10);
-        }
-        return -n +1;
+    return clamp(1-n + mix(1, 0, clamp(abs(0.65-height)*MULT*2, 0, 1)), 0, 1);
 }
 
 float snow_distrib(float height, float n) {
-    if(height >= 0.8) {
-        return mix(n, 0, abs(1 - height) * 5);
-    }
-    return 0;
+    return mix(1, 0, clamp(abs(1-height)*MULT, 0, 1));
 }
 
 float sand_distrib(float height, float n) {
-    if(height <= 0.5) {
-        return mix(n, 0, height*2)*1.2;
-    }
-    return 0;
+    return mix(2, 0, clamp(abs(height)*MULT, 0, 1));
 }
+
+float[4] distributions(float height, float n) {
+    float[4] result;
+    result[0] = rock_distrib(height, n);
+    float other = 1-result[0];
+    result[1] = grass_distrib(height, n);
+    result[2] = snow_distrib(height, n);
+    result[3] = sand_distrib(height, n);
+
+    float tot = result[0] + result[1] + result[2] + result[3];
+    result[1] *= other/tot;
+    result[2] *= other/tot;
+    result[3] *= other/tot;
+    return result;
+}
+
+uniform float fog_threshold;
+
 
 void main() {
 
@@ -67,21 +69,31 @@ void main() {
 
     float nDotL = max(dot(normal_mv, light_dir), 0);
 
-    float alpha1=grass_distrib(height, normal.y),
-          alpha2=rock_distrib(height, normal.y),
-          alpha3=snow_distrib(height, normal.y),
-          alpha4=sand_distrib(height, normal.y);
+    float normal_y = normal.y*2;//int(normal.y*4)/4.0f;
 
-    if(clip && height < 0.4) {
-        discard;
+    //float alpha1=grass_distrib(height, normal_y),
+    //      alpha2=rock_distrib(height, normal_y),
+    //      alpha3=snow_distrib(height, normal_y),
+    //      alpha4=sand_distrib(height, normal_y);
+    float[4] distribs = distributions(height, normal_y);
+
+
+    if(drawBlack == 0){
+        color = vec3(0.0,0.0,0.0);
+    }else{
+        color =
+                (
+                  vec3(1, 1, 1.2) * distribs[1] * texture(grass, (uv + offset)*80).rgb
+                + distribs[0] * texture(rock, (uv + offset)*40).rgb
+                + 0.8*distribs[2] * texture(snow, (uv + offset)*30).rgb
+                + distribs[3] * texture(sand, (uv + offset)*60).rgb)
+                + kd * nDotL * Ld + 0.1; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
+
+                //float distance = gl_FragCoord.z;
+                //if (distance > fog_threshold) {
+                  //color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
+                //}
+
     }
-
-    color =   0.9*(
-              alpha1 * texture(grass, (uv + offset)*20).rgb
-            + alpha2 * texture(rock, (uv + offset)*10).rgb
-            + alpha3 * texture(snow, (uv + offset)*35).rgb
-            + alpha4 * texture(sand, (uv + offset)*60).rgb
-            + kd * nDotL * Ld); //computation of the color : we use the height, and we add the diffuse component so that we have shadings
-
 
 }

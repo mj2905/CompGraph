@@ -3,6 +3,7 @@
 #include "../framebuffer.h"
 #include "../terrain/terrain.h"
 #include "../perlin_noise/perlin.h"
+#include "../constants.h"
 
 #include <array>
 
@@ -34,7 +35,7 @@ public:
 
     }
 
-    void Init(size_t width, size_t height) {
+    void Init(size_t width, size_t height, LightSource &light) {
 
         assert(INCREMENT <= 0.5);
 
@@ -42,7 +43,7 @@ public:
             framebuffers[i].Init(size_tile, size_tile, true);
         }
 
-        terrain.Init(width, height);
+        terrain.Init(width, height, light);
         perlin.Init();
 
         for(int i = 0; i < 4; ++i) {
@@ -55,11 +56,13 @@ public:
     void Draw(
               const mat4 &model = IDENTITY_MATRIX,
               const mat4 &view = IDENTITY_MATRIX,
-              const mat4 &projection = IDENTITY_MATRIX) {
-        terrain.Draw(x_visible, y_visible, model, view, projection);
+              const mat4 &projection = IDENTITY_MATRIX, int drawBlack = 1) {
+        terrain.Draw(x_visible, y_visible, model, view, projection, drawBlack);
     }
 
-    void incrementX() {
+    void incrementX(float INCREMENT) {
+
+        assert(INCREMENT < 0.5);
         //if we are moving a bit to the right from the center, we compute and store the right not visible tiles
         if(x_visible <= x and x_visible + INCREMENT > x) {
             drawRightTiles();
@@ -101,7 +104,9 @@ public:
         terrain.Moved(x_visible, y_visible);
     }
 
-    void decrementX() {
+    void decrementX(float INCREMENT) {
+
+        assert(INCREMENT < 0.5);
         //if we are moving a bit to the left from the center, we compute and store the left not visible tiles
         if(x_visible >= x and x_visible - INCREMENT < x) {
             drawLeftTiles();
@@ -142,7 +147,9 @@ public:
         terrain.Moved(x_visible, y_visible);
     }
 
-    void incrementY() {
+    void incrementY(float INCREMENT) {
+
+        assert(INCREMENT < 0.5);
         //if we are moving a bit to the top from the center, we compute and store the top not visible tiles
         if(y_visible <= y and y_visible + INCREMENT > y) {
             drawUpTiles();
@@ -183,7 +190,9 @@ public:
         terrain.Moved(x_visible, y_visible);
     }
 
-    void decrementY() {
+    void decrementY(float INCREMENT) {
+
+        assert(INCREMENT < 0.5);
         //if we are moving a bit to the bottom from the center, we compute and store the bottom not visible tiles
         if(y_visible >= y and y_visible - INCREMENT < y) {
             drawDownTiles();
