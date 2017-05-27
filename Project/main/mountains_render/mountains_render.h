@@ -202,12 +202,16 @@ class MountainsRender {
         void Draw(float offsetX, float offsetY, bool underwaterclip,
                   const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
-                  const glm::mat4 &projection = IDENTITY_MATRIX) {
+                  const glm::mat4 &projection = IDENTITY_MATRIX,
+                  int drawBlack=0) {
 
             glEnable(GL_CLIP_PLANE0);
 
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
+
+            GLuint draw = glGetUniformLocation(program_id_, "drawBlack");
+            glUniform1i(draw, drawBlack);
 
 
             // bind textures

@@ -3,6 +3,7 @@
 #include "../framebuffer.h"
 #include "../terrain/terrain.h"
 #include "../perlin_noise/perlin.h"
+#include "../constants.h"
 
 #include <array>
 
@@ -34,7 +35,7 @@ public:
 
     }
 
-    void Init(size_t width, size_t height) {
+    void Init(size_t width, size_t height, LightSource &light) {
 
         assert(INCREMENT <= 0.5);
 
@@ -42,7 +43,7 @@ public:
             framebuffers[i].Init(size_tile, size_tile, true);
         }
 
-        terrain.Init(width, height);
+        terrain.Init(width, height, light);
         perlin.Init();
 
         for(int i = 0; i < 4; ++i) {
@@ -55,8 +56,8 @@ public:
     void Draw(
               const mat4 &model = IDENTITY_MATRIX,
               const mat4 &view = IDENTITY_MATRIX,
-              const mat4 &projection = IDENTITY_MATRIX) {
-        terrain.Draw(x_visible, y_visible, model, view, projection);
+              const mat4 &projection = IDENTITY_MATRIX, int drawBlack = 1) {
+        terrain.Draw(x_visible, y_visible, model, view, projection, drawBlack);
     }
 
     void incrementX(float INCREMENT) {

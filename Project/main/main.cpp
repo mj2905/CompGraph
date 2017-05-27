@@ -37,7 +37,7 @@ mat4 projection_matrix;
 
 mat4 quad_model_matrix;
 mat4 quad_model_matrix_base;
-
+LightSource light;
 AbstractCamera* camera;
 
 float old_x, old_y;
@@ -77,6 +77,8 @@ void Init() {
     // sets background color
     glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
 
+
+
     // enable depth test.
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -97,7 +99,11 @@ void Init() {
 
     quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
 
-    multitiles.Init(window_width, window_height);
+
+    vec3 light_init = vec3(1.0,1.0,-1.0); // NOTE: IT IS NOT ALIGNED WITH THE SUN OF THE SKYBOX
+    light.Init(light_init.x, light_init.y, light_init.z);
+
+    multitiles.Init(window_width, window_height, light);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -111,9 +117,11 @@ void Display() {
 
     glViewport(0, 0, window_width, window_height);
 
-    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
 
     camera->animate();
+
+
 
 }
 
@@ -199,7 +207,7 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
                                               0.1f, 100.0f);
 
     multitiles.Cleanup();
-    multitiles.Init(width, height);
+    multitiles.Init(width, height, light);
 
     //GLfloat top = 1.0f;
     //GLfloat right = (GLfloat)window_width / window_height * top;

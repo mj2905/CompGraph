@@ -17,6 +17,8 @@ uniform sampler2D rock;
 uniform sampler2D snow;
 uniform sampler2D sand;
 
+uniform int drawBlack;
+
 uniform vec2 offset;
 
 const float MULT = 2.5;
@@ -73,22 +75,25 @@ void main() {
     //      alpha2=rock_distrib(height, normal_y),
     //      alpha3=snow_distrib(height, normal_y),
     //      alpha4=sand_distrib(height, normal_y);
-
     float[4] distribs = distributions(height, normal_y);
 
 
-    color =
-            (
-              vec3(1, 1, 1.2) * distribs[1] * texture(grass, (uv + offset)*80).rgb
-            + distribs[0] * texture(rock, (uv + offset)*40).rgb
-            + 0.8*distribs[2] * texture(snow, (uv + offset)*30).rgb
-            + distribs[3] * texture(sand, (uv + offset)*60).rgb)
-            + kd * nDotL * Ld + 0.1; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
+    if(drawBlack == 0){
+        color = vec3(0.0,0.0,0.0);
+    }else{
+        color =
+                (
+                  vec3(1, 1, 1.2) * distribs[1] * texture(grass, (uv + offset)*80).rgb
+                + distribs[0] * texture(rock, (uv + offset)*40).rgb
+                + 0.8*distribs[2] * texture(snow, (uv + offset)*30).rgb
+                + distribs[3] * texture(sand, (uv + offset)*60).rgb)
+                + kd * nDotL * Ld + 0.1; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 
-            //float distance = gl_FragCoord.z;
-            //if (distance > fog_threshold) {
-              //color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
-            //}
+                //float distance = gl_FragCoord.z;
+                //if (distance > fog_threshold) {
+                  //color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
+                //}
 
+    }
 
 }
