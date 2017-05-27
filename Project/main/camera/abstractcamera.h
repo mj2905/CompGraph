@@ -47,6 +47,10 @@ public:
         view_matrix = LookAt(position, center, up);
     }
 
+    virtual void Init(mat4 view_matrix){
+        this->view_matrix = view_matrix;
+    }
+
     virtual void animate() = 0;
 
     virtual void rotate(float x, float z) = 0;
@@ -55,6 +59,14 @@ public:
 
     virtual void increaseVelocity() = 0;
     virtual void decreaseVelocity() = 0;
+
+    virtual void beginFwAccel() = 0;
+    virtual void beginBwAccel() = 0;
+    virtual void beginYawAccel() = 0;
+    virtual void beginReverseYawAccel() = 0;
+    virtual void beginPitchAccel() = 0;
+    virtual void beginReversePitchAccel() = 0;
+    //virtual void beginRollAccel() = 0;
 
     mat4 getView() {
         return view_matrix;

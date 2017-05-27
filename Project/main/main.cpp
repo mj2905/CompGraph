@@ -18,7 +18,7 @@
 #include "camera/abstractcamera.h"
 #include "camera/beziercamera.h"
 #include "camera/camera.h"
-
+#include "camera/inertiacamera.h"
 
 constexpr float NB_FPS = 60.0;
 
@@ -30,6 +30,8 @@ MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 
 int window_width = 800;
 int window_height = 600;
+
+
 
 using namespace glm;
 
@@ -73,11 +75,39 @@ mat4 PerspectiveProjection(float fovy, float aspect, float near, float far) {
     return pro; // we already transposed the matrix (since it's column major!) so no need to transpose it again
 }
 
+mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
+    // we need a function that converts from world coordinates into camera coordiantes.
+    //
+    // cam coords to world coords is given by:
+    // X_world = R * X_cam + eye
+    //
+    // inverting it leads to:
+    //
+    // X_cam = R^T * X_world - R^T * eye
+    //
+    // or as a homogeneous matrix:
+    // [ r_00 r_10 r_20 -r_0*eye
+    //   r_01 r_11 r_21 -r_1*eye
+    //   r_02 r_12 r_22 -r_2*eye
+    //      0    0    0        1 ]
+
+    vec3 z_cam = normalize(eye - center);
+    vec3 x_cam = normalize(cross(up, z_cam));
+    vec3 y_cam = cross(z_cam, x_cam);
+
+    mat3 R(x_cam, y_cam, z_cam);
+    R = transpose(R);
+
+    mat4 look_at(vec4(R[0], 0.0f),
+            vec4(R[1], 0.0f),
+            vec4(R[2], 0.0f),
+            vec4(-R * (eye), 1.0f));
+    return look_at;
+}
+
 void Init() {
     // sets background color
     glClearColor(0.937, 0.937, 0.937 /*gray*/, 1.0 /*solid*/);
-
-
 
     // enable depth test.
     glEnable(GL_DEPTH_TEST);
@@ -92,13 +122,13 @@ void Init() {
                          vec3(0.0f, 1.0f, 0.0f));*/
     //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    camera = new Camera(multitiles);
+    //camera = new Camera(multitiles);
+    camera = new InertiaCamera();
     //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
 
     camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
 
     quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
-
 
     vec3 light_init = vec3(1.0,1.0,-1.0); // NOTE: IT IS NOT ALIGNED WITH THE SUN OF THE SKYBOX
     light.Init(light_init.x, light_init.y, light_init.z);
@@ -120,9 +150,6 @@ void Display() {
     multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
 
     camera->animate();
-
-
-
 }
 
 bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
@@ -223,7 +250,27 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
+    if(key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginFwAccel();
+    }
+    if(key == GLFW_KEY_K &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginBwAccel();
+    }
+    if(key == GLFW_KEY_Q &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginYawAccel();
+    }
+    if(key == GLFW_KEY_E &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginReverseYawAccel();
 
+    }
+    if(key == GLFW_KEY_J &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginPitchAccel();
+
+    }
+    if(key == GLFW_KEY_L &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginReversePitchAccel();
+
+    }
     if (key == GLFW_KEY_UP) {
         if(action == GLFW_PRESS) {
             upPressed = true;
@@ -266,6 +313,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         camera->decreaseVelocity();
     }
 }
+
 
 
 int main(int argc, char *argv[]) {

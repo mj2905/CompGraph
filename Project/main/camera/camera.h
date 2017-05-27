@@ -68,5 +68,14 @@ public:
     virtual void increaseVelocity() override {}
     virtual void decreaseVelocity() override {}
 
+    virtual void beginFwAccel() override {}
+    virtual void beginBwAccel() override{}
+
+    virtual void beginYawAccel() override{}
+    virtual void beginReverseYawAccel() override{}
+
+    virtual void beginPitchAccel() override{}
+    virtual void beginReversePitchAccel() override{}
+
 
 };
