@@ -6,8 +6,8 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "abstractcamera.h"
-#define ACCEL_FACTOR 0.00005
-#define MAX_T 10
+#define ACCEL_FACTOR 0.0005
+#define MAX_T 5
 
 using namespace glm;
 
@@ -22,34 +22,19 @@ private:
     glm::mat4 view_matrix;
 
     mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
-    // we need a function that converts from world coordinates into camera coordiantes.
-    //
-    // cam coords to world coords is given by:
-    // X_world = R * X_cam + eye
-    //
-    // inverting it leads to:
-    //
-    // X_cam = R^T * X_world - R^T * eye
-    //
-    // or as a homogeneous matrix:
-    // [ r_00 r_10 r_20 -r_0*eye
-    //   r_01 r_11 r_21 -r_1*eye
-    //   r_02 r_12 r_22 -r_2*eye
-    //      0    0    0        1 ]
+        vec3 z_cam = normalize(eye - center);
+        vec3 x_cam = normalize(cross(up, z_cam));
+        vec3 y_cam = cross(z_cam, x_cam);
 
-    vec3 z_cam = normalize(eye - center);
-    vec3 x_cam = normalize(cross(up, z_cam));
-    vec3 y_cam = cross(z_cam, x_cam);
+        mat3 R(x_cam, y_cam, z_cam);
+        R = transpose(R);
 
-    mat3 R(x_cam, y_cam, z_cam);
-    R = transpose(R);
-
-    mat4 look_at(vec4(R[0], 0.0f),
-            vec4(R[1], 0.0f),
-            vec4(R[2], 0.0f),
-            vec4(-R * (eye), 1.0f));
-    return look_at;
-}
+        mat4 look_at(vec4(R[0], 0.0f),
+                vec4(R[1], 0.0f),
+                vec4(R[2], 0.0f),
+                vec4(-R * (eye), 1.0f));
+        return look_at;
+    }
 
 
 public:
@@ -64,6 +49,33 @@ public:
 
     virtual void Init(vec3 initEye = vec3(0), vec3 initCenter = vec3(0), vec3 up = vec3(0,1,0)) override {
         view_matrix = LookAt(initEye, initCenter, up);
+        a1 = 0.0;
+        a2= 0.0;
+        x0= 0.0;
+        rh1= 0.0;
+        rh2= 0.0;
+        rh0= 0.0;
+        rv1= 0.0;
+        rv2= 0.0;
+        rv0= 0.0;
+        t= 0.0;
+        trh= 0.0;
+        trv= 0.0;
+        frontInc = false;
+        frontDec= false;
+        frontIncv= false;
+        frontDecv= false;
+        frontInch= false;
+        frontDech= false;
+        increment= false;
+        incrementrh= false;
+        incrementrv= false;
+        t10= 0.0;
+        t20= 0.0;
+        rH10= 0.0;
+        rH20= 0.0;
+        rV10= 0.0;
+        rV20= 0.0;
         AbstractCamera::Init(view_matrix);
     }
 
