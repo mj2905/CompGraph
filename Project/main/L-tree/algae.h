@@ -22,7 +22,7 @@ private:
     Turtle turtle;
     vector<GLuint> leftIndex, rightIndex, indices, bLeftIndex, bRightIndex;
     vector<vec3> leftPoint, rightPoint, direction,triangleNormals, bLeftPoint, bRightPoint;
-    vector<GLfloat> vertices, normals;
+    vector<GLfloat> vertices_, normals;
     vector<char> branches;
     int index_ = 0;
     float init_width = 0.08f;
@@ -38,9 +38,11 @@ public:
         * @param origin The starting point of the tree
         * @param texture_id The id of the texture
         */
-    void Init(GLuint depth, char axiom, vec3 origin, GLuint texture_id){
+    void Init(GLuint depth, char axiom, vec3 origin, /*GLuint texture_id,*/ int index){
         generator.Seed(1);
         rand = generator.rand();
+
+        this->index_ = index;
 
 
         vec3 originLeft = vec3(origin.x - init_width, origin.y, origin.z);
@@ -60,7 +62,6 @@ public:
 
         direction.push_back(vec3(0.0f,1.0f,0.0f));
         leftIndex.push_back(index_);
-        //index_++;
         bLeftIndex.push_back(++index_);
         bRightIndex.push_back(++index_);
         rightIndex.push_back(++index_);
@@ -71,8 +72,8 @@ public:
 
         createNormals();
 
-        if(3*triangleNormals.size()!= vertices.size()){
-            cout << "Sizes different. Normals should be: " << vertices.size() << " but was " << triangleNormals.size() << endl;
+        if(3*triangleNormals.size()!= vertices_.size()){
+            cout << "Sizes different. Normals should be: " << vertices_.size() << " but was " << triangleNormals.size() << endl;
         }
 
         vector<GLfloat> n;
@@ -82,7 +83,7 @@ public:
             n.push_back(triangleNormals.at(i).z);
         }
 
-        grid.Init(vertices, indices, n, texture_id);
+//        grid.Init(vertices_, indices, n/*, texture_id*/);
 
     }
 
@@ -91,9 +92,9 @@ public:
         * @param point
         */
     void pushToVertices(vec3 point){
-        vertices.push_back(point.x);
-        vertices.push_back(point.y);
-        vertices.push_back(point.z);
+        vertices_.push_back(point.x);
+        vertices_.push_back(point.y);
+        vertices_.push_back(point.z);
     }
 
 
@@ -511,11 +512,11 @@ public:
     }
 
     vec3 getPointFromID(int id){
-        return vec3(vertices.at(id*3), vertices.at(id*3+1), vertices.at(id*3+2));
+        return vec3(vertices_.at(id*3), vertices_.at(id*3+1), vertices_.at(id*3+2));
     }
 
     void createNormals(){
-        for(size_t vertex = 0; vertex < vertices.size()/3; ++vertex){
+        for(size_t vertex = 0; vertex < vertices_.size()/3; ++vertex){
             vector<vec3> vertexNormal; // accumulates all the normals for one vertex
             for(size_t triangle = 0; triangle < indices.size(); triangle+=3){
                 int i1 = indices.at(triangle);
@@ -556,11 +557,29 @@ public:
     }
 
 
-    void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
+   /* void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
               const glm::mat4 &view = IDENTITY_MATRIX,
               const glm::mat4 &projection = IDENTITY_MATRIX){
         grid.Draw(model, view, projection);
+    }*/
+
+    vector<GLuint> getIndicesArray(){
+        return indices;
     }
+
+    int getIndex(){
+        return index_;
+    }
+
+    vector<GLfloat> getVertices(){
+        return vertices_;
+    }
+
+    vector<GLfloat> getNormals(){
+        return normals;
+    }
+
+
 
     void Cleanup(){
         leftPoint.clear();
@@ -572,7 +591,7 @@ public:
         branches.clear();
         grid.Cleanup();
         indices.clear();
-        vertices.clear();
+        vertices_.clear();
         triangleNormals.clear();
 
     }

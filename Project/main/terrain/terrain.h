@@ -12,6 +12,7 @@
 #include "../shadow/framebuffer_shadow.h"
 #include "../constants.h"
 #include "../lightScattering/lightscattering.h"
+#include "../L-tree/algaebatch.h"
 
 using namespace glm;
 
