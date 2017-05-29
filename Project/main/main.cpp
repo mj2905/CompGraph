@@ -357,8 +357,8 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
                                               (GLfloat)window_width / window_height,
                                               0.1f, 100.0f);
 
-  //  shadow_projection = OrthographicProjection(-20.0, 20.0, -20.0, 20.0,
-  //                                            0.01f, 1000.0f);
+    shadow_projection = OrthographicProjection(-20.0, 20.0, -20.0, 20.0,
+                                              0.01f, 1000.0f);
 
 
 

@@ -110,7 +110,14 @@ class PerlinNoise {
         }
 
         void Draw(float x=0, float y=0) {
-            glUseProgram(program_id_);
+
+
+            if (!in_shadowmap) {
+              glUseProgram(program_id_);
+            }
+
+
+
             glBindVertexArray(vertex_array_id_);
 
             glm::vec2 offset = glm::vec2(x, y);
@@ -121,6 +128,12 @@ class PerlinNoise {
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
             glBindVertexArray(0);
-            glUseProgram(0);
+
+            if (!in_shadowmap) {
+              glUseProgram(0);
+            }
+
+
+
         }
 };

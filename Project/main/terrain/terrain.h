@@ -66,26 +66,34 @@ class Terrain {
                   const glm::mat4 &view,
                   const glm::mat4 &projection) {
 
+                    if (!in_shadowmap) {
+                      mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100, vec3(0,1,0));
 
-            mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100, vec3(0,1,0));
+                      framebuffer_reflect.ClearContent();
+                      framebuffer_reflect.Bind();
+                          mat4 rot = glm::translate(glm::rotate(IDENTITY_MATRIX, (float)M_PI, vec3(1,0,0)), vec3(0, -0.8, 0));
+                          skybox.Draw(view * glm::scale(IDENTITY_MATRIX, vec3(1, -1, 1)) * skyboxRot, projection);
+                          reflect.Draw(offsetX, offsetY, true, model * rot, view, projection);
+                      framebuffer_reflect.Unbind();
 
-            framebuffer_reflect.ClearContent();
-            framebuffer_reflect.Bind();
-                mat4 rot = glm::translate(glm::rotate(IDENTITY_MATRIX, (float)M_PI, vec3(1,0,0)), vec3(0, -0.8, 0));
-                skybox.Draw(view * glm::scale(IDENTITY_MATRIX, vec3(1, -1, 1)) * skyboxRot, projection);
-                reflect.Draw(offsetX, offsetY, true, model * rot, view, projection);
-            framebuffer_reflect.Unbind();
+                      /*
+                      framebuffer_shadow.ClearContent();
+                      framebuffer_shadow.Bind();
+                          mountains.Draw(offsetX, offsetY, false, model, view, projection);
+                      framebuffer_shadow.Unbind();
+                      */
 
-            /*
-            framebuffer_shadow.ClearContent();
-            framebuffer_shadow.Bind();
-                mountains.Draw(offsetX, offsetY, false, model, view, projection);
-            framebuffer_shadow.Unbind();
-            */
+                      skybox.Draw(view * skyboxRot, projection);
+                    }
 
-            skybox.Draw(view * skyboxRot, projection);
+
+
             mountains.Draw(offsetX, offsetY, false, model, view, projection);
-            water.Draw(offsetX, offsetY, model, view, projection);
+
+              if (!in_shadowmap) {
+                water.Draw(offsetX, offsetY, model, view, projection);
+              }
+
 
             //shadow.Draw(model, view, projection);
         }

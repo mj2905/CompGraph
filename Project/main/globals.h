@@ -32,7 +32,7 @@ glm::mat4 LookAtC(glm::vec3 eye, glm::vec3 center, glm::vec3 up) {
 
 //shadows
 GLfloat near_plane = 1.0f, far_plane = 7.5f;
-glm::vec3 light_pos = glm::vec3(0.0f, 1.0, 0.5);
+glm::vec3 light_pos = glm::vec3(2.0f, 0.0, 0.0);
 glm::mat4 shadow_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 //glm::mat4 shadow_view = glm::lookAt(light_pos,
 //                                  glm::vec3( 0.0f, 0.0f,  0.0f),

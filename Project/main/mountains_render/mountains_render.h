@@ -215,78 +215,90 @@ class MountainsRender {
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
 
-            glEnable(GL_CLIP_PLANE0);
+                    glEnable(GL_CLIP_PLANE0);
 
-            glUseProgram(program_id_);
-            glBindVertexArray(vertex_array_id_);
-
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture_id_);
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, grass_id_);
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, rock_id_);
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D, snow_id_);
-
-            // bind textures
-            glActiveTexture(GL_TEXTURE4);
-            glBindTexture(GL_TEXTURE_2D, sand_id_);
-
-            // bind shadowmap
-            glActiveTexture(GL_TEXTURE5);
-            glBindTexture(GL_TEXTURE_2D, shadowmap_id);
-
-            glm::vec2 offset = glm::vec2(offsetX, offsetY);
-
-            glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
-            glUniform1i(glGetUniformLocation(program_id_, "clip"), underwaterclip);
-
-            glm::vec3 rot_light_pos =  glm::mat3(glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100-1, glm::vec3(0,1,0))) * light_pos;
-
-            glUniform3fv(light_pos_id, 1, glm::value_ptr(rot_light_pos));
-
-            // setup MVP
-            glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
-            glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
-            glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
+                    if (!in_shadowmap) {
+                      glUseProgram(program_id_);
+                    }
+                      glBindVertexArray(vertex_array_id_);
 
 
-            glm::mat4 MVP = projection * view * model;
+                      // bind textures
+                      glActiveTexture(GL_TEXTURE0);
+                      glBindTexture(GL_TEXTURE_2D, texture_id_);
 
-            glm::mat4 biasMatrix(
-0.5, 0.0, 0.0, 0.0,
-0.0, 0.5, 0.0, 0.0,
-0.0, 0.0, 0.5, 0.0,
-0.5, 0.5, 0.5, 1.0
-);
-glm::mat4 depthBiasMVP = biasMatrix * MVP;
+                      // bind textures
+                      glActiveTexture(GL_TEXTURE1);
+                      glBindTexture(GL_TEXTURE_2D, grass_id_);
 
-            glm::mat4 shadowVP = shadow_projection * shadow_view;
+                      // bind textures
+                      glActiveTexture(GL_TEXTURE2);
+                      glBindTexture(GL_TEXTURE_2D, rock_id_);
 
-            glUniformMatrix4fv(shadow_vp_id, ONE, DONT_TRANSPOSE, glm::value_ptr(shadowVP));
-            glUniformMatrix4fv(shadow_mvp_id, ONE, DONT_TRANSPOSE, glm::value_ptr(depthBiasMVP));
+                      // bind textures
+                      glActiveTexture(GL_TEXTURE3);
+                      glBindTexture(GL_TEXTURE_2D, snow_id_);
 
-            // draw
-            // TODO 5: for debugging it can be helpful to draw only the wireframe.
-            // You can do that by uncommenting the next line.
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            // TODO 5: depending on how you set up your vertex index buffer, you
-            // might have to change GL_TRIANGLE_STRIP to GL_TRIANGLES.
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
+                      // bind textures
+                      glActiveTexture(GL_TEXTURE4);
+                      glBindTexture(GL_TEXTURE_2D, sand_id_);
 
-            glBindVertexArray(0);
-            glUseProgram(0);
+                      // bind shadowmap
+                      glActiveTexture(GL_TEXTURE5);
+                      glBindTexture(GL_TEXTURE_2D, shadowmap_id);
 
-            glDisable(GL_CLIP_PLANE0);
+
+
+
+                      glm::vec2 offset = glm::vec2(offsetX, offsetY);
+
+                      glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
+                      glUniform1i(glGetUniformLocation(program_id_, "clip"), underwaterclip);
+
+                      glm::vec3 rot_light_pos =  glm::mat3(glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100-1, glm::vec3(0,1,0))) * light_pos;
+
+                      glUniform3fv(light_pos_id, 1, glm::value_ptr(rot_light_pos));
+
+                      // setup MVP
+                      glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
+                      glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
+                      glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
+
+
+                      glm::mat4 MVP = projection * view * model;
+
+                      glm::mat4 biasMatrix(
+          0.5, 0.0, 0.0, 0.0,
+          0.0, 0.5, 0.0, 0.0,
+          0.0, 0.0, 0.5, 0.0,
+          0.5, 0.5, 0.5, 1.0
+          );
+          glm::mat4 depthBiasMVP = biasMatrix * MVP;
+
+                      glm::mat4 shadowVP = shadow_projection * shadow_view;
+
+                      glUniformMatrix4fv(shadow_vp_id, ONE, DONT_TRANSPOSE, glm::value_ptr(shadowVP));
+                      glUniformMatrix4fv(shadow_mvp_id, ONE, DONT_TRANSPOSE, glm::value_ptr(depthBiasMVP));
+
+                      // draw
+                      // TODO 5: for debugging it can be helpful to draw only the wireframe.
+                      // You can do that by uncommenting the next line.
+                      //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                      // TODO 5: depending on how you set up your vertex index buffer, you
+                      // might have to change GL_TRIANGLE_STRIP to GL_TRIANGLES.
+                      //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                      glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
+
+                      glBindVertexArray(0);
+
+                      if (!in_shadowmap) {
+                        glUseProgram(0);
+                    }
+                      glDisable(GL_CLIP_PLANE0);
+
+
+
+
+
         }
 };

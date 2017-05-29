@@ -28,7 +28,10 @@ class MountainsGenerator {
                 exit(EXIT_FAILURE);
             }
 
-            glUseProgram(program_id_);
+
+              glUseProgram(program_id_);
+
+
 
             // vertex one vertex array
             glGenVertexArrays(1, &vertex_array_id_);
@@ -99,7 +102,10 @@ class MountainsGenerator {
 
             // to avoid the current object being polluted
             glBindVertexArray(0);
-            glUseProgram(0);
+
+              glUseProgram(0);
+
+
         }
 
         //method to automatically change the textures, after the multitiles has computed them
@@ -125,7 +131,10 @@ class MountainsGenerator {
 
         void Draw(float offsetX, float offsetY) {
 
-            glUseProgram(program_id_);
+            if (!in_shadowmap) {
+              glUseProgram(program_id_);
+            }
+
             glBindVertexArray(vertex_array_id_);
 
             // bind textures
@@ -159,6 +168,10 @@ class MountainsGenerator {
             glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
 
             glBindVertexArray(0);
-            glUseProgram(0);
+
+            if (!in_shadowmap) {
+              glUseProgram(0);
+            }
+
         }
 };

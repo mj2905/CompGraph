@@ -61,6 +61,10 @@ uniform float fog_threshold;
 
 void main() {
 
+
+
+
+
     vec3 p = vpoint_mv.xyz;
 
     vec3 normal_mv = normalize(cross(dFdx(p), dFdy(p)));
@@ -79,38 +83,32 @@ void main() {
     //      alpha4=sand_distrib(height, normal_y);
     float[4] distribs = distributions(height, normal_y);
 
-    // perform perspective divide
-//    vec3 projCoords = mapped_shadow_pos.xyz / mapped_shadow_pos.w;
-    // Transform to [0,1] range
-  //  projCoords = projCoords * 0.5 + 0.5;
-    // Check whether current frag pos is in shadow
-//    float shadow = (mapped_shadow_pos.z > texture(shadowmap, mapped_shadow_pos.xy).z)  ? 0.3 : 1.0;
-
-// perform perspective divide
     vec3 projCoords = mapped_shadow_pos.xyz / mapped_shadow_pos.w;
     // Transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
 
+    float closestDepth = texture(shadowmap, projCoords.xy).x;
+        // Get depth of current fragment from light's perspective
+        float currentDepth = projCoords.z;
+        // Check whether current frag pos is in shadow
+        float shadow = currentDepth > closestDepth  ? 1.0 : 0.3;
 
-    float shadow = 1.0;
-if ( texture(shadowmap, projCoords.xy).z  <  projCoords.z){
-    shadow = 0.25;
-}
 
+        color =
+                      (
+                        vec3(1, 1, 1.2) * distribs[1] * texture(grass, (uv + offset)*80).rgb
+                      + distribs[0] * texture(rock, (uv + offset)*40).rgb
+                      + 0.8*distribs[2] * texture(snow, (uv + offset)*30).rgb
+                      + distribs[3] * texture(sand, (uv + offset)*60).rgb
+                      )
+                      + kd * nDotL * Ld + 0.1; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 
-    color =
-       (
-         vec3(1, 1, 1.2) * distribs[1] * texture(grass, (uv + offset)*80).rgb
-       + distribs[0] * texture(rock, (uv + offset)*40).rgb
-       + 0.8*distribs[2] * texture(snow, (uv + offset)*30).rgb
-       + distribs[3] * texture(sand, (uv + offset)*60).rgb)
-       + kd * nDotL * Ld + 0.1; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 
        //float distance = gl_FragCoord.z;
        //if (distance > fog_threshold) {
          //color.xyz = mix(color.xyz, vec3(0.9,0.9,0.9), (distance-fog_threshold)*9);
        //}
 
-       color = color * shadow;
+       color = color * (1.0 - shadow);
 
 }
