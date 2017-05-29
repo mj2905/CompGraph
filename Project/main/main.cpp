@@ -5,6 +5,8 @@
 // contains helper functions such as shader compiler
 #include "icg_helper.h"
 
+#include "globals.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
@@ -20,6 +22,7 @@
 #include "camera/beziercamera.h"
 #include "camera/camera.h"
 #include "camera/fps_camera.h"
+#include "shadowmap/shadowmap.h"
 
 #define WASD_NULL (0)
 #define WASD_W (1)
@@ -43,9 +46,6 @@ const unsigned int OFFSET_Y = 257;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 
-int window_width = 800;
-int window_height = 600;
-
 using namespace glm;
 
 mat4 view_matrix;
@@ -53,6 +53,7 @@ mat4 view_matrix;
 mat4 projection_matrix;
 mat4 quad_model_matrix;
 mat4 quad_model_matrix_base;
+
 
 float old_x, old_y;
 GLfloat global_angle_x = 0.528f;
@@ -111,6 +112,8 @@ void Init() {
                          vec3(0.0f, 1.0f, 0.0f));*/
     //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
+    shadowmap.init();
+
     regular_cam = new Camera(multitiles);
     //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
     current_cam = regular_cam;
@@ -130,20 +133,6 @@ vec3 up = vec3(0.0f, 1.0f, 0.0f);
 vec3 position = vec3(0.0f, -0.25f, -3.2);
 vec3 center = vec3(-1.0f, 1.1f, -1.2f);
 
-mat4 LookAtC(vec3 eye, vec3 center, vec3 up) {
-    vec3 z_cam = normalize(eye - center);
-    vec3 x_cam = normalize(cross(up, z_cam));
-    vec3 y_cam = cross(z_cam, x_cam);
-
-    mat3 R(x_cam, y_cam, z_cam);
-    R = transpose(R);
-
-    mat4 look_at(vec4(R[0], 0.0f),
-                 vec4(R[1], 0.0f),
-                 vec4(R[2], 0.0f),
-                 vec4(-R * (eye), 1.0f));
-    return look_at;
-}
 
 void update_fps_cam() {
 
@@ -253,9 +242,15 @@ void Display() {
     update_fps_cam();
 
 
+    //generating real-time shadowmap
+    shadowmap.bind(quad_model_matrix);
+    multitiles.Draw(quad_model_matrix, current_cam->getView(), shadow_projection);
+    shadowmap.unbind();
+
     multitiles.Draw(quad_model_matrix, current_cam->getView(), projection_matrix);
 
     current_cam->animate();
+
 
 }
 
@@ -357,9 +352,15 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, window_width, window_height);
 
     // TODO 1: Use a perspective projection instead;
+
     projection_matrix = PerspectiveProjection(45.0f,
                                               (GLfloat)window_width / window_height,
                                               0.1f, 100.0f);
+
+  //  shadow_projection = OrthographicProjection(-20.0, 20.0, -20.0, 20.0,
+  //                                            0.01f, 1000.0f);
+
+
 
     multitiles.Cleanup();
     multitiles.Init(width, height);
@@ -410,8 +411,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
         wasd_direction[1] = WASD_NULL;
       }
-
-
 
 
         //rest

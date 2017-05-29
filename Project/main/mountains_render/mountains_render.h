@@ -1,5 +1,6 @@
 #pragma once
 #include "../constants.h"
+#include "../globals.h"
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
@@ -20,6 +21,11 @@ class MountainsRender {
 
         GLuint light_pos_id;
         glm::vec3 light_pos;
+
+        //shadow
+        GLuint shadow_vp_id;
+        GLuint shadow_mvp_id;
+        GLuint shadowmap_id;
 
         GLuint num_indices_;                    // number of vertices to render
         GLuint M_id_;                           // model matrix ID
@@ -131,6 +137,11 @@ class MountainsRender {
             loadImage("sand.jpg", "sand", 4, sand_id_);
 
             // other uniforms
+            shadow_vp_id = glGetUniformLocation(program_id_, "shadow_vp");
+            shadow_mvp_id = glGetUniformLocation(program_id_, "shadow_mvp");
+            shadowmap_id = shadowmap.get_shadowmap_id();
+            glUniform1i(glGetUniformLocation(program_id_, "shadowmap"), 5);
+
             M_id_ = glGetUniformLocation(program_id_, "model");
             V_id_ = glGetUniformLocation(program_id_, "view");
             P_id_ = glGetUniformLocation(program_id_, "projection");
@@ -230,6 +241,10 @@ class MountainsRender {
             glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_2D, sand_id_);
 
+            // bind shadowmap
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_2D, shadowmap_id);
+
             glm::vec2 offset = glm::vec2(offsetX, offsetY);
 
             glUniform2fv(glGetUniformLocation(program_id_, "offset"), 1, glm::value_ptr(offset));
@@ -243,6 +258,22 @@ class MountainsRender {
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
+
+
+            glm::mat4 MVP = projection * view * model;
+
+            glm::mat4 biasMatrix(
+0.5, 0.0, 0.0, 0.0,
+0.0, 0.5, 0.0, 0.0,
+0.0, 0.0, 0.5, 0.0,
+0.5, 0.5, 0.5, 1.0
+);
+glm::mat4 depthBiasMVP = biasMatrix * MVP;
+
+            glm::mat4 shadowVP = shadow_projection * shadow_view;
+
+            glUniformMatrix4fv(shadow_vp_id, ONE, DONT_TRANSPOSE, glm::value_ptr(shadowVP));
+            glUniformMatrix4fv(shadow_mvp_id, ONE, DONT_TRANSPOSE, glm::value_ptr(depthBiasMVP));
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.

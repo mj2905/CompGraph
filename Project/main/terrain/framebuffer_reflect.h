@@ -21,7 +21,13 @@ class FrameBufferReflect {
         }
 
         void Unbind() {
+          if (in_shadowmap) {
+            glBindFramebuffer(GL_FRAMEBUFFER, shadowmap_fb);
+          }
+          else {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
+          }
+
         }
 
         GLuint getTextureId() {
