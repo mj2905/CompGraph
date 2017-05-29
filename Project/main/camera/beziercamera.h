@@ -61,5 +61,15 @@ public:
         velocity *= 0.9;
     }
 
+    virtual void beginYawAccel() override{}
+    virtual void beginReverseYawAccel() override{}
+
+    virtual void beginPitchAccel() override{}
+    virtual void beginReversePitchAccel() override{}
+
+
+    virtual void beginFwAccel() override {};
+    virtual void beginBwAccel() override {};
+
 
 };
