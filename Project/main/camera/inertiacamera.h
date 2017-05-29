@@ -112,86 +112,86 @@ public:
     }
 
 
-    void inertiaFunc(bool *front, bool* back,
-                     float *posValue, float *initPos,
-                     float *fwAccel, float *bwAccel,
-                     int *time, int *fwStartTime, int *bwStartTime,
+    void inertiaFunc(bool &front, bool &back,
+                     float &posValue, float &initPos,
+                     float &fwAccel, float &bwAccel,
+                     int &time, int &fwStartTime, int &bwStartTime,
                      void (InertiaCamera::*startIncremF)(), void (InertiaCamera::*stopIncremF)()){
-        if((*front)){
-            if((*posValue) == 0){
+        if((front)){
+            if((posValue) == 0){
                 (this->*startIncremF)();
-                ++(*time);
-                (*posValue) = 0.5*(*fwAccel)*(*time)*(*time);
+                ++(time);
+                (posValue) = 0.5*(fwAccel)*(time)*(time);
             }
-            if((*posValue)>=0 && (*posValue) < 0.5*(*fwAccel)*MAX_T*MAX_T){
-                (*bwAccel) = 0.0;
-                (*posValue) = (*initPos)+ 0.5*(*fwAccel)*(*time)*(*time);
-            } else if((*posValue) >=0.5*(*fwAccel)*MAX_T*MAX_T){
-                (*bwAccel) = 0.0;
-                (*posValue) = (*initPos)+0.5*(*fwAccel)*MAX_T*MAX_T;
+            if((posValue)>=0 && (posValue) < 0.5*(fwAccel)*MAX_T*MAX_T){
+                (bwAccel) = 0.0;
+                (posValue) = (initPos)+ 0.5*(fwAccel)*(time)*(time);
+            } else if((posValue) >=0.5*(fwAccel)*MAX_T*MAX_T){
+                (bwAccel) = 0.0;
+                (posValue) = (initPos)+0.5*(fwAccel)*MAX_T*MAX_T;
             } else{
-                (*bwAccel) = 0.0;
-                (*posValue) = (*initPos) + 0.5*(*fwAccel)*((*time)-(*bwStartTime))*((*time)-(*bwStartTime));
+                (bwAccel) = 0.0;
+                (posValue) = (initPos) + 0.5*(fwAccel)*((time)-(bwStartTime))*((time)-(bwStartTime));
 
             }
 
 
-        } else if((*back)){
-            if((*posValue) == 0){
+        } else if((back)){
+            if((posValue) == 0){
                 (this->*startIncremF)();
-                ++(*time);
-                (*posValue) = 0.5*(*bwAccel)*(*time)*(*time);
+                ++(time);
+                (posValue) = 0.5*(bwAccel)*(time)*(time);
             }
-            if((*posValue)<=0 && (*posValue) > 0.5*(*bwAccel)*MAX_T*MAX_T){
-                (*fwAccel) = 0.0;
-                (*posValue) = (*initPos)+ 0.5*(*bwAccel)*(*time)*(*time);
-            }else if((*posValue) <= 0.5*(*bwAccel)*MAX_T*MAX_T){
-                (*fwAccel) = 0.0;
-                (*posValue) = (*initPos)+0.5*(*bwAccel)*MAX_T*MAX_T;
+            if((posValue)<=0 && (posValue) > 0.5*(bwAccel)*MAX_T*MAX_T){
+                (fwAccel) = 0.0;
+                (posValue) = (initPos)+ 0.5*(bwAccel)*(time)*(time);
+            }else if((posValue) <= 0.5*(bwAccel)*MAX_T*MAX_T){
+                (fwAccel) = 0.0;
+                (posValue) = (initPos)+0.5*(bwAccel)*MAX_T*MAX_T;
             }else{
-                (*fwAccel) = 0.0;
-                (*posValue)=  (*initPos) + 0.5*(*bwAccel)*((*time)-(*fwStartTime))*((*time)-(*fwStartTime));
+                (fwAccel) = 0.0;
+                (posValue)=  (initPos) + 0.5*(bwAccel)*((time)-(fwStartTime))*((time)-(fwStartTime));
             }
 
         }else{
-            if((*posValue) > 0){
-                (*initPos) = (*posValue);
-                (*fwAccel) = 0.0;
-                (*bwAccel) = -ACCEL_FACTOR;
-                (*posValue) = (*initPos) + 0.5*(*bwAccel)*((*time)-(*fwStartTime))*((*time)-(*fwStartTime));
-                if((*posValue) <= 0){
-                    (*posValue) = 0;
+            if((posValue) > 0){
+                (initPos) = (posValue);
+                (fwAccel) = 0.0;
+                (bwAccel) = -ACCEL_FACTOR;
+                (posValue) = (initPos) + 0.5*(bwAccel)*((time)-(fwStartTime))*((time)-(fwStartTime));
+                if((posValue) <= 0){
+                    (posValue) = 0;
                 }
-            }else if((*posValue) < 0){
-                (*initPos) = (*posValue);
-                (*bwAccel) = 0.0;
-                (*fwAccel) = ACCEL_FACTOR;
-                (*posValue) = (*initPos) + 0.5*(*fwAccel)*((*time)-(*bwStartTime))*((*time)-(*bwStartTime));
-                if((*posValue) >=0){
-                    (*posValue) = 0;
+            }else if((posValue) < 0){
+                (initPos) = (posValue);
+                (bwAccel) = 0.0;
+                (fwAccel) = ACCEL_FACTOR;
+                (posValue) = (initPos) + 0.5*(fwAccel)*((time)-(bwStartTime))*((time)-(bwStartTime));
+                if((posValue) >=0){
+                    (posValue) = 0;
                 }
             }
-            else if((*posValue) == 0){
+            else if((posValue) == 0){
                 (this->*stopIncremF)();
-                (*fwAccel) = 0.0;
-                (*bwAccel) = 0.0;
-                (*initPos) =0;
-                (*fwStartTime) = 0;
-                (*bwStartTime) = 0;
+                (fwAccel) = 0.0;
+                (bwAccel) = 0.0;
+                (initPos) =0;
+                (fwStartTime) = 0;
+                (bwStartTime) = 0;
             }
         }
     }
 
-    void transFunc(bool *front, bool *back){
-        inertiaFunc(front,back, &currTrans, &x0, &a1, &a2, &t, &t10, &t20, &InertiaCamera::startIncrementingTranslation,
+    void transFunc(bool &front, bool &back){
+        inertiaFunc(front,back, currTrans, x0, a1, a2, t, t10, t20, &InertiaCamera::startIncrementingTranslation,
                     &InertiaCamera::stopIncrementingTranslation);
         view_matrix = glm::translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
         frontInc = false;
         frontDec = false;
     }
 
-    void rotHFunc(bool *front, bool *back){
-        inertiaFunc(front, back, &currRoth, &rh0,&rh1,&rh2, &trh, &rH10, &rH20,
+    void rotHFunc(bool &front, bool &back){
+        inertiaFunc(front, back, currRoth, rh0,rh1,rh2, trh, rH10, rH20,
                     &InertiaCamera::startIncrementingRotationh, &InertiaCamera::stopIncrementingRotationh);
 
         view_matrix = glm::rotate(IDENTITY_MATRIX, -currRoth, vec3(1.0,0.0,0.0f))*view_matrix;
@@ -200,8 +200,8 @@ public:
 
     }
 
-    void rotVFunc(bool *front, bool *back){
-        inertiaFunc(front, back, &currRotv, &rv0, &rv1, &rv2, &trv, &rV10, &rV20,
+    void rotVFunc(bool &front, bool &back){
+        inertiaFunc(front, back, currRotv, rv0, rv1, rv2, trv, rV10, rV20,
                     &InertiaCamera::startIncrementingRotationv, &InertiaCamera::stopIncrementingRotationv);
 
         view_matrix = glm::rotate(IDENTITY_MATRIX, -currRotv, vec3(0.0,1.0,0.0f))*view_matrix;
@@ -216,16 +216,19 @@ public:
 
         if(increment) {
             t++;
+            cout << "Pool" << endl;
         }
         if(incrementrh) {
             trh++;
+             cout << "Pool2" << endl;
         }
         if(incrementrv) {
             trv++;
+             cout << "Pool3" << endl;
         }
-        transFunc(&frontInc, &frontDec);
-        rotHFunc(&frontInch, &frontDech);
-        rotVFunc(&frontIncv, &frontDecv);
+        transFunc(frontInc, frontDec);
+        rotHFunc(frontInch, frontDech);
+        rotVFunc(frontIncv, frontDecv);
         AbstractCamera::Init(view_matrix);
 
     }

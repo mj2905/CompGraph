@@ -252,9 +252,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     if(key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT)){
         camera->beginFwAccel();
+        cout << "I" << endl;
     }
     if(key == GLFW_KEY_K &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
         camera->beginBwAccel();
+        cout << "K" << endl;
     }
     if(key == GLFW_KEY_Q &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
         camera->beginYawAccel();
