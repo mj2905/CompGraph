@@ -7,6 +7,7 @@
 #include "../globals.h"
 
 
+
 using namespace glm;
 
 class AbstractCamera {
@@ -71,6 +72,10 @@ public:
     virtual void beginPitchAccel() = 0;
     virtual void beginReversePitchAccel() = 0;
     //virtual void beginRollAccel() = 0;
+
+    virtual small_t type_of_camera() = 0;
+
+    virtual bool switch_from_camera(mat4& view_matrix) = 0;
 
     mat4 getView() {
         return view_matrix;

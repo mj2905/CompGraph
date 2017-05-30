@@ -65,6 +65,15 @@ public:
 
     }
 
+    virtual small_t type_of_camera() override {
+      return CAMERA_TYPE_NORMAL ;
+    }
+
+    virtual bool switch_from_camera(mat4& view_matrix) override {
+      AbstractCamera::Init(view_matrix);
+      return true;
+    }
+
     virtual void increaseVelocity() override {}
     virtual void decreaseVelocity() override {}
 

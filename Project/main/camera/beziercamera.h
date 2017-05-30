@@ -71,5 +71,8 @@ public:
     virtual void beginFwAccel() override {};
     virtual void beginBwAccel() override {};
 
+    virtual small_t type_of_camera() override {
+      return CAMERA_TYPE_BEZIER;
+    }
 
 };

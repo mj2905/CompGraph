@@ -40,6 +40,8 @@ mat4 projection_matrix;
 
 LightSource light;
 AbstractCamera* camera;
+AbstractCamera* cams[CAM_COUNT];
+
 
 Terrain* terrain;
 
@@ -136,10 +138,12 @@ void Init() {
 
     terrain = multitiles.getTerrain();
 
-    //camera = new Camera(multitiles);
-    camera = new InertiaCamera();
+    cams[CAMERA_TYPE_NORMAL] = new Camera(multitiles);
+    cams[CAMERA_TYPE_INERTIA] = new InertiaCamera();
     //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
-    //camera = new fps_camera(*terrain, multitiles);
+    cams[CAMERA_TYPE_FPS] = new class fps_camera(*terrain, multitiles);
+
+    camera = cams[CAMERA_TYPE_NORMAL];
     camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -268,102 +272,134 @@ void ErrorCallback(int error, const char* description) {
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
-  //FPS
-   if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
-       wasd_direction[0] = WASD_W;
-   }
-   else if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
-       wasd_direction[0] = WASD_NULL;
-   }
-   if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
-       wasd_direction[0] = WASD_S;
-   }
-   else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-       wasd_direction[0] = WASD_NULL;
-   }
-   if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
-       wasd_direction[1] = WASD_A;
-   }
-   else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
-       wasd_direction[1] = WASD_NULL;
-   }
-   if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
-       wasd_direction[1] = WASD_D;
-   }
-   else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
-       wasd_direction[1] = WASD_NULL;
-     }
+  if (!switching_camera) {
+
+
+    //switching camera
+    if (key == KEY_NORMAL_CAMERA && camera->type_of_camera() != CAMERA_TYPE_NORMAL) {
+      switching_camera = true;
+      delete cams[camera->type_of_camera()];
+      cams[CAMERA_TYPE_NORMAL] = new Camera(multitiles);
+      camera = cams[CAMERA_TYPE_NORMAL];
+      camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+      switching_camera = false;
+    }
+
+    else if (key == KEY_INERTIA_CAMERA && camera->type_of_camera() != CAMERA_TYPE_INERTIA) {
+      switching_camera = true;
+      delete cams[camera->type_of_camera()];
+      cams[CAMERA_TYPE_INERTIA] = new InertiaCamera();
+      camera = cams[CAMERA_TYPE_INERTIA];
+      camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+      switching_camera = false;
+
+    }
+    else if (key == KEY_FPS_CAMERA && camera->type_of_camera() != CAMERA_TYPE_FPS) {
+      switching_camera = true;
+      delete cams[camera->type_of_camera()];
+      cams[CAMERA_TYPE_FPS] = new class fps_camera(*terrain, multitiles);
+      camera = cams[CAMERA_TYPE_FPS];
+      camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+      switching_camera = false;
+    }
+
+    //FPS
+    if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+      //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+      wasd_direction[0] = WASD_W;
+    }
+    else if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
+      wasd_direction[0] = WASD_NULL;
+    }
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+      //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+      wasd_direction[0] = WASD_S;
+    }
+    else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+      wasd_direction[0] = WASD_NULL;
+    }
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+      //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+      wasd_direction[1] = WASD_A;
+    }
+    else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+      wasd_direction[1] = WASD_NULL;
+    }
+    if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+      //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+      wasd_direction[1] = WASD_D;
+    }
+    else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+      wasd_direction[1] = WASD_NULL;
+    }
 
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GL_TRUE);
+      glfwSetWindowShouldClose(window, GL_TRUE);
     }
     if(key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginFwAccel();
+      camera->beginFwAccel();
     }
     if(key == GLFW_KEY_K &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginBwAccel();
+      camera->beginBwAccel();
     }
     if(key == GLFW_KEY_Q &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginYawAccel();
+      camera->beginYawAccel();
     }
     if(key == GLFW_KEY_E &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginReverseYawAccel();
+      camera->beginReverseYawAccel();
 
     }
     if(key == GLFW_KEY_J &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginPitchAccel();
+      camera->beginPitchAccel();
 
     }
     if(key == GLFW_KEY_L &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginReversePitchAccel();
+      camera->beginReversePitchAccel();
 
     }
     if (key == GLFW_KEY_UP) {
-        if(action == GLFW_PRESS) {
-            upPressed = true;
-        }
-        else if(action == GLFW_RELEASE) {
-            upPressed = false;
-        }
+      if(action == GLFW_PRESS) {
+        upPressed = true;
+      }
+      else if(action == GLFW_RELEASE) {
+        upPressed = false;
+      }
     }
 
     if (key == GLFW_KEY_DOWN) {
-        if(action == GLFW_PRESS) {
-            downPressed = true;
-        }
-        else if(action == GLFW_RELEASE) {
-            downPressed = false;
-        }
+      if(action == GLFW_PRESS) {
+        downPressed = true;
+      }
+      else if(action == GLFW_RELEASE) {
+        downPressed = false;
+      }
     }
 
     if (key == GLFW_KEY_LEFT) {
-        if(action == GLFW_PRESS) {
-            leftPressed = true;
-        }
-        else if(action == GLFW_RELEASE) {
-            leftPressed = false;
-        }
+      if(action == GLFW_PRESS) {
+        leftPressed = true;
+      }
+      else if(action == GLFW_RELEASE) {
+        leftPressed = false;
+      }
     }
 
     if (key == GLFW_KEY_RIGHT) {
-        if(action == GLFW_PRESS) {
-            rightPressed = true;
-        }
-        else if(action == GLFW_RELEASE) {
-            rightPressed = false;
-        }
+      if(action == GLFW_PRESS) {
+        rightPressed = true;
+      }
+      else if(action == GLFW_RELEASE) {
+        rightPressed = false;
+      }
     }
     if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->increaseVelocity();
+      camera->increaseVelocity();
     }
     if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->decreaseVelocity();
+      camera->decreaseVelocity();
     }
+  }
 }
 
 
