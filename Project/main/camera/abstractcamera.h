@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "../globals.h"
 
 
 using namespace glm;
@@ -42,13 +43,16 @@ public:
 
     virtual void Init(vec3 initEye = vec3(0), vec3 initCenter = vec3(0), vec3 up = vec3(0,1,0)) {
         this->position = initEye;
+        global_position = initEye;
         this->up = up;
         this->center = initCenter;
         view_matrix = LookAt(position, center, up);
+        global_view_matrix = LookAt(position, center, up);
     }
 
     virtual void Init(mat4 view_matrix){
         this->view_matrix = view_matrix;
+        global_view_matrix = view_matrix;
     }
 
     virtual void animate() = 0;

@@ -31,6 +31,8 @@ private:
     ScreenQuad screenQuad;
 
     const string skyboxTexture = "miramar";
+    GLsizei width;
+        GLsizei height;
 
 public:
     void Init(size_t width, size_t height, LightSource &light) {
@@ -52,6 +54,8 @@ public:
 
         framebuffer_shadow.Init(width, height, true);
         shadow.Init(framebuffer_shadow.getTextureId());
+        this->width = width;
+        this->height = height;
     }
 
     void changeTexture(const array<GLuint, 4>& textures) {
@@ -100,6 +104,16 @@ public:
 
 
     }
+
+    float getCurrentHeight() {
+          GLfloat ret = 0.1f;
+          framebuffer_terrain.Bind();
+        //  glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
+          glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
+          framebuffer_terrain.Unbind();
+
+          return ret;
+        }
 
     void Cleanup() {
         mountainsCreator.Cleanup();

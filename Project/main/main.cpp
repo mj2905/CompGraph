@@ -7,6 +7,9 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "constants.h"
+#include "globals.h"
+
 #include "water/water.h"
 
 #include "trackball.h"
@@ -19,6 +22,9 @@
 #include "camera/beziercamera.h"
 #include "camera/camera.h"
 #include "camera/inertiacamera.h"
+#include "camera/fps_camera.h"
+
+#include "shadowmap/shadowmap.h"
 
 constexpr float NB_FPS = 60.0;
 
@@ -28,19 +34,14 @@ const unsigned int OFFSET_Y = 257;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 
-int window_width = 800;
-int window_height = 600;
-
-
-
 using namespace glm;
 
 mat4 projection_matrix;
 
-mat4 quad_model_matrix;
-mat4 quad_model_matrix_base;
 LightSource light;
 AbstractCamera* camera;
+
+Terrain* terrain;
 
 float old_x, old_y;
 
@@ -122,11 +123,9 @@ void Init() {
                          vec3(0.0f, 1.0f, 0.0f));*/
     //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    //camera = new Camera(multitiles);
-    camera = new InertiaCamera();
-    //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
 
-    camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+
+
 
     quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
 
@@ -135,21 +134,42 @@ void Init() {
 
     multitiles.Init(window_width, window_height, light);
 
+    terrain = multitiles.getTerrain();
+
+    camera = new Camera(multitiles);
+    //camera = new InertiaCamera();
+    //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
+    //camera = new fps_camera(*terrain, multitiles);
+    camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 }
+
+vec3 up = vec3(0.0f, 1.0f, 0.0f);
+
+vec3 center = vec3(-1.0f, 1.1f, -1.2f);
+
+
 
 
 // gets called for every frame.
 void Display() {
 
+    camera->animate();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glViewport(0, 0, window_width, window_height);
 
-    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
 
-    camera->animate();
+    //generating real-time shadowmap
+
+    //shadowmap.bind(quad_model_matrix);
+    //multitiles.Draw(quad_model_matrix, camera->getView(), shadow_projection);
+    //shadowmap.unbind();
+
+    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
 }
 
 bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
@@ -247,6 +267,38 @@ void ErrorCallback(int error, const char* description) {
 
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+
+  //FPS
+   if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+       wasd_direction[0] = WASD_W;
+   }
+   else if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
+       wasd_direction[0] = WASD_NULL;
+   }
+   if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+       wasd_direction[0] = WASD_S;
+   }
+   else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+       wasd_direction[0] = WASD_NULL;
+   }
+   if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+       wasd_direction[1] = WASD_A;
+   }
+   else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+       wasd_direction[1] = WASD_NULL;
+   }
+   if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+       wasd_direction[1] = WASD_D;
+   }
+   else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+       wasd_direction[1] = WASD_NULL;
+     }
+
+
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
@@ -388,8 +440,9 @@ int main(int argc, char *argv[]) {
 
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
+          Update();
             Display();
-            Update();
+
             lastTime = time;
             glfwSwapBuffers(window);
         }

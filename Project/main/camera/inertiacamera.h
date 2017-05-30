@@ -49,6 +49,7 @@ public:
 
     virtual void Init(vec3 initEye = vec3(0), vec3 initCenter = vec3(0), vec3 up = vec3(0,1,0)) override {
         view_matrix = LookAt(initEye, initCenter, up);
+        global_view_matrix = LookAt(initEye, initCenter, up);
         a1 = 0.0;
         a2= 0.0;
         x0= 0.0;
@@ -186,6 +187,7 @@ public:
         inertiaFunc(front,back, currTrans, x0, a1, a2, t, t10, t20, &InertiaCamera::startIncrementingTranslation,
                     &InertiaCamera::stopIncrementingTranslation);
         view_matrix = glm::translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
+        global_view_matrix = glm::translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
         frontInc = false;
         frontDec = false;
     }
@@ -195,6 +197,7 @@ public:
                     &InertiaCamera::startIncrementingRotationh, &InertiaCamera::stopIncrementingRotationh);
 
         view_matrix = glm::rotate(IDENTITY_MATRIX, -currRoth, vec3(1.0,0.0,0.0f))*view_matrix;
+        global_view_matrix = glm::rotate(IDENTITY_MATRIX, -currRoth, vec3(1.0,0.0,0.0f))*view_matrix;
         frontInch = false;
         frontDech = false;
 
@@ -205,6 +208,7 @@ public:
                     &InertiaCamera::startIncrementingRotationv, &InertiaCamera::stopIncrementingRotationv);
 
         view_matrix = glm::rotate(IDENTITY_MATRIX, -currRotv, vec3(0.0,1.0,0.0f))*view_matrix;
+        global_view_matrix = glm::rotate(IDENTITY_MATRIX, -currRotv, vec3(0.0,1.0,0.0f))*view_matrix;
         frontIncv = false;
         frontDecv = false;
     }
