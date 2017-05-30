@@ -14,6 +14,7 @@ class ScreenQuad {
 
         float screenquad_width_;
         float screenquad_height_;
+        GLuint render_res_ = RENDER_DIM;
         LightSource light;
 
     public:
@@ -125,17 +126,21 @@ class ScreenQuad {
             glUniform1f(glGetUniformLocation(program_id_, "tex_height"),
                         this->screenquad_height_);
 
+            glUniform1i(glGetUniformLocation(program_id_, "RENDER_RES"),
+                        this->render_res_);
+
+
+            /*this->light.update(
+                        glm::vec3(glm::rotate(
+                                      IDENTITY_MATRIX, float(glfwGetTime()/100-1), glm::vec3(0,1,0))*
+                        glm::vec4(this->light.getPosition(),1.0)));*/
 
             glm::vec4 k = projection*view*glm::vec4(light.getPosition(),1.0);
             k /= k.z;
             k += glm::vec4(1.0,1.0,0.0,0.0);
             k /= 2.0;
 
-
-            glm::vec2 l = glm::vec2(float(k.x/*/viewport[2]*/), float(k.y/*/viewport[3]*/));
-
-            glUniform2f(glGetUniformLocation(program_id_, "light_position"), l.x, l.y);
-
+            glUniform2f(glGetUniformLocation(program_id_, "light_position"), k.x/render_res_, k.y/render_res_);
 
             // bind texture
             glActiveTexture(GL_TEXTURE0);

@@ -1,6 +1,6 @@
 #pragma once
 #include "icg_helper.h"
-
+#include "../constants.h"
 #define OFF_SCREEN_RENDER_RATIO 2;
 
 class FrameBufferScattering{
@@ -15,9 +15,15 @@ private:
 
 public:
     // warning: overrides viewport!!
-    void Bind() {
+    void Bind(bool lowerRes=false) {
 
-        glViewport(0, 0, width_, height_);
+        if(lowerRes){
+            glViewport(0, 0, width_/RENDER_DIM, height_/RENDER_DIM);
+        }
+        else{
+            glViewport(0, 0, width_, height_);
+        }
+
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
         const GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
