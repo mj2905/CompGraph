@@ -136,8 +136,8 @@ void Init() {
 
     terrain = multitiles.getTerrain();
 
-    //camera = new Camera(multitiles);
-    camera = new InertiaCamera();
+    camera = new Camera();
+    //camera = new InertiaCamera();
     //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
     //camera = new fps_camera(*terrain, multitiles);
     camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
@@ -173,9 +173,24 @@ void Display() {
 }
 
 bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
+bool yPressed = false, xPressed = false, cPressed = false, vPressed = false;
 
 void Update() {
     //multitiles.incrementY(); //to move with the camera
+
+    if(yPressed and not xPressed){
+        multitiles.incrementX(0.01);
+    }
+    if(xPressed and not yPressed){
+        multitiles.decrementX(0.01);
+    }
+
+    if(cPressed and not vPressed){
+        multitiles.incrementY(0.01);
+    }
+    if(vPressed and not cPressed){
+        multitiles.decrementY(0.01);
+    }
 
     float increment = 0.05f;
 
@@ -321,8 +336,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     if(key == GLFW_KEY_L &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
         camera->beginReversePitchAccel();
-
     }
+
+
+
+    if(key == GLFW_KEY_L &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
+        camera->beginReversePitchAccel();
+    }
+
     if (key == GLFW_KEY_UP) {
         if(action == GLFW_PRESS) {
             upPressed = true;
@@ -358,6 +379,43 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             rightPressed = false;
         }
     }
+
+    if (key == GLFW_KEY_LEFT_SHIFT) {
+        if(action == GLFW_PRESS) {
+            yPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            yPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_X) {
+        if(action == GLFW_PRESS) {
+            xPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            xPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_C) {
+        if(action == GLFW_PRESS) {
+            cPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            cPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_V) {
+        if(action == GLFW_PRESS) {
+            vPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            vPressed = false;
+        }
+    }
+
     if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         camera->increaseVelocity();
     }

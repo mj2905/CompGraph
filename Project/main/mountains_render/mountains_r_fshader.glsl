@@ -85,7 +85,7 @@ void main() {
                 (
                   vec3(1, 1, 1.2) * distribs[1] * texture(grass, (uv + offset)*80).rgb
                 + distribs[0] * texture(rock, (uv + offset)*40).rgb
-                + 0.8*distribs[2] * texture(snow, (uv + offset)*30).rgb
+                + 0.9*distribs[2] * texture(snow, (uv + offset)*30).rgb
                 + distribs[3] * texture(sand, (uv + offset)*60).rgb)
                 + kd * nDotL * Ld + 0.1; //computation of the color : we use the height, and we add the diffuse component so that we have shadings
 

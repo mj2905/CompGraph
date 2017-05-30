@@ -106,7 +106,7 @@ class MountainsRender {
             {
                 light_pos = glm::vec3(0.0f, 1, -1);
 
-                glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 0.8f);
+                glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1);
 
                 light_pos_id = glGetUniformLocation(program_id_, "light_pos");
 

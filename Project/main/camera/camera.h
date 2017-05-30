@@ -17,14 +17,9 @@ class Camera : public AbstractCamera {
 private:
 
     const float MIN_DISTANCE_POLE = 0.1f;
-    MultiTiles& multitiles;
 
 
 public:
-
-    Camera(MultiTiles& multitiles) : multitiles(multitiles) {
-
-    }
 
     virtual ~Camera() {}
 
