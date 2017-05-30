@@ -21,7 +21,7 @@ const float weight = 7.7f;
 
 
 
-const int NUM_SAMPLES = 100;
+const int NUM_SAMPLES = 64;
 
 void main()
 {

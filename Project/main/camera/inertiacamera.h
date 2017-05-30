@@ -8,7 +8,7 @@
 #include "abstractcamera.h"
 #define ACCEL_FACTOR 0.000005
 #define MAX_T 10
-#define delta_t 1/2.0f
+#define delta_t 1.0f
 
 using namespace glm;
 
