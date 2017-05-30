@@ -9,6 +9,8 @@
 #define ACCEL_FACTOR 0.000005
 #define MAX_T 10
 #define delta_t 1.0f
+#define a1 ACCEL_FACTOR
+#define a2 -ACCEL_FACTOR
 
 using namespace glm;
 
@@ -16,7 +18,6 @@ class InertiaCamera : public AbstractCamera {
 
 private:
 
-    float a1, a2;
     float frontTrans, frontSpeed, sideTrans, sideSpeed, upTrans, upSpeed;
     bool frontInc, frontDec,frontIncv, frontDecv,frontInch, frontDech;
     bool increment, incrementrh, incrementrv;
@@ -40,8 +41,8 @@ private:
 
 public:
 
-    InertiaCamera() : AbstractCamera(), a1(0.0),
-        a2(0.0),
+    InertiaCamera() : AbstractCamera(),/* a1(0.0),
+        a2(0.0),*/
         frontInc(false), frontDec(false), frontIncv(false), frontDecv(false), frontInch(false), frontDech(false),
         frontTrans(0.0), frontSpeed(0.0), sideTrans(0.0), sideSpeed(0.0), upTrans(0.0), upSpeed(0.0),
         increment(false), incrementrh(false), incrementrv(false){}
@@ -50,10 +51,7 @@ public:
 
     virtual void Init(vec3 initEye = vec3(0), vec3 initCenter = vec3(0), vec3 up = vec3(0,1,0)) override {
         view_matrix = LookAt(initEye, initCenter, up);
-        a1 = ACCEL_FACTOR;
-        a2= -ACCEL_FACTOR;
 
-        //--
         frontTrans = 0.0;
         frontSpeed = 0.0;
         sideTrans = 0.0;
@@ -77,26 +75,26 @@ public:
 
     void inertiaFunc(bool &front, bool &back,
                      float &posValue, float &speedValue,
-                     float &fwAccel, float &bwAccel,
+                     /*float &fwAccel, float &bwAccel,*/
                      bool &incremBool){
        if(front && incremBool){
-           speedValue = speedValue + fwAccel*delta_t;
+           speedValue = speedValue + a1*delta_t;
            posValue = posValue + speedValue*delta_t;
        }
        else if(back && incremBool){
-           speedValue = speedValue + bwAccel*delta_t;
+           speedValue = speedValue + a2*delta_t;
            posValue = posValue + speedValue*delta_t;
        }
        else if(incremBool){
            if(posValue > ACCEL_FACTOR){
-               speedValue = speedValue + bwAccel*delta_t;
+               speedValue = speedValue + a2*delta_t;
                posValue = posValue + speedValue*delta_t;
                if(posValue <=0){
                    posValue = 0;
                    speedValue = 0;
                }
            } else if(posValue < - ACCEL_FACTOR){
-               speedValue = speedValue + fwAccel*delta_t;
+               speedValue = speedValue + a1*delta_t;
                posValue = posValue + speedValue*delta_t;
                if(posValue >=0){
                    posValue = 0;
@@ -108,14 +106,14 @@ public:
 
 
     void transFunc(bool &front, bool &back){
-        inertiaFunc(front, back, frontTrans, frontSpeed, a1,a2, increment);
+        inertiaFunc(front, back, frontTrans, frontSpeed, /*a1,a2,*/ increment);
         view_matrix = glm::translate(IDENTITY_MATRIX, vec3(0.0,0.0,frontTrans))*view_matrix;
         frontInc = false;
         frontDec = false;
     }
 
     void rotHFunc(bool &front, bool &back){
-        inertiaFunc(front, back, sideTrans, sideSpeed, a1,a2, incrementrh);
+        inertiaFunc(front, back, sideTrans, sideSpeed, /*a1,a2,*/ incrementrh);
         view_matrix = glm::rotate(IDENTITY_MATRIX, -sideTrans, vec3(1.0,0.0,0.0f))*view_matrix;
         frontInch = false;
         frontDech = false;
@@ -123,7 +121,7 @@ public:
     }
 
     void rotVFunc(bool &front, bool &back){
-        inertiaFunc(front, back, upTrans, upSpeed, a1, a2, incrementrv);
+        inertiaFunc(front, back, upTrans, upSpeed,/* a1, a2, */incrementrv);
         view_matrix = glm::rotate(IDENTITY_MATRIX, -upTrans, vec3(0.0,1.0,0.0f))*view_matrix;
         frontIncv = false;
         frontDecv = false;

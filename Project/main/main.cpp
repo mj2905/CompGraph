@@ -137,9 +137,9 @@ void Init() {
     terrain = multitiles.getTerrain();
 
     //camera = new Camera(multitiles);
-    //camera = new InertiaCamera();
+    camera = new InertiaCamera();
     //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
-    camera = new fps_camera(*terrain, multitiles);
+    //camera = new fps_camera(*terrain, multitiles);
     camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
