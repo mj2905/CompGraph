@@ -6,8 +6,9 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "abstractcamera.h"
-#define ACCEL_FACTOR 0.0005
-#define MAX_T 5
+#define ACCEL_FACTOR 0.000005
+#define MAX_T 10
+#define delta_t 1.0f
 
 using namespace glm;
 
@@ -15,8 +16,8 @@ class InertiaCamera : public AbstractCamera {
 
 private:
 
-    float a1, a2, currTrans, x0, rh1, rh2, currRoth, rh0, rv1, rv2, currRotv, rv0;
-    int t, trh, trv,t10, t20, rH10, rH20,rV10, rV20;
+    float a1, a2;
+    float frontTrans, frontSpeed, sideTrans, sideSpeed, upTrans, upSpeed;
     bool frontInc, frontDec,frontIncv, frontDecv,frontInch, frontDech;
     bool increment, incrementrh, incrementrv;
     glm::mat4 view_matrix;
@@ -40,28 +41,27 @@ private:
 public:
 
     InertiaCamera() : AbstractCamera(), a1(0.0),
-        a2(0.0), x0(0.0), rh1(0.0), rh2(0.0), rh0(0.0), rv1(0.0), rv2(0.0), rv0(0.0), t(0), trh(0), trv(0),
+        a2(0.0),
         frontInc(false), frontDec(false), frontIncv(false), frontDecv(false), frontInch(false), frontDech(false),
-        increment(false), incrementrh(false), incrementrv(false),
-        t10(0), t20(0), rH10(0), rH20(0), rV10(0), rV20(0){}
+        frontTrans(0.0), frontSpeed(0.0), sideTrans(0.0), sideSpeed(0.0), upTrans(0.0), upSpeed(0.0),
+        increment(false), incrementrh(false), incrementrv(false){}
 
     virtual ~InertiaCamera() {}
 
     virtual void Init(vec3 initEye = vec3(0), vec3 initCenter = vec3(0), vec3 up = vec3(0,1,0)) override {
         view_matrix = LookAt(initEye, initCenter, up);
-        global_view_matrix = LookAt(initEye, initCenter, up);
-        a1 = 0.0;
-        a2= 0.0;
-        x0= 0.0;
-        rh1= 0.0;
-        rh2= 0.0;
-        rh0= 0.0;
-        rv1= 0.0;
-        rv2= 0.0;
-        rv0= 0.0;
-        t= 0.0;
-        trh= 0.0;
-        trv= 0.0;
+        a1 = ACCEL_FACTOR;
+        a2= -ACCEL_FACTOR;
+
+        //--
+        frontTrans = 0.0;
+        frontSpeed = 0.0;
+        sideTrans = 0.0;
+        sideSpeed = 0.0;
+        upTrans = 0.0;
+        upSpeed = 0.0;
+
+
         frontInc = false;
         frontDec= false;
         frontIncv= false;
@@ -71,171 +71,117 @@ public:
         increment= false;
         incrementrh= false;
         incrementrv= false;
-        t10= 0.0;
-        t20= 0.0;
-        rH10= 0.0;
-        rH20= 0.0;
-        rV10= 0.0;
-        rV20= 0.0;
-        AbstractCamera::Init(view_matrix);
-    }
-
-
-    void startIncrementingTranslation(){
-        increment = true;
-        t = 0;
-    }
-
-    void startIncrementingRotationh(){
-        incrementrh = true;
-        trh = 0;
-    }
-
-    void startIncrementingRotationv(){
-        incrementrv = true;
-        trv = 0;
-    }
-
-    void stopIncrementingTranslation(){
-        increment = false;
-        t = 0;
-    }
-
-    void stopIncrementingRotationh(){
-        incrementrh = false;
-        trh=0;
+        AbstractCamera::Init(initEye,initCenter, up);
 
     }
-
-    void stopIncrementingRotationv(){
-        incrementrv = false;
-        trv =0;
-    }
-
 
     void inertiaFunc(bool &front, bool &back,
-                     float &posValue, float &initPos,
+                     float &posValue, float &speedValue,
                      float &fwAccel, float &bwAccel,
-                     int &time, int &fwStartTime, int &bwStartTime,
-                     void (InertiaCamera::*startIncremF)(), void (InertiaCamera::*stopIncremF)()){
-        if((front)){
-            if((posValue) == 0){
-                (this->*startIncremF)();
-                ++(time);
-                (posValue) = 0.5*(fwAccel)*(time)*(time);
-            }
-            if((posValue)>=0 && (posValue) < 0.5*(fwAccel)*MAX_T*MAX_T){
-                (bwAccel) = 0.0;
-                (posValue) = (initPos)+ 0.5*(fwAccel)*(time)*(time);
-            } else if((posValue) >=0.5*(fwAccel)*MAX_T*MAX_T){
-                (bwAccel) = 0.0;
-                (posValue) = (initPos)+0.5*(fwAccel)*MAX_T*MAX_T;
-            } else{
-                (bwAccel) = 0.0;
-                (posValue) = (initPos) + 0.5*(fwAccel)*((time)-(bwStartTime))*((time)-(bwStartTime));
-
-            }
-
-
-        } else if((back)){
-            if((posValue) == 0){
-                (this->*startIncremF)();
-                ++(time);
-                (posValue) = 0.5*(bwAccel)*(time)*(time);
-            }
-            if((posValue)<=0 && (posValue) > 0.5*(bwAccel)*MAX_T*MAX_T){
-                (fwAccel) = 0.0;
-                (posValue) = (initPos)+ 0.5*(bwAccel)*(time)*(time);
-            }else if((posValue) <= 0.5*(bwAccel)*MAX_T*MAX_T){
-                (fwAccel) = 0.0;
-                (posValue) = (initPos)+0.5*(bwAccel)*MAX_T*MAX_T;
-            }else{
-                (fwAccel) = 0.0;
-                (posValue)=  (initPos) + 0.5*(bwAccel)*((time)-(fwStartTime))*((time)-(fwStartTime));
-            }
-
-        }else{
-            if((posValue) > 0){
-                (initPos) = (posValue);
-                (fwAccel) = 0.0;
-                (bwAccel) = -ACCEL_FACTOR;
-                (posValue) = (initPos) + 0.5*(bwAccel)*((time)-(fwStartTime))*((time)-(fwStartTime));
-                if((posValue) <= 0){
-                    (posValue) = 0;
-                }
-            }else if((posValue) < 0){
-                (initPos) = (posValue);
-                (bwAccel) = 0.0;
-                (fwAccel) = ACCEL_FACTOR;
-                (posValue) = (initPos) + 0.5*(fwAccel)*((time)-(bwStartTime))*((time)-(bwStartTime));
-                if((posValue) >=0){
-                    (posValue) = 0;
-                }
-            }
-            else if((posValue) == 0){
-                (this->*stopIncremF)();
-                (fwAccel) = 0.0;
-                (bwAccel) = 0.0;
-                (initPos) =0;
-                (fwStartTime) = 0;
-                (bwStartTime) = 0;
-            }
-        }
+                     bool &incremBool){
+       if(front && incremBool){
+           speedValue = speedValue + fwAccel*delta_t;
+           posValue = posValue + speedValue*delta_t;
+       }
+       else if(back && incremBool){
+           speedValue = speedValue + bwAccel*delta_t;
+           posValue = posValue + speedValue*delta_t;
+       }
+       else if(incremBool){
+           if(posValue > ACCEL_FACTOR){
+               speedValue = speedValue + bwAccel*delta_t;
+               posValue = posValue + speedValue*delta_t;
+               if(posValue <=0){
+                   posValue = 0;
+                   speedValue = 0;
+               }
+           } else if(posValue < - ACCEL_FACTOR){
+               speedValue = speedValue + fwAccel*delta_t;
+               posValue = posValue + speedValue*delta_t;
+               if(posValue >=0){
+                   posValue = 0;
+                   speedValue = 0;
+               }
+           }
+       }
     }
 
+
     void transFunc(bool &front, bool &back){
-        inertiaFunc(front,back, currTrans, x0, a1, a2, t, t10, t20, &InertiaCamera::startIncrementingTranslation,
-                    &InertiaCamera::stopIncrementingTranslation);
-        view_matrix = glm::translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
-        global_view_matrix = glm::translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
+        inertiaFunc(front, back, frontTrans, frontSpeed, a1,a2, increment);
+        view_matrix = glm::translate(IDENTITY_MATRIX, vec3(0.0,0.0,frontTrans))*view_matrix;
         frontInc = false;
         frontDec = false;
     }
 
     void rotHFunc(bool &front, bool &back){
-        inertiaFunc(front, back, currRoth, rh0,rh1,rh2, trh, rH10, rH20,
-                    &InertiaCamera::startIncrementingRotationh, &InertiaCamera::stopIncrementingRotationh);
-
-        view_matrix = glm::rotate(IDENTITY_MATRIX, -currRoth, vec3(1.0,0.0,0.0f))*view_matrix;
-        global_view_matrix = glm::rotate(IDENTITY_MATRIX, -currRoth, vec3(1.0,0.0,0.0f))*view_matrix;
+        inertiaFunc(front, back, sideTrans, sideSpeed, a1,a2, incrementrh);
+        view_matrix = glm::rotate(IDENTITY_MATRIX, -sideTrans, vec3(1.0,0.0,0.0f))*view_matrix;
         frontInch = false;
         frontDech = false;
 
     }
 
     void rotVFunc(bool &front, bool &back){
-        inertiaFunc(front, back, currRotv, rv0, rv1, rv2, trv, rV10, rV20,
-                    &InertiaCamera::startIncrementingRotationv, &InertiaCamera::stopIncrementingRotationv);
-
-        view_matrix = glm::rotate(IDENTITY_MATRIX, -currRotv, vec3(0.0,1.0,0.0f))*view_matrix;
-        global_view_matrix = glm::rotate(IDENTITY_MATRIX, -currRotv, vec3(0.0,1.0,0.0f))*view_matrix;
+        inertiaFunc(front, back, upTrans, upSpeed, a1, a2, incrementrv);
+        view_matrix = glm::rotate(IDENTITY_MATRIX, -upTrans, vec3(0.0,1.0,0.0f))*view_matrix;
         frontIncv = false;
         frontDecv = false;
     }
 
 
-
-
     virtual void animate() override {
+        if(increment){
+            transFunc(frontInc, frontDec);
+        }
+        if(incrementrh){
+            rotHFunc(frontInch, frontDech);
+        }
+        if(incrementrv){
+            rotVFunc(frontIncv, frontDecv);
+        }
 
-        if(increment) {
-            t++;
-            cout << "Pool" << endl;
-        }
-        if(incrementrh) {
-            trh++;
-             cout << "Pool2" << endl;
-        }
-        if(incrementrv) {
-            trv++;
-             cout << "Pool3" << endl;
-        }
-        transFunc(frontInc, frontDec);
-        rotHFunc(frontInch, frontDech);
-        rotVFunc(frontIncv, frontDecv);
         AbstractCamera::Init(view_matrix);
 
     }
+
+
+    virtual void beginFwAccel() override {
+        frontInc = true;
+        frontDec =false;
+        increment = true;
+    }
+
+    virtual void beginBwAccel() override{
+        frontDec = true;
+        frontInc = false;
+        increment = true;
+    }
+
+    virtual void beginYawAccel() override{
+        frontInch = true;
+        frontDech = false;
+        incrementrh = true;
+    }
+
+    virtual void beginReverseYawAccel() override{
+        frontDech = true;
+        frontInch = false;
+        incrementrh = true;
+    }
+
+    virtual void beginPitchAccel() override{
+        frontIncv = true;
+        frontDecv = false;
+        incrementrv = true;
+    }
+
+    virtual void beginReversePitchAccel() override{
+        frontDecv = true;
+        frontIncv = false;
+        incrementrv = true;
+    }
+
 
     void rotate(float x, float z) override {}
 
@@ -245,41 +191,6 @@ public:
 
     virtual void decreaseVelocity() override {}
 
-    virtual void beginFwAccel() override {
-        frontInc = true;
-        a1 = ACCEL_FACTOR;
-        t10 = t;
-    }
-
-    virtual void beginBwAccel() override{
-        frontDec = true;
-        a2 = -ACCEL_FACTOR;
-        t20 = t;
-    }
-
-    virtual void beginYawAccel() override{
-        frontInch = true;
-        rh1 = ACCEL_FACTOR;
-        rH10 = trh;
-    }
-
-    virtual void beginReverseYawAccel() override{
-        frontDech = true;
-        rh2 = -ACCEL_FACTOR;
-        rH20 = trh;
-    }
-
-    virtual void beginPitchAccel() override{
-        frontIncv = true;
-        rv1 = ACCEL_FACTOR;
-        rV10 = trv;
-    }
-
-    virtual void beginReversePitchAccel() override{
-        frontDecv = true;
-        rv2 = -ACCEL_FACTOR;
-        rV20 = trv;
-    }
 
 
 };

@@ -89,7 +89,7 @@ public:
         framebuffer_reflect.Unbind();
 
 
-        fboScatter1.Bind();{
+        fboScatter1.Bind(true);{
             mountains.Draw(offsetX, offsetY, false, model, view, projection);
         }
         fboScatter1.Unbind();

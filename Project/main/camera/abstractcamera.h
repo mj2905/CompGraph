@@ -50,7 +50,7 @@ public:
         global_view_matrix = LookAt(position, center, up);
     }
 
-    virtual void Init(mat4 view_matrix){
+    virtual void Init(mat4 &view_matrix){
         this->view_matrix = view_matrix;
         global_view_matrix = view_matrix;
     }
