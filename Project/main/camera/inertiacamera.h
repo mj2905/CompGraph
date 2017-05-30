@@ -92,12 +92,14 @@ public:
                if(posValue <=0){
                    posValue = 0;
                    speedValue = 0;
+                   incremBool = false;
                }
            } else if(posValue < - ACCEL_FACTOR){
                speedValue = speedValue + a1*delta_t;
                posValue = posValue + speedValue*delta_t;
                if(posValue >=0){
                    posValue = 0;
+                   incremBool = false;
                    speedValue = 0;
                }
            }
