@@ -9,7 +9,7 @@
 #include "icg_helper.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
-
+#include "terrain/terrain.h"
 
 // ----- camera and projection -----
 int window_width = 800;
