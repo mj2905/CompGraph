@@ -163,7 +163,7 @@ void Display() {
     //shadowmap.unbind();
 
     multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
-    algaes.Draw(quad_model_matrix, camera->getView(), projection_matrix);
+    //algaes.Draw(quad_model_matrix, camera->getView(), projection_matrix);
 }
 
 bool iPressed = false, kPressed = false, jPressed = false, lPressed = false;

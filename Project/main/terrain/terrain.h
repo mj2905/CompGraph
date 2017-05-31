@@ -95,20 +95,21 @@ public:
         reflect.Draw(offsetX, offsetY, true, model * rot, view, projection);
         framebuffer_reflect.Unbind();
 
-/*
+
         fboScatter1.Bind(true);{
             mountains.Draw(offsetX, offsetY, false, model, view, projection);
         }
         fboScatter1.Unbind();
-        fboScatter2.Bind();{*/
+        fboScatter2.Bind();
+        {
             skybox.Draw(view * skyboxRot, projection);
             mountains.Draw(offsetX, offsetY, false, model, view, projection, 1);
             water.Draw(offsetX, offsetY, model, view, projection);
-        /*}
+        }
         fboScatter2.Unbind();
 
         screenQuad.Draw(model, view, projection);
-*/
+
 
     }
 
