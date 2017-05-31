@@ -174,9 +174,9 @@ class Water {
             //light_pos = glm::vec3(0.0f, 1, -1);
             //light_pos = glm::vec3(0.0f, 1, -2);
 
-            glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
-            glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
-            glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 0.8f);
+            glm::vec3 La = glm::vec3(1.0f, 1.0f, 0.9f);
+            glm::vec3 Ld = glm::vec3(1.0f, 0.9f, 0.75f);
+            glm::vec3 Ls = glm::vec3(1.0f, 0.9f, 0.75f);
 
             light_pos_id = glGetUniformLocation(program_id_, "light_pos");
 
