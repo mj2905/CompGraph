@@ -10,7 +10,7 @@ const glm::vec3 MODEL_CENTER = glm::vec3(glm::translate(IDENTITY_MATRIX, glm::ve
 
 #define SHADOW_MAP_RES 512
 
-
+#define WATER_HEIGHT 1.43f
 
 //camera switching
 #define KEY_BEZIER_CAMERA GLFW_KEY_1
