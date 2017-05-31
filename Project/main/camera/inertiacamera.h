@@ -182,6 +182,14 @@ public:
         incrementrv = true;
     }
 
+    virtual small_t type_of_camera() override {
+      return CAMERA_TYPE_INERTIA;
+    }
+
+    virtual bool switch_from_camera(mat4& view_matrix) override {
+      AbstractCamera::Init(view_matrix);
+      return true;
+    }
 
     void rotate(float x, float z) override {}
 

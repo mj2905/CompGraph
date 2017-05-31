@@ -11,7 +11,7 @@
 #include <glm/gtx/vector_angle.hpp>
 
 
-
+// ----- camera and projection -----
 int window_width = 800;
 int window_height = 600;
 
@@ -19,7 +19,11 @@ glm::mat4 quad_model_matrix;
 glm::mat4 global_view_matrix;
 glm::vec3 global_position = glm::vec3(0.0f, -0.25f, -3.2);
 
-//FPS camera
+bool switching_camera = false;
+// ---------------------------------
+
+
+// --------- FPS camera -------------
 #define INCREMENT_STEPS (0.028f)
 #define MULTITILES_INCREMENT (0.0001f)
 #define WASD_NULL (0)
@@ -30,6 +34,7 @@ glm::vec3 global_position = glm::vec3(0.0f, -0.25f, -3.2);
 GLfloat global_angle_x = 0.528f;
 
 uint8_t wasd_direction[2] = {WASD_NULL, WASD_NULL};
+// ----------------------------------
 
 
 

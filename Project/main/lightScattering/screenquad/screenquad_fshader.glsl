@@ -16,12 +16,12 @@ uniform vec2 light_position;
 
 const float exposure = 0.0024f;
 const float decay = 0.99;
-const float density = 0.5f;
-const float weight = 7.7f;
+const float density = 0.4f;
+const float weight = 5.7f;
 
 
 
-const int NUM_SAMPLES = 64;
+const int NUM_SAMPLES = 128;
 
 void main()
 {

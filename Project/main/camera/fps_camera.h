@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "abstractcamera.h"
 #include "../terrain/terrain.h"
 #include "../globals.h"
 #include "../constants.h"
@@ -188,6 +189,15 @@ public:
 
         AbstractCamera::Init(position, center, up);
 
+    }
+
+    virtual small_t type_of_camera() override {
+      return CAMERA_TYPE_FPS;
+    }
+
+    virtual bool switch_from_camera(mat4& view_matrix) override {
+      AbstractCamera::Init(view_matrix);
+      return true;
     }
 
     virtual void move(float x, float y, float z) override {}

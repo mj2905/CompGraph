@@ -41,6 +41,7 @@ mat4 projection_matrix;
 LightSource light;
 AbstractCamera* camera;
 
+
 Terrain* terrain;
 
 float old_x, old_y;
@@ -140,6 +141,13 @@ void Init() {
     //camera = new InertiaCamera();
     //rcamera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
     camera = new fps_camera(*terrain, multitiles);
+
+    //cams[CAMERA_TYPE_NORMAL] = new Camera(multitiles);
+    //cams[CAMERA_TYPE_INERTIA] = new InertiaCamera();
+    //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
+    //cams[CAMERA_TYPE_FPS] = new class fps_camera(*terrain, multitiles);
+
+    //camera = cams[CAMERA_TYPE_NORMAL];
     camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -255,6 +263,8 @@ void MousePos(GLFWwindow* window, double x, double y) {
 
 // Gets called when the windows/framebuffer is resized.
 void SetupProjection(GLFWwindow* window, int width, int height) {
+
+    bool modified = window_width != width || window_height != height;
     window_width = width;
     window_height = height;
 
@@ -267,13 +277,11 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
     projection_matrix = PerspectiveProjection(45.0f,
                                               (GLfloat)window_width / window_height,
                                               0.1f, 100.0f);
+    if(modified) {
+        multitiles.Cleanup();
+        multitiles.Init(width, height, light);
+    }
 
-    multitiles.Cleanup();
-    multitiles.Init(width, height, light);
-
-    //GLfloat top = 1.0f;
-    //GLfloat right = (GLfloat)window_width / window_height * top;
-    //projection_matrix = OrthographicProjection(-right, right, -top, top, -10.0, 10.0f);
 }
 
 void ErrorCallback(int error, const char* description) {
@@ -283,101 +291,117 @@ void ErrorCallback(int error, const char* description) {
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
-  //FPS
-   if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
-       wasd_direction[0] = WASD_W;
-   }
-   else if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
-       wasd_direction[0] = WASD_NULL;
-   }
-   if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
-       wasd_direction[0] = WASD_S;
-   }
-   else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-       wasd_direction[0] = WASD_NULL;
-   }
-   if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
-       wasd_direction[1] = WASD_A;
-   }
-   else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
-       wasd_direction[1] = WASD_NULL;
-   }
-   if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-       //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
-       wasd_direction[1] = WASD_D;
-   }
-   else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
-       wasd_direction[1] = WASD_NULL;
-     }
+  if (!switching_camera) {
+
+
+    //switching camera
+    if (key == KEY_NORMAL_CAMERA && camera->type_of_camera() != CAMERA_TYPE_NORMAL) {
+      delete camera;
+      camera = new Camera();
+      camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+    }
+
+    else if (key == KEY_INERTIA_CAMERA && camera->type_of_camera() != CAMERA_TYPE_INERTIA) {
+      delete camera;
+      camera = new InertiaCamera();
+      camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+    }
+    else if (key == KEY_FPS_CAMERA && camera->type_of_camera() != CAMERA_TYPE_FPS) {
+      delete camera;
+      camera = new fps_camera(*terrain, multitiles);
+      camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
+    }
+
+    //FPS
+    if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+      //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+      wasd_direction[0] = WASD_W;
+    }
+    else if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
+      wasd_direction[0] = WASD_NULL;
+    }
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+      //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+      wasd_direction[0] = WASD_S;
+    }
+    else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+      wasd_direction[0] = WASD_NULL;
+    }
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+      //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+      wasd_direction[1] = WASD_A;
+    }
+    else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+      wasd_direction[1] = WASD_NULL;
+    }
+    if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+      //view_matrix = translate(IDENTITY_MATRIX, vec3(0, 0, 0.1)) * view_matrix;
+      wasd_direction[1] = WASD_D;
+    }
+    else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+      wasd_direction[1] = WASD_NULL;
+    }
 
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GL_TRUE);
+      glfwSetWindowShouldClose(window, GL_TRUE);
     }
     if(key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginFwAccel();
+      camera->beginFwAccel();
     }
     if(key == GLFW_KEY_K &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginBwAccel();
+      camera->beginBwAccel();
     }
     if(key == GLFW_KEY_Q &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginYawAccel();
+      camera->beginYawAccel();
     }
     if(key == GLFW_KEY_E &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginReverseYawAccel();
+      camera->beginReverseYawAccel();
 
     }
     if(key == GLFW_KEY_J &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginPitchAccel();
+      camera->beginPitchAccel();
 
     }
-    if(key == GLFW_KEY_L &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginReversePitchAccel();
-    }
-
-
 
     if(key == GLFW_KEY_L &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
         camera->beginReversePitchAccel();
     }
 
     if (key == GLFW_KEY_UP) {
-        if(action == GLFW_PRESS) {
-            upPressed = true;
-        }
-        else if(action == GLFW_RELEASE) {
-            upPressed = false;
-        }
+      if(action == GLFW_PRESS) {
+        upPressed = true;
+      }
+      else if(action == GLFW_RELEASE) {
+        upPressed = false;
+      }
     }
 
     if (key == GLFW_KEY_DOWN) {
-        if(action == GLFW_PRESS) {
-            downPressed = true;
-        }
-        else if(action == GLFW_RELEASE) {
-            downPressed = false;
-        }
+      if(action == GLFW_PRESS) {
+        downPressed = true;
+      }
+      else if(action == GLFW_RELEASE) {
+        downPressed = false;
+      }
     }
 
     if (key == GLFW_KEY_LEFT) {
-        if(action == GLFW_PRESS) {
-            leftPressed = true;
-        }
-        else if(action == GLFW_RELEASE) {
-            leftPressed = false;
-        }
+      if(action == GLFW_PRESS) {
+        leftPressed = true;
+      }
+      else if(action == GLFW_RELEASE) {
+        leftPressed = false;
+      }
     }
 
     if (key == GLFW_KEY_RIGHT) {
-        if(action == GLFW_PRESS) {
-            rightPressed = true;
-        }
-        else if(action == GLFW_RELEASE) {
-            rightPressed = false;
-        }
+      if(action == GLFW_PRESS) {
+        rightPressed = true;
+      }
+      else if(action == GLFW_RELEASE) {
+        rightPressed = false;
+      }
     }
 
     if (key == GLFW_KEY_LEFT_SHIFT) {
@@ -417,11 +441,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 
     if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->increaseVelocity();
+      camera->increaseVelocity();
     }
     if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->decreaseVelocity();
+      camera->decreaseVelocity();
     }
+  }
 }
 
 
@@ -474,11 +499,6 @@ int main(int argc, char *argv[]) {
     }
 
     cout << "OpenGL" << glGetString(GL_VERSION) << endl;
-
-    //vector<vec3> points = {vec3(0), vec3(1, 1, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0)};
-    //Bezier bezier(points);
-    //float t = 0.2;
-    //cout << bezier.apply(t).x << " " << bezier.apply(t).y << " " << bezier.apply(t).z << endl;
 
     // initialize our OpenGL program
     Init();
