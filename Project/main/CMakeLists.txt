@@ -25,7 +25,8 @@ file(GLOB SHADERS
   shadow/*.glsl
   lightScattering/mesh/*.glsl
   lightScattering/quad/*.glsl
-  lightScattering/screenquad/*.glsl)
+  lightScattering/screenquad/*.glsl
+  L-tree/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 file(GLOB OBJ_FILES
