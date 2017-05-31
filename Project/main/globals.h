@@ -38,7 +38,7 @@ bool switching_camera = false;
 #define QE_KEYS (2)
 GLfloat global_angle_x = 0.528f;
 
-uint8_t wasdqe_direction[2] = {WASDQE_NULL, WASDQE_NULL};
+uint8_t wasdqe_direction[3] = {WASDQE_NULL, WASDQE_NULL, WASDQE_NULL};
 // ----------------------------------
 
 
