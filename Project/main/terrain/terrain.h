@@ -30,7 +30,7 @@ private:
     FrameBufferScattering fboScatter1, fboScatter2;
     ScreenQuad screenQuad;
 
-    const string skyboxTexture = "miramar";
+    const string skyboxTexture = "ely_cloudtop";
     GLsizei width;
         GLsizei height;
 
@@ -77,7 +77,7 @@ public:
 
 
 
-        mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100, vec3(0,1,0));
+        mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, 2.8f, vec3(0,1,0));
         fboScatter1.Clear();
         fboScatter2.Clear();
 

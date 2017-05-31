@@ -56,9 +56,6 @@ public:
         position += zpivot * z + xpivot * x + up*y;
         center += xpivot * x + zpivot * z + up*y;
 
-        cout << "position " << position.x << " " << position.y << " " << position.z << endl;
-        cout << "center " << center.x << " " << center.y << " " << center.z << endl;
-
         AbstractCamera::Init(position, center, up);
 
     }

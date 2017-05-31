@@ -14,14 +14,14 @@ uniform int RENDER_RES;
 
 uniform vec2 light_position;
 
-const float exposure = 0.0024f;
+const float exposure = 0.0022f;
 const float decay = 0.99;
-const float density = 0.4f;
+const float density = 0.5f;
 const float weight = 5.7f;
 
 
 
-const int NUM_SAMPLES = 128;
+const int NUM_SAMPLES = 64;
 
 void main()
 {
@@ -42,5 +42,6 @@ void main()
     }
 
     //color = vec4(c*exposure, 1.0f);
-    color =  mix(vec4(c*exposure, 1.0f), texture(tex2,uv),0.5);
+    //color =  mix(vec4(c*exposure, 1.0f), texture(tex2,uv),0.65);
+    color = texture(tex2,uv)*0.96 + vec4(c*exposure, 0)/2;
 }
