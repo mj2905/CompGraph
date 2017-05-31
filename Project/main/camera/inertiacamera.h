@@ -6,8 +6,11 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "abstractcamera.h"
-#define ACCEL_FACTOR 0.00005
+#define ACCEL_FACTOR 0.000005
 #define MAX_T 10
+#define delta_t 1.0f
+#define a1 ACCEL_FACTOR
+#define a2 -ACCEL_FACTOR
 
 using namespace glm;
 
@@ -15,207 +18,172 @@ class InertiaCamera : public AbstractCamera {
 
 private:
 
-    float a1, a2, currTrans, x0, rh1, rh2, currRoth, rh0, rv1, rv2, currRotv, rv0;
-    int t, trh, trv,t10, t20, rH10, rH20,rV10, rV20;
+    float frontTrans, frontSpeed, sideTrans, sideSpeed, upTrans, upSpeed;
     bool frontInc, frontDec,frontIncv, frontDecv,frontInch, frontDech;
     bool increment, incrementrh, incrementrv;
     glm::mat4 view_matrix;
 
     mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
-    // we need a function that converts from world coordinates into camera coordiantes.
-    //
-    // cam coords to world coords is given by:
-    // X_world = R * X_cam + eye
-    //
-    // inverting it leads to:
-    //
-    // X_cam = R^T * X_world - R^T * eye
-    //
-    // or as a homogeneous matrix:
-    // [ r_00 r_10 r_20 -r_0*eye
-    //   r_01 r_11 r_21 -r_1*eye
-    //   r_02 r_12 r_22 -r_2*eye
-    //      0    0    0        1 ]
+        vec3 z_cam = normalize(eye - center);
+        vec3 x_cam = normalize(cross(up, z_cam));
+        vec3 y_cam = cross(z_cam, x_cam);
 
-    vec3 z_cam = normalize(eye - center);
-    vec3 x_cam = normalize(cross(up, z_cam));
-    vec3 y_cam = cross(z_cam, x_cam);
+        mat3 R(x_cam, y_cam, z_cam);
+        R = transpose(R);
 
-    mat3 R(x_cam, y_cam, z_cam);
-    R = transpose(R);
-
-    mat4 look_at(vec4(R[0], 0.0f),
-            vec4(R[1], 0.0f),
-            vec4(R[2], 0.0f),
-            vec4(-R * (eye), 1.0f));
-    return look_at;
-}
+        mat4 look_at(vec4(R[0], 0.0f),
+                vec4(R[1], 0.0f),
+                vec4(R[2], 0.0f),
+                vec4(-R * (eye), 1.0f));
+        return look_at;
+    }
 
 
 public:
 
-    InertiaCamera() : AbstractCamera(), a1(0.0),
-        a2(0.0), x0(0.0), rh1(0.0), rh2(0.0), rh0(0.0), rv1(0.0), rv2(0.0), rv0(0.0), t(0), trh(0), trv(0),
+    InertiaCamera() : AbstractCamera(),/* a1(0.0),
+        a2(0.0),*/
         frontInc(false), frontDec(false), frontIncv(false), frontDecv(false), frontInch(false), frontDech(false),
-        increment(false), incrementrh(false), incrementrv(false),
-        t10(0), t20(0), rH10(0), rH20(0), rV10(0), rV20(0){}
+        frontTrans(0.0), frontSpeed(0.0), sideTrans(0.0), sideSpeed(0.0), upTrans(0.0), upSpeed(0.0),
+        increment(false), incrementrh(false), incrementrv(false){}
 
     virtual ~InertiaCamera() {}
 
     virtual void Init(vec3 initEye = vec3(0), vec3 initCenter = vec3(0), vec3 up = vec3(0,1,0)) override {
         view_matrix = LookAt(initEye, initCenter, up);
-        AbstractCamera::Init(view_matrix);
-    }
+
+        frontTrans = 0.0;
+        frontSpeed = 0.0;
+        sideTrans = 0.0;
+        sideSpeed = 0.0;
+        upTrans = 0.0;
+        upSpeed = 0.0;
 
 
-    void startIncrementingTranslation(){
-        increment = true;
-        t = 0;
-    }
-
-    void startIncrementingRotationh(){
-        incrementrh = true;
-        trh = 0;
-    }
-
-    void startIncrementingRotationv(){
-        incrementrv = true;
-        trv = 0;
-    }
-
-    void stopIncrementingTranslation(){
-        increment = false;
-        t = 0;
-    }
-
-    void stopIncrementingRotationh(){
-        incrementrh = false;
-        trh=0;
+        frontInc = false;
+        frontDec= false;
+        frontIncv= false;
+        frontDecv= false;
+        frontInch= false;
+        frontDech= false;
+        increment= false;
+        incrementrh= false;
+        incrementrv= false;
+        AbstractCamera::Init(initEye,initCenter, up);
 
     }
 
-    void stopIncrementingRotationv(){
-        incrementrv = false;
-        trv =0;
+    void inertiaFunc(bool &front, bool &back,
+                     float &posValue, float &speedValue,
+                     /*float &fwAccel, float &bwAccel,*/
+                     bool &incremBool){
+       if(front && incremBool){
+           speedValue = speedValue + a1*delta_t;
+           posValue = posValue + speedValue*delta_t;
+       }
+       else if(back && incremBool){
+           speedValue = speedValue + a2*delta_t;
+           posValue = posValue + speedValue*delta_t;
+       }
+       else if(incremBool){
+           if(posValue > ACCEL_FACTOR){
+               speedValue = speedValue + a2*delta_t;
+               posValue = posValue + speedValue*delta_t;
+               if(posValue <=0){
+                   posValue = 0;
+                   speedValue = 0;
+                   incremBool = false;
+               }
+           } else if(posValue < - ACCEL_FACTOR){
+               speedValue = speedValue + a1*delta_t;
+               posValue = posValue + speedValue*delta_t;
+               if(posValue >=0){
+                   posValue = 0;
+                   incremBool = false;
+                   speedValue = 0;
+               }
+           }
+       }
     }
 
 
-    void inertiaFunc(bool *front, bool* back,
-                     float *posValue, float *initPos,
-                     float *fwAccel, float *bwAccel,
-                     int *time, int *fwStartTime, int *bwStartTime,
-                     void (InertiaCamera::*startIncremF)(), void (InertiaCamera::*stopIncremF)()){
-        if((*front)){
-            if((*posValue) == 0){
-                (this->*startIncremF)();
-                ++(*time);
-                (*posValue) = 0.5*(*fwAccel)*(*time)*(*time);
-            }
-            if((*posValue)>=0 && (*posValue) < 0.5*(*fwAccel)*MAX_T*MAX_T){
-                (*bwAccel) = 0.0;
-                (*posValue) = (*initPos)+ 0.5*(*fwAccel)*(*time)*(*time);
-            } else if((*posValue) >=0.5*(*fwAccel)*MAX_T*MAX_T){
-                (*bwAccel) = 0.0;
-                (*posValue) = (*initPos)+0.5*(*fwAccel)*MAX_T*MAX_T;
-            } else{
-                (*bwAccel) = 0.0;
-                (*posValue) = (*initPos) + 0.5*(*fwAccel)*((*time)-(*bwStartTime))*((*time)-(*bwStartTime));
-
-            }
-
-
-        } else if((*back)){
-            if((*posValue) == 0){
-                (this->*startIncremF)();
-                ++(*time);
-                (*posValue) = 0.5*(*bwAccel)*(*time)*(*time);
-            }
-            if((*posValue)<=0 && (*posValue) > 0.5*(*bwAccel)*MAX_T*MAX_T){
-                (*fwAccel) = 0.0;
-                (*posValue) = (*initPos)+ 0.5*(*bwAccel)*(*time)*(*time);
-            }else if((*posValue) <= 0.5*(*bwAccel)*MAX_T*MAX_T){
-                (*fwAccel) = 0.0;
-                (*posValue) = (*initPos)+0.5*(*bwAccel)*MAX_T*MAX_T;
-            }else{
-                (*fwAccel) = 0.0;
-                (*posValue)=  (*initPos) + 0.5*(*bwAccel)*((*time)-(*fwStartTime))*((*time)-(*fwStartTime));
-            }
-
-        }else{
-            if((*posValue) > 0){
-                (*initPos) = (*posValue);
-                (*fwAccel) = 0.0;
-                (*bwAccel) = -ACCEL_FACTOR;
-                (*posValue) = (*initPos) + 0.5*(*bwAccel)*((*time)-(*fwStartTime))*((*time)-(*fwStartTime));
-                if((*posValue) <= 0){
-                    (*posValue) = 0;
-                }
-            }else if((*posValue) < 0){
-                (*initPos) = (*posValue);
-                (*bwAccel) = 0.0;
-                (*fwAccel) = ACCEL_FACTOR;
-                (*posValue) = (*initPos) + 0.5*(*fwAccel)*((*time)-(*bwStartTime))*((*time)-(*bwStartTime));
-                if((*posValue) >=0){
-                    (*posValue) = 0;
-                }
-            }
-            else if((*posValue) == 0){
-                (this->*stopIncremF)();
-                (*fwAccel) = 0.0;
-                (*bwAccel) = 0.0;
-                (*initPos) =0;
-                (*fwStartTime) = 0;
-                (*bwStartTime) = 0;
-            }
-        }
-    }
-
-    void transFunc(bool *front, bool *back){
-        inertiaFunc(front,back, &currTrans, &x0, &a1, &a2, &t, &t10, &t20, &InertiaCamera::startIncrementingTranslation,
-                    &InertiaCamera::stopIncrementingTranslation);
-        view_matrix = glm::translate(IDENTITY_MATRIX, vec3(0.0,0.0,currTrans))*view_matrix;
+    void transFunc(bool &front, bool &back){
+        inertiaFunc(front, back, frontTrans, frontSpeed, /*a1,a2,*/ increment);
+        view_matrix = glm::translate(IDENTITY_MATRIX, vec3(0.0,0.0,frontTrans))*view_matrix;
         frontInc = false;
         frontDec = false;
     }
 
-    void rotHFunc(bool *front, bool *back){
-        inertiaFunc(front, back, &currRoth, &rh0,&rh1,&rh2, &trh, &rH10, &rH20,
-                    &InertiaCamera::startIncrementingRotationh, &InertiaCamera::stopIncrementingRotationh);
-
-        view_matrix = glm::rotate(IDENTITY_MATRIX, -currRoth, vec3(1.0,0.0,0.0f))*view_matrix;
+    void rotHFunc(bool &front, bool &back){
+        inertiaFunc(front, back, sideTrans, sideSpeed, /*a1,a2,*/ incrementrh);
+        view_matrix = glm::rotate(IDENTITY_MATRIX, -sideTrans, vec3(1.0,0.0,0.0f))*view_matrix;
         frontInch = false;
         frontDech = false;
 
     }
 
-    void rotVFunc(bool *front, bool *back){
-        inertiaFunc(front, back, &currRotv, &rv0, &rv1, &rv2, &trv, &rV10, &rV20,
-                    &InertiaCamera::startIncrementingRotationv, &InertiaCamera::stopIncrementingRotationv);
-
-        view_matrix = glm::rotate(IDENTITY_MATRIX, -currRotv, vec3(0.0,1.0,0.0f))*view_matrix;
+    void rotVFunc(bool &front, bool &back){
+        inertiaFunc(front, back, upTrans, upSpeed,/* a1, a2, */incrementrv);
+        view_matrix = glm::rotate(IDENTITY_MATRIX, -upTrans, vec3(0.0,1.0,0.0f))*view_matrix;
         frontIncv = false;
         frontDecv = false;
     }
 
 
-
-
     virtual void animate() override {
+        if(increment){
+            transFunc(frontInc, frontDec);
+        }
+        if(incrementrh){
+            rotHFunc(frontInch, frontDech);
+        }
+        if(incrementrv){
+            rotVFunc(frontIncv, frontDecv);
+        }
 
-        if(increment) {
-            t++;
-        }
-        if(incrementrh) {
-            trh++;
-        }
-        if(incrementrv) {
-            trv++;
-        }
-        transFunc(&frontInc, &frontDec);
-        rotHFunc(&frontInch, &frontDech);
-        rotVFunc(&frontIncv, &frontDecv);
         AbstractCamera::Init(view_matrix);
 
+    }
+
+
+    virtual void beginFwAccel() override {
+        frontInc = true;
+        frontDec =false;
+        increment = true;
+    }
+
+    virtual void beginBwAccel() override{
+        frontDec = true;
+        frontInc = false;
+        increment = true;
+    }
+
+    virtual void beginYawAccel() override{
+        frontInch = true;
+        frontDech = false;
+        incrementrh = true;
+    }
+
+    virtual void beginReverseYawAccel() override{
+        frontDech = true;
+        frontInch = false;
+        incrementrh = true;
+    }
+
+    virtual void beginPitchAccel() override{
+        frontIncv = true;
+        frontDecv = false;
+        incrementrv = true;
+    }
+
+    virtual void beginReversePitchAccel() override{
+        frontDecv = true;
+        frontIncv = false;
+        incrementrv = true;
+    }
+
+    virtual small_t type_of_camera() override {
+      return CAMERA_TYPE_INERTIA;
     }
 
     void rotate(float x, float z) override {}
@@ -226,41 +194,8 @@ public:
 
     virtual void decreaseVelocity() override {}
 
-    virtual void beginFwAccel() override {
-        frontInc = true;
-        a1 = ACCEL_FACTOR;
-        t10 = t;
-    }
+    virtual void update_height() override {}
 
-    virtual void beginBwAccel() override{
-        frontDec = true;
-        a2 = -ACCEL_FACTOR;
-        t20 = t;
-    }
-
-    virtual void beginYawAccel() override{
-        frontInch = true;
-        rh1 = ACCEL_FACTOR;
-        rH10 = trh;
-    }
-
-    virtual void beginReverseYawAccel() override{
-        frontDech = true;
-        rh2 = -ACCEL_FACTOR;
-        rH20 = trh;
-    }
-
-    virtual void beginPitchAccel() override{
-        frontIncv = true;
-        rv1 = ACCEL_FACTOR;
-        rV10 = trv;
-    }
-
-    virtual void beginReversePitchAccel() override{
-        frontDecv = true;
-        rv2 = -ACCEL_FACTOR;
-        rV20 = trv;
-    }
 
 
 };

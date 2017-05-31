@@ -60,6 +60,10 @@ public:
         terrain.Draw(x_visible, y_visible, model, view, projection, drawBlack);
     }
 
+    Terrain* getTerrain() {
+      return &terrain;
+    }
+
     void incrementX(float INCREMENT) {
 
         assert(INCREMENT < 0.5);

@@ -31,7 +31,9 @@ private:
     FrameBufferScattering fboScatter1, fboScatter2;
     ScreenQuad screenQuad;
 
-    const string skyboxTexture = "miramar";
+    const string skyboxTexture = "ely_cloudtop";
+    GLsizei width;
+        GLsizei height;
 
 public:
     void Init(size_t width, size_t height, LightSource &light) {
@@ -53,6 +55,8 @@ public:
 
         framebuffer_shadow.Init(width, height, true);
         shadow.Init(framebuffer_shadow.getTextureId());
+        this->width = width;
+        this->height = height;
     }
 
     void changeTexture(const array<GLuint, 4>& textures) {
@@ -74,7 +78,7 @@ public:
 
 
 
-        mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100, vec3(0,1,0));
+        mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, 2.8f + (float)glfwGetTime()/100, vec3(0,1,0));
         fboScatter1.Clear();
         fboScatter2.Clear();
 
@@ -86,7 +90,7 @@ public:
         framebuffer_reflect.Unbind();
 
 
-        fboScatter1.Bind();{
+        fboScatter1.Bind(true);{
             mountains.Draw(offsetX, offsetY, false, model, view, projection);
         }
         fboScatter1.Unbind();
@@ -101,6 +105,26 @@ public:
 
 
     }
+
+    float getCurrentHeight() {
+          GLfloat ret = 0.1f;
+          framebuffer_terrain.Bind();
+        //  glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
+          glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
+          framebuffer_terrain.Unbind();
+
+          return ret;
+        }
+
+        float getCurrentHeight(GLuint width, GLuint height) {
+              GLfloat ret = 0.1f;
+              framebuffer_terrain.Bind();
+            //  glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
+              glReadPixels(width, height, 1, 1, GL_RED, GL_FLOAT, &ret);
+              framebuffer_terrain.Unbind();
+
+              return ret;
+            }
 
     void Cleanup() {
         mountainsCreator.Cleanup();

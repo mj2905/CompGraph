@@ -7,6 +7,9 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "constants.h"
+#include "globals.h"
+
 #include "water/water.h"
 
 #include "trackball.h"
@@ -19,6 +22,10 @@
 #include "camera/beziercamera.h"
 #include "camera/camera.h"
 #include "camera/inertiacamera.h"
+#include "camera/fps_camera.h"
+#include "camera/fps_camera2.h"
+
+#include "shadowmap/shadowmap.h"
 
 constexpr float NB_FPS = 60.0;
 
@@ -28,19 +35,15 @@ const unsigned int OFFSET_Y = 257;
 
 MultiTiles multitiles(OFFSET_X, OFFSET_Y);
 
-int window_width = 800;
-int window_height = 600;
-
-
-
 using namespace glm;
 
 mat4 projection_matrix;
 
-mat4 quad_model_matrix;
-mat4 quad_model_matrix_base;
 LightSource light;
 AbstractCamera* camera;
+
+
+Terrain* terrain;
 
 float old_x, old_y;
 
@@ -122,55 +125,102 @@ void Init() {
                          vec3(0.0f, 1.0f, 0.0f));*/
     //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
 
-    //camera = new Camera(multitiles);
-    camera = new InertiaCamera();
-    //camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
 
-    camera->Init(vec3(-2, 1.3, 1), vec3(-1.0f, 1.1f, -1.2f), vec3(0.0f, 1.0f, 0.0f));
 
-    quad_model_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -0.25f, -3.2)) * glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
 
-    vec3 light_init = vec3(1.0,1.0,-1.0); // NOTE: IT IS NOT ALIGNED WITH THE SUN OF THE SKYBOX
+
+    quad_model_matrix = glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
+
+    vec3 light_init = vec3(-0.5,4.0,-1.5); // NOTE: IT IS NOT ALIGNED WITH THE SUN OF THE SKYBOX
     light.Init(light_init.x, light_init.y, light_init.z);
 
     multitiles.Init(window_width, window_height, light);
 
+    terrain = multitiles.getTerrain();
+
+    //camera = new InertiaCamera();
+    camera = new InertiaCamera();
+    camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 }
+
+vec3 up = vec3(0.0f, 1.0f, 0.0f);
+
+vec3 center = vec3(-1.0f, 1.1f, -1.2f);
+
+
 
 
 // gets called for every frame.
 void Display() {
 
+    camera->animate();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glViewport(0, 0, window_width, window_height);
 
-    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
 
-    camera->animate();
+    //generating real-time shadowmap
+
+    //shadowmap.bind(quad_model_matrix);
+    //multitiles.Draw(quad_model_matrix, camera->getView(), shadow_projection);
+    //shadowmap.unbind();
+
+    multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
 }
 
-bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
+bool iPressed = false, kPressed = false, jPressed = false, lPressed = false;
 
 void Update() {
     //multitiles.incrementY(); //to move with the camera
 
-    float increment = 0.05f;
 
-    if(upPressed and not downPressed) {
-        camera->move(0, 0, increment);
+    if(iPressed and not kPressed){
+        multitiles.incrementY(0.01);
+        camera->update_height();
     }
-    if(downPressed and not upPressed) {
-        camera->move(0, 0, -increment);
+    if(kPressed and not iPressed){
+        multitiles.decrementY(0.01);
+        camera->update_height();
     }
-    if(leftPressed and not rightPressed) {
-        camera->move(increment, 0, 0);
+
+    if(jPressed and not lPressed){
+        multitiles.decrementX(0.01);
     }
-    if(rightPressed and not leftPressed) {
-        camera->move(-increment, 0, 0);
+    if(lPressed and not jPressed){
+        multitiles.incrementX(0.01);
     }
+
+
+    if(wasdqe_direction[0] == WASDQE_W) {
+        camera->beginFwAccel();
+        camera->increaseVelocity();
+        camera->move(0, 0, 1);
+    }
+    else if(wasdqe_direction[0] == WASDQE_S) {
+        camera->beginBwAccel();
+        camera->decreaseVelocity();
+        camera->move(0, 0, -1);
+    }
+    if(wasdqe_direction[1] == WASDQE_A) {
+        camera->beginPitchAccel();
+        camera->move(1, 0, 0);
+    }
+    else if(wasdqe_direction[1] == WASDQE_D) {
+        camera->beginReversePitchAccel();
+        camera->move(-1, 0, 0);
+    }
+    if(wasdqe_direction[2] == WASDQE_Q) {
+        camera->beginYawAccel();
+    }
+    else if(wasdqe_direction[2] == WASDQE_E) {
+        camera->beginReverseYawAccel();
+    }
+
+
 }
 
 // transforms glfw screen coordinates into normalized OpenGL coordinates.
@@ -220,6 +270,7 @@ void MousePos(GLFWwindow* window, double x, double y) {
 
 // Gets called when the windows/framebuffer is resized.
 void SetupProjection(GLFWwindow* window, int width, int height) {
+
     window_width = width;
     window_height = height;
 
@@ -232,13 +283,9 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
     projection_matrix = PerspectiveProjection(45.0f,
                                               (GLfloat)window_width / window_height,
                                               0.1f, 100.0f);
-
     multitiles.Cleanup();
     multitiles.Init(width, height, light);
 
-    //GLfloat top = 1.0f;
-    //GLfloat right = (GLfloat)window_width / window_height * top;
-    //projection_matrix = OrthographicProjection(-right, right, -top, top, -10.0, 10.0f);
 }
 
 void ErrorCallback(int error, const char* description) {
@@ -247,71 +294,128 @@ void ErrorCallback(int error, const char* description) {
 
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GL_TRUE);
+      glfwSetWindowShouldClose(window, GL_TRUE);
     }
-    if(key == GLFW_KEY_I && (action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginFwAccel();
-    }
-    if(key == GLFW_KEY_K &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginBwAccel();
-    }
-    if(key == GLFW_KEY_Q &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginYawAccel();
-    }
-    if(key == GLFW_KEY_E &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginReverseYawAccel();
 
+    //switching camera
+    if (key == KEY_BEZIER_CAMERA && camera->type_of_camera() != CAMERA_TYPE_BEZIER) {
+      delete camera;
+      camera = new BezierCamera({vec3(-1.7f, 3, 4), vec3(-1.5f,1.85f,3.15f), vec3(-4, 3.7, -2.4), vec3(-2.5f, 2.5f, 1), vec3(-3.5f, 3.5f, -3.8f)},
+                                {vec3(-1,1.6,1.9), vec3(-0.7f,1.6,-1.5), vec3(-1.3, 2, -1), vec3(-2,2.2f,-2.25f)});
+      camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
     }
-    if(key == GLFW_KEY_J &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginPitchAccel();
 
+    else if (key == KEY_INERTIA_CAMERA && camera->type_of_camera() != CAMERA_TYPE_INERTIA) {
+      delete camera;
+      camera = new InertiaCamera();
+      camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
     }
-    if(key == GLFW_KEY_L &&(action == GLFW_PRESS || action == GLFW_REPEAT)){
-        camera->beginReversePitchAccel();
+    else if (key == KEY_FPS_CAMERA && camera->type_of_camera() != CAMERA_TYPE_FPS) {
+      delete camera;
+      camera = new FPSCamera2(*terrain);
+      camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
+      camera->update_height();
+    }
+    else if (key == KEY_NORMAL_CAMERA && camera->type_of_camera() != CAMERA_TYPE_NORMAL) {
+      delete camera;
+      camera = new Camera();
+      camera->Init(vec3(0,3.7,-2.3), vec3(-0.25f, 1, 0.44f), vec3(0.0f, 1.0f, 0.0f));
+    }
 
-    }
-    if (key == GLFW_KEY_UP) {
+
+    //FPS
+    if (key == GLFW_KEY_W) {
         if(action == GLFW_PRESS) {
-            upPressed = true;
+            wasdqe_direction[WS_KEYS] = WASDQE_W;
         }
         else if(action == GLFW_RELEASE) {
-            upPressed = false;
+            wasdqe_direction[WS_KEYS] = WASDQE_NULL;
         }
     }
 
-    if (key == GLFW_KEY_DOWN) {
+    if (key == GLFW_KEY_S) {
         if(action == GLFW_PRESS) {
-            downPressed = true;
+            wasdqe_direction[WS_KEYS] = WASDQE_S;
         }
         else if(action == GLFW_RELEASE) {
-            downPressed = false;
+            wasdqe_direction[WS_KEYS] = WASDQE_NULL;
         }
     }
 
-    if (key == GLFW_KEY_LEFT) {
+    if (key == GLFW_KEY_A) {
         if(action == GLFW_PRESS) {
-            leftPressed = true;
+            wasdqe_direction[AD_KEYS] = WASDQE_A;
         }
         else if(action == GLFW_RELEASE) {
-            leftPressed = false;
+            wasdqe_direction[AD_KEYS] = WASDQE_NULL;
         }
     }
 
-    if (key == GLFW_KEY_RIGHT) {
+    if (key == GLFW_KEY_D) {
         if(action == GLFW_PRESS) {
-            rightPressed = true;
+            wasdqe_direction[AD_KEYS] = WASDQE_D;
+        }
+        else if (action == GLFW_RELEASE) {
+            wasdqe_direction[AD_KEYS] = WASDQE_NULL;
+        }
+    }
+
+    if (key == GLFW_KEY_Q) {
+        if(action == GLFW_PRESS) {
+            wasdqe_direction[QE_KEYS] = WASDQE_Q;
         }
         else if(action == GLFW_RELEASE) {
-            rightPressed = false;
+            wasdqe_direction[QE_KEYS] = WASDQE_NULL;
         }
     }
-    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->increaseVelocity();
+
+    if (key == GLFW_KEY_E) {
+        if(action == GLFW_PRESS) {
+            wasdqe_direction[QE_KEYS] = WASDQE_E;
+        }
+        else if (action == GLFW_RELEASE) {
+            wasdqe_direction[QE_KEYS] = WASDQE_NULL;
+        }
     }
-    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        camera->decreaseVelocity();
+
+    if (key == GLFW_KEY_I) {
+        if(action == GLFW_PRESS) {
+            iPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            iPressed = false;
+        }
     }
+
+    if (key == GLFW_KEY_K) {
+        if(action == GLFW_PRESS) {
+            kPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            kPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_J) {
+        if(action == GLFW_PRESS) {
+            jPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            jPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_L) {
+        if(action == GLFW_PRESS) {
+            lPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            lPressed = false;
+        }
+    }
+
 }
 
 
@@ -365,11 +469,6 @@ int main(int argc, char *argv[]) {
 
     cout << "OpenGL" << glGetString(GL_VERSION) << endl;
 
-    //vector<vec3> points = {vec3(0), vec3(1, 1, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0)};
-    //Bezier bezier(points);
-    //float t = 0.2;
-    //cout << bezier.apply(t).x << " " << bezier.apply(t).y << " " << bezier.apply(t).z << endl;
-
     // initialize our OpenGL program
     Init();
 
@@ -386,8 +485,9 @@ int main(int argc, char *argv[]) {
 
         time = glfwGetTime();
         if(time - lastTime >= limitSPF) {
+          Update();
             Display();
-            Update();
+
             lastTime = time;
             glfwSwapBuffers(window);
         }

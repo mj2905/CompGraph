@@ -106,7 +106,7 @@ class MountainsRender {
             {
                 light_pos = glm::vec3(0.0f, 1, -1);
 
-                glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 0.8f);
+                glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1);
 
                 light_pos_id = glGetUniformLocation(program_id_, "light_pos");
 
@@ -213,26 +213,27 @@ class MountainsRender {
             GLuint draw = glGetUniformLocation(program_id_, "drawBlack");
             glUniform1i(draw, drawBlack);
 
-
             // bind textures
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture_id_);
 
-            // bind textures
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, grass_id_);
+            if(drawBlack == 1){
+                // bind textures
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, grass_id_);
 
-            // bind textures
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, rock_id_);
+                // bind textures
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_2D, rock_id_);
 
-            // bind textures
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D, snow_id_);
+                // bind textures
+                glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_2D, snow_id_);
 
-            // bind textures
-            glActiveTexture(GL_TEXTURE4);
-            glBindTexture(GL_TEXTURE_2D, sand_id_);
+                // bind textures
+                glActiveTexture(GL_TEXTURE4);
+                glBindTexture(GL_TEXTURE_2D, sand_id_);
+            }
 
             glm::vec2 offset = glm::vec2(offsetX, offsetY);
 

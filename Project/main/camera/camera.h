@@ -17,14 +17,10 @@ class Camera : public AbstractCamera {
 private:
 
     const float MIN_DISTANCE_POLE = 0.1f;
-    MultiTiles& multitiles;
+    const float increment = 0.05;
 
 
 public:
-
-    Camera(MultiTiles& multitiles) : multitiles(multitiles) {
-
-    }
 
     virtual ~Camera() {}
 
@@ -53,6 +49,10 @@ public:
 
     virtual void move(float x, float y, float z) override {
 
+        x *= increment;
+        y *= increment;
+        z *= increment;
+
         vec3 zpivot = normalize(center - position);
         vec3 xpivot = normalize(cross(up, zpivot));
 
@@ -61,8 +61,15 @@ public:
         position += zpivot * z + xpivot * x + up*y;
         center += xpivot * x + zpivot * z + up*y;
 
-            AbstractCamera::Init(position, center, up);
+        //cout << "position " << position.x << " " << position.y << " " << position.z << endl;
+        //cout << "center " << center.x << " " << center.y << " " << center.z << endl;
 
+        AbstractCamera::Init(position, center, up);
+
+    }
+
+    virtual small_t type_of_camera() override {
+      return CAMERA_TYPE_NORMAL ;
     }
 
     virtual void increaseVelocity() override {}
@@ -76,6 +83,8 @@ public:
 
     virtual void beginPitchAccel() override{}
     virtual void beginReversePitchAccel() override{}
+
+    virtual void update_height() override {}
 
 
 };
