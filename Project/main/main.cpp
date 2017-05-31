@@ -312,7 +312,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     //switching camera
     if (key == KEY_BEZIER_CAMERA && camera->type_of_camera() != CAMERA_TYPE_BEZIER) {
       delete camera;
-      camera = new BezierCamera({vec3(-1.9f, 2.25f, 0.65f), vec3(-2,0,-0.9), vec3(0,3.7,-2.3), vec3(1, 3.2, -4.5), vec3(2, 2, -6)}, {vec3(-1,0,-1), vec3(1,4,-2), vec3(2,2,-5)});
+      camera = new BezierCamera({vec3(-1.7f, 3, 4), vec3(-1.5f,1.85f,3.15f), vec3(0,3.7,-2.3), vec3(-2.5f, 2.5f, 1), vec3(-3.5f, 3.5f, -3.8f)},
+                                {vec3(-1,0,-1), vec3(-0.7f,1.6,-1.5), vec3(-0.25f, 1, 0.44f), vec3(-2,2.2f,-2.25f)});
       camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
     }
 
