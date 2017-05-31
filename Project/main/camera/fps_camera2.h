@@ -67,7 +67,10 @@ public:
     virtual void move(float x, float y, float z) override {
 
 
-      vec3 zpivot = normalize(center - position);
+      vec3 tmp = center - position;
+      tmp.y = 0;
+      vec3 zpivot = normalize(tmp);
+
       vec3 xpivot = normalize(cross(up, zpivot));
 
       vec3 oldPosition = position;
