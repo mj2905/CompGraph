@@ -315,7 +315,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == KEY_NORMAL_CAMERA && camera->type_of_camera() != CAMERA_TYPE_NORMAL) {
       delete camera;
       camera = new Camera();
-      camera->Init(vec3(0,3.7,-2.3), vec3(-0.25f, 1, 0.44f), vec3(0.0f, 1.0f, 0.0f));
+      camera->Init(vec3(-1.7f, 3, 4), vec3(-1,1.6,1.9), vec3(0.0f, 1.0f, 0.0f));
     }
 
 

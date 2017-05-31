@@ -270,7 +270,7 @@ class Water {
 
             glUniform1f(glGetUniformLocation(program_id_, "time"), glfwGetTime());
 
-            glm::vec3 rot_light_pos =  glm::mat3(glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/100-1, glm::vec3(0,1,0))) * light_pos;
+            glm::vec3 rot_light_pos =  glm::mat3(glm::rotate(IDENTITY_MATRIX, (float)glfwGetTime()/1000-1, glm::vec3(0,1,0))) * light_pos;
 
             glUniform3fv(light_pos_id, 1, glm::value_ptr(rot_light_pos));
 
