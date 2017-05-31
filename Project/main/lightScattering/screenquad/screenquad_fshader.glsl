@@ -14,7 +14,7 @@ uniform int RENDER_RES;
 
 uniform vec2 light_position;
 
-const float exposure = 0.0022f;
+const float exposure = 0.0024f;
 const float decay = 0.99;
 const float density = 0.5f;
 const float weight = 5.7f;
