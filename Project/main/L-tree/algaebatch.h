@@ -5,11 +5,13 @@
 #include "algae.h"
 #include "flexigrid.h"
 
+using namespace glm;
+
 class AlgaeBatch{
 private:
     GLuint texture_id_, program_id_, vertex_array_id_, vertex_buffer_object_position_;
     GLuint vertex_buffer_object_index_;
-    //vector<Algae> algaes;
+    vector<Algae> algaes;
     GLuint num_indices_;                    // number of vertices to render
     GLuint M_id_;                           // model matrix ID
     GLuint V_id_;                           // view matrix ID
@@ -29,7 +31,7 @@ private:
 
 public:
     void Init(GLuint texture, int algaeNumber){
-        program_id_= icg_helper::LoadShaders("algaebatch_vshader.glsl", "algaebatch_fshader.glsl");
+        /*program_id_= icg_helper::LoadShaders("algaebatch_vshader.glsl", "algaebatch_fshader.glsl");
 
         if(!program_id_) {
             exit(EXIT_FAILURE);
@@ -40,9 +42,9 @@ public:
         glGenVertexArrays(1, &vertex_array_id_);
         glBindVertexArray(vertex_array_id_);
 
-        glUniform1i(glGetUniformLocation(program_id_, "tex"), 0 /*GL_TEXTURE0*/);
-        texture_id_ = texture;
-
+        glUniform1i(glGetUniformLocation(program_id_, "tex"), 0 /*GL_TEXTURE0*///);
+        //texture_id_ = texture;
+/*
         M_id_ = glGetUniformLocation(program_id_, "model");
         V_id_ = glGetUniformLocation(program_id_, "view");
         P_id_ = glGetUniformLocation(program_id_, "projection");
@@ -68,13 +70,19 @@ public:
             ++baseIndex;
             a.Cleanup(); // we basically don't need it anymore
 
-        }
+        }*/
 
-        grid.Init(points, indices, normals, texture_id_);
+        //grid.Init(points, indices, normals, texture_id_);
 
         // to avoid the current object being polluted
-        glBindVertexArray(0);
-        glUseProgram(0);
+
+        GLuint p = 0;
+        glTextureSubImage2D(texture, 0,0,0,1,1,GL_RGB,GL_UNSIGNED_BYTE, &p);
+
+        cout << "p:" << p << endl;;
+
+        /*glBindVertexArray(0);
+        glUseProgram(0);*/
 
     }
 

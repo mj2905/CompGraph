@@ -38,7 +38,7 @@ public:
         * @param origin The starting point of the tree
         * @param texture_id The id of the texture
         */
-    void Init(GLuint depth, char axiom, vec3 origin, /*GLuint texture_id,*/ int index){
+    void Init(GLuint depth, char axiom, vec3 origin, GLuint texture_id, int index){
         generator.Seed(1);
         rand = generator.rand();
 
@@ -83,7 +83,7 @@ public:
             n.push_back(triangleNormals.at(i).z);
         }
 
-//        grid.Init(vertices_, indices, n/*, texture_id*/);
+        grid.Init(vertices_, indices, n, texture_id);
 
     }
 
@@ -557,11 +557,11 @@ public:
     }
 
 
-   /* void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
+    void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
               const glm::mat4 &view = IDENTITY_MATRIX,
               const glm::mat4 &projection = IDENTITY_MATRIX){
         grid.Draw(model, view, projection);
-    }*/
+    }
 
     vector<GLuint> getIndicesArray(){
         return indices;
