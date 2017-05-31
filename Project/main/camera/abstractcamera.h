@@ -75,8 +75,6 @@ public:
 
     virtual small_t type_of_camera() = 0;
 
-    virtual bool switch_from_camera(mat4& view_matrix) = 0;
-
     mat4 getView() {
         return view_matrix;
     }

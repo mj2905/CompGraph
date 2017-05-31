@@ -11,7 +11,7 @@
 
 using namespace glm;
 
-class fps_camera : public AbstractCamera {
+class FPSCamera : public AbstractCamera {
 
 private:
 
@@ -39,7 +39,7 @@ private:
     void update_fps_cam() {
 
       //if WASD was pressed before the current frame
-      if (wasd_direction[0] != WASD_NULL || wasd_direction[1] != WASD_NULL) {
+      if (wasdqe_direction[0] != WASDQE_NULL || wasdqe_direction[1] != WASDQE_NULL) {
 
         size_t factors;
         float angle_sin = sin(global_angle_x) * INCREMENT_STEPS;
@@ -52,17 +52,17 @@ private:
 
           angle_sin*=angle_sin;
 
-          if (wasd_direction[1] == WASD_D) {
+          if (wasdqe_direction[1] == WASDQE_D) {
             multitiles.decrementY(angle_sin);
           }
-          else if (wasd_direction[1] == WASD_A) {
+          else if (wasdqe_direction[1] == WASDQE_A) {
             multitiles.incrementY(angle_sin);
           }
 
-          if (wasd_direction[0] == WASD_W) {
+          if (wasdqe_direction[0] == WASDQE_W) {
             multitiles.incrementX(angle_sin);
           }
-          else if (wasd_direction[0] == WASD_S) {
+          else if (wasdqe_direction[0] == WASDQE_S) {
             multitiles.decrementX(angle_sin);
           }
         }
@@ -70,18 +70,18 @@ private:
         else {
           angle_sin*=angle_sin;
 
-          if (wasd_direction[1] == WASD_D) {
+          if (wasdqe_direction[1] == WASDQE_D) {
             multitiles.incrementY(angle_sin);
           }
-          else if (wasd_direction[1] == WASD_A) {
+          else if (wasdqe_direction[1] == WASDQE_A) {
             multitiles.decrementY(angle_sin);
           }
 
 
-          if (wasd_direction[0] == WASD_W) {
+          if (wasdqe_direction[0] == WASDQE_W) {
             multitiles.decrementX(angle_sin);
           }
-          else if (wasd_direction[0] == WASD_S) {
+          else if (wasdqe_direction[0] == WASDQE_S) {
             multitiles.incrementX(angle_sin);
           }
 
@@ -90,18 +90,18 @@ private:
         if (angle_cos <=0.0f) {
           angle_cos*=angle_cos;
 
-          if (wasd_direction[1] == WASD_D) {
+          if (wasdqe_direction[1] == WASDQE_D) {
             multitiles.incrementX(angle_cos);
           }
-          else if (wasd_direction[1] == WASD_A) {
+          else if (wasdqe_direction[1] == WASDQE_A) {
             multitiles.decrementX(angle_cos);
           }
 
 
-          if (wasd_direction[0] == WASD_W) {
+          if (wasdqe_direction[0] == WASDQE_W) {
             multitiles.incrementY(angle_cos);
           }
-          else if (wasd_direction[0] == WASD_S) {
+          else if (wasdqe_direction[0] == WASDQE_S) {
             multitiles.decrementY(angle_cos);
           }
         }
@@ -110,17 +110,17 @@ private:
         else {
           angle_cos*=angle_cos;
 
-          if (wasd_direction[1] == WASD_D) {
+          if (wasdqe_direction[1] == WASDQE_D) {
             multitiles.decrementX(angle_cos);
           }
-          else if (wasd_direction[1] == WASD_A) {
+          else if (wasdqe_direction[1] == WASDQE_A) {
             multitiles.incrementX(angle_cos);
           }
 
-          if (wasd_direction[0] == WASD_W) {
+          if (wasdqe_direction[0] == WASDQE_W) {
             multitiles.decrementY(angle_cos);
           }
-          else if (wasd_direction[0] == WASD_S) {
+          else if (wasdqe_direction[0] == WASDQE_S) {
             multitiles.incrementY(angle_cos);
           }
         }
@@ -134,9 +134,9 @@ private:
 
 public:
 
-    fps_camera(Terrain& terrain, MultiTiles& multitiles) : AbstractCamera(), terrain(terrain), multitiles(multitiles){}
+    FPSCamera(Terrain& terrain, MultiTiles& multitiles) : AbstractCamera(), terrain(terrain), multitiles(multitiles){}
 
-    virtual ~fps_camera() {}
+    virtual ~FPSCamera() {}
 
 
 
@@ -193,11 +193,6 @@ public:
 
     virtual small_t type_of_camera() override {
       return CAMERA_TYPE_FPS;
-    }
-
-    virtual bool switch_from_camera(mat4& view_matrix) override {
-      AbstractCamera::Init(view_matrix);
-      return true;
     }
 
     virtual void move(float x, float y, float z) override {}

@@ -13,7 +13,8 @@ const glm::vec3 MODEL_CENTER = glm::vec3(glm::translate(IDENTITY_MATRIX, glm::ve
 
 
 //camera switching
-#define KEY_NORMAL_CAMERA GLFW_KEY_1
+#define KEY_BEZIER_CAMERA GLFW_KEY_1
+#define KEY_NORMAL_CAMERA GLFW_KEY_0
 #define KEY_INERTIA_CAMERA GLFW_KEY_2
 #define KEY_FPS_CAMERA GLFW_KEY_3
 

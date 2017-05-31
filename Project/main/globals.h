@@ -26,14 +26,19 @@ bool switching_camera = false;
 // --------- FPS camera -------------
 #define INCREMENT_STEPS (0.028f)
 #define MULTITILES_INCREMENT (0.0001f)
-#define WASD_NULL (0)
-#define WASD_W (1)
-#define WASD_A (2)
-#define WASD_S (3)
-#define WASD_D (4)
+#define WASDQE_NULL (0)
+#define WASDQE_W (1)
+#define WASDQE_A (2)
+#define WASDQE_S (3)
+#define WASDQE_D (4)
+#define WASDQE_Q (5)
+#define WASDQE_E (6)
+#define WS_KEYS (0)
+#define AD_KEYS (1)
+#define QE_KEYS (2)
 GLfloat global_angle_x = 0.528f;
 
-uint8_t wasd_direction[2] = {WASD_NULL, WASD_NULL};
+uint8_t wasdqe_direction[2] = {WASDQE_NULL, WASDQE_NULL};
 // ----------------------------------
 
 

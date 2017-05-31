@@ -56,17 +56,15 @@ public:
         position += zpivot * z + xpivot * x + up*y;
         center += xpivot * x + zpivot * z + up*y;
 
-            AbstractCamera::Init(position, center, up);
+        cout << "position " << position.x << " " << position.y << " " << position.z << endl;
+        cout << "center " << center.x << " " << center.y << " " << center.z << endl;
+
+        AbstractCamera::Init(position, center, up);
 
     }
 
     virtual small_t type_of_camera() override {
       return CAMERA_TYPE_NORMAL ;
-    }
-
-    virtual bool switch_from_camera(mat4& view_matrix) override {
-      AbstractCamera::Init(view_matrix);
-      return true;
     }
 
     virtual void increaseVelocity() override {}
