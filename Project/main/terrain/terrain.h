@@ -12,7 +12,7 @@
 #include "../shadow/framebuffer_shadow.h"
 #include "../constants.h"
 #include "../lightScattering/lightscattering.h"
-#include "../L-tree/algaebatch.h"
+//#include "../L-tree/algaebatch.h"
 
 using namespace glm;
 
@@ -30,10 +30,11 @@ private:
     Shadow shadow;
     FrameBufferScattering fboScatter1, fboScatter2;
     ScreenQuad screenQuad;
+   // AlgaeBatch algaeBatch;
 
     const string skyboxTexture = "ely_cloudtop";
     GLsizei width;
-        GLsizei height;
+    GLsizei height;
 
 public:
     void Init(size_t width, size_t height, LightSource &light) {
@@ -58,6 +59,11 @@ public:
         this->width = width;
         this->height = height;
     }
+
+    GLuint getFrameBufferTerrainTextureID(){
+        return framebuffer_terrain.getTextureId();
+    }
+
 
     void changeTexture(const array<GLuint, 4>& textures) {
         mountainsCreator.changeTexture(textures);
@@ -89,42 +95,42 @@ public:
         reflect.Draw(offsetX, offsetY, true, model * rot, view, projection);
         framebuffer_reflect.Unbind();
 
-
+/*
         fboScatter1.Bind(true);{
             mountains.Draw(offsetX, offsetY, false, model, view, projection);
         }
         fboScatter1.Unbind();
-        fboScatter2.Bind();{
+        fboScatter2.Bind();{*/
             skybox.Draw(view * skyboxRot, projection);
             mountains.Draw(offsetX, offsetY, false, model, view, projection, 1);
             water.Draw(offsetX, offsetY, model, view, projection);
-        }
+        /*}
         fboScatter2.Unbind();
 
         screenQuad.Draw(model, view, projection);
-
+*/
 
     }
 
     float getCurrentHeight() {
-          GLfloat ret = 0.1f;
-          framebuffer_terrain.Bind();
+        GLfloat ret = 0.1f;
+        framebuffer_terrain.Bind();
         //  glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
-          glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
-          framebuffer_terrain.Unbind();
+        glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
+        framebuffer_terrain.Unbind();
 
-          return ret;
-        }
+        return ret;
+    }
 
-        float getCurrentHeight(GLuint width, GLuint height) {
-              GLfloat ret = 0.1f;
-              framebuffer_terrain.Bind();
-            //  glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
-              glReadPixels(width, height, 1, 1, GL_RED, GL_FLOAT, &ret);
-              framebuffer_terrain.Unbind();
+    float getCurrentHeight(GLuint width, GLuint height) {
+        GLfloat ret = 0.1f;
+        framebuffer_terrain.Bind();
+        //  glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
+        glReadPixels(width, height, 1, 1, GL_RED, GL_FLOAT, &ret);
+        framebuffer_terrain.Unbind();
 
-              return ret;
-            }
+        return ret;
+    }
 
     void Cleanup() {
         mountainsCreator.Cleanup();

@@ -31,7 +31,7 @@ struct Light {
 struct Material {
         glm::vec3 ka = glm::vec3(0.9f, 0.05f, 0.05f);
         glm::vec3 kd = glm::vec3(0.9f, 0.5f, 0.5f);
-        glm::vec3 ks = glm::vec3(0.8f, 0.8f, 0.8f);
+        glm::vec3 ks = glm::vec3(0.7f, 0.7f, 0.7f);
         float alpha = 60.0f;
 
         // pass material properties to the shaders
@@ -222,9 +222,9 @@ class Flexigrid: public Material, public Light {
 
 
 
-            float scale = 1.0;
+            float scale = 0.01;
             glm::mat4 M = model;
-            M = glm::translate(M, glm::vec3(0.0f, 0.0f, 0.5f));
+            //M = glm::translate(M, glm::vec3(0.0f, 0.0f, 0.5f));
            // M = glm::rotate(M, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
             M = glm::scale(M, glm::vec3(scale));
             // setup MVP

@@ -1,11 +1,10 @@
 #pragma once
-#include "icg_helper.h"
-#include <glm/gtc/type_ptr.hpp>
+
 #include <vector>
 #include "algae.h"
 #include "flexigrid.h"
+#include "../globals.h"
 
-using namespace glm;
 
 class AlgaeBatch{
 private:
@@ -17,6 +16,7 @@ private:
     GLuint V_id_;                           // view matrix ID
     GLuint P_id_;
     Flexigrid grid;
+    Terrain terrain;
 
 
     const int size_perm[100] = {
@@ -30,66 +30,28 @@ private:
     const char letter_perm[2] = {'A','B'};
 
 public:
-    void Init(GLuint texture, int algaeNumber){
-        /*program_id_= icg_helper::LoadShaders("algaebatch_vshader.glsl", "algaebatch_fshader.glsl");
+    void Init(Terrain &terrain, GLuint texture, int algaeNumber,
+              int window_width, int window_height){
 
-        if(!program_id_) {
-            exit(EXIT_FAILURE);
-        }
+        float p = 0;
+        p = terrain.getCurrentHeight(0,0);
 
-        glUseProgram(program_id_);
-
-        glGenVertexArrays(1, &vertex_array_id_);
-        glBindVertexArray(vertex_array_id_);
-
-        glUniform1i(glGetUniformLocation(program_id_, "tex"), 0 /*GL_TEXTURE0*///);
-        //texture_id_ = texture;
-/*
-        M_id_ = glGetUniformLocation(program_id_, "model");
-        V_id_ = glGetUniformLocation(program_id_, "view");
-        P_id_ = glGetUniformLocation(program_id_, "projection");
-
-        vector<GLfloat> points;
-        vector<GLfloat> normals;
-        vector<GLuint> indices;
-
-        int baseIndex = 0;
-
-        for(size_t i = 0; i < algaeNumber; ++i){
-            vec3 p = vec3(size_perm[(i+size_perm[(size_perm[(i+4)%100]+2*i)%100])%100],
-                    size_perm[(i+size_perm[(size_perm[(i-4)%100]-2*i)%100])%100],
-                    0);
-            Algae a;
-            a.Init((size_perm[i]%8),letter_perm[(i*i-1)%2],p,baseIndex);
-
-            points.push_back(*(a.getVertices().data()));
-            normals.push_back(*(a.getNormals().data()));
-            indices.push_back(*(a.getIndicesArray().data()));
-            baseIndex = a.getIndex();
-
-            ++baseIndex;
-            a.Cleanup(); // we basically don't need it anymore
-
-        }*/
-
-        //grid.Init(points, indices, normals, texture_id_);
-
-        // to avoid the current object being polluted
-
-        GLuint p = 0;
-        glTextureSubImage2D(texture, 0,0,0,1,1,GL_RGB,GL_UNSIGNED_BYTE, &p);
-
-        cout << "p:" << p << endl;;
-
-        /*glBindVertexArray(0);
-        glUseProgram(0);*/
-
+        Algae a;
+        float x = -15;
+        float y = 50;
+        p = terrain.getCurrentHeight(x,y);
+        cout << p << endl;
+        a.Init(8, 'A', vec3(x,40,y), texture, 0);
+        algaes.push_back(a);
     }
 
      void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                const glm::mat4 &view = IDENTITY_MATRIX,
                const glm::mat4 &projection = IDENTITY_MATRIX){
-         grid.Draw(model, view, projection);
+         for(auto a: algaes){
+             a.Draw(model, view, projection);
+         }
+         //grid.Draw(model, view, projection);
      }
 
 };

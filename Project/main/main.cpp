@@ -26,6 +26,7 @@
 #include "camera/fps_camera2.h"
 
 #include "shadowmap/shadowmap.h"
+#include "L-tree/algaebatch.h"
 
 constexpr float NB_FPS = 60.0;
 
@@ -41,6 +42,8 @@ mat4 projection_matrix;
 
 LightSource light;
 AbstractCamera* camera;
+
+AlgaeBatch algaes;
 
 
 Terrain* terrain;
@@ -116,18 +119,6 @@ void Init() {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    // TODO 3: once you use the trackball, you should use a view matrix that
-    // looks straight down the -z axis. Otherwise the trackball's rotation gets
-    // applied in a rotated coordinate frame.
-    // uncomment lower line to achieve this.
-    /*view_matrix = LookAt(vec3(2.0f, 2.0f, 2.0f),
-                         vec3(0.0f, 0.0f, 0.0f),
-                         vec3(0.0f, 1.0f, 0.0f));*/
-    //view_matrix = translate(IDENTITY_MATRIX, vec3(0.0f, -2.0f, distance_camera)) * glm::rotate(IDENTITY_MATRIX, (float)M_PI/4.0f, vec3(1, 0, 0));
-
-
-
-
 
     quad_model_matrix = glm::scale(IDENTITY_MATRIX, vec3(5,3, 5));
 
@@ -141,6 +132,8 @@ void Init() {
     //camera = new InertiaCamera();
     camera = new InertiaCamera();
     camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
+
+    algaes.Init((*terrain),(*terrain).getFrameBufferTerrainTextureID(),10, window_width, window_height);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -170,6 +163,7 @@ void Display() {
     //shadowmap.unbind();
 
     multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
+    algaes.Draw(quad_model_matrix, camera->getView(), projection_matrix);
 }
 
 bool iPressed = false, kPressed = false, jPressed = false, lPressed = false;
