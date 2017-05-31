@@ -194,6 +194,8 @@ public:
 
     virtual void decreaseVelocity() override {}
 
+    virtual void update_height() override {}
+
 
 
 };

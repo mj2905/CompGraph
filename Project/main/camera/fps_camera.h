@@ -206,6 +206,7 @@ public:
     virtual void beginReverseYawAccel() override{}
     virtual void beginPitchAccel() override{}
     virtual void beginReversePitchAccel() override{}
+    virtual void update_height() override {}
     //virtual void beginRollAccel() = 0;
 
 

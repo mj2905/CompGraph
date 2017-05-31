@@ -14,24 +14,28 @@ class AbstractCamera {
 
 private:
 
-    mat4 view_matrix;
 
-    mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
-        vec3 z_cam = normalize(eye - center);
-        vec3 x_cam = normalize(cross(up, z_cam));
-        vec3 y_cam = cross(z_cam, x_cam);
 
-        mat3 R(x_cam, y_cam, z_cam);
-        R = transpose(R);
 
-        mat4 look_at(vec4(R[0], 0.0f),
-                     vec4(R[1], 0.0f),
-                     vec4(R[2], 0.0f),
-                     vec4(-R * (eye), 1.0f));
-        return look_at;
-    }
+
 
 protected:
+  mat4 view_matrix;
+
+  mat4 LookAt(vec3 eye, vec3 center, vec3 up) {
+      vec3 z_cam = normalize(eye - center);
+      vec3 x_cam = normalize(cross(up, z_cam));
+      vec3 y_cam = cross(z_cam, x_cam);
+
+      mat3 R(x_cam, y_cam, z_cam);
+      R = transpose(R);
+
+      mat4 look_at(vec4(R[0], 0.0f),
+                   vec4(R[1], 0.0f),
+                   vec4(R[2], 0.0f),
+                   vec4(-R * (eye), 1.0f));
+      return look_at;
+    }
 
     vec3 up;
     vec3 position;
@@ -78,4 +82,6 @@ public:
     mat4 getView() {
         return view_matrix;
     }
+
+    virtual void update_height() = 0;
 };
