@@ -77,7 +77,7 @@ public:
 
 
 
-        mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, 2.8f, vec3(0,1,0));
+        mat4 skyboxRot = glm::rotate(IDENTITY_MATRIX, 2.8f + (float)glfwGetTime()/100, vec3(0,1,0));
         fboScatter1.Clear();
         fboScatter2.Clear();
 
