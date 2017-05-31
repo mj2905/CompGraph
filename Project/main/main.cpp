@@ -180,16 +180,20 @@ void Update() {
 
     if(uPressed and not iPressed){
         multitiles.incrementX(0.01);
+        camera->update_height();
     }
     if(iPressed and not uPressed){
         multitiles.decrementX(0.01);
+        camera->update_height();
     }
 
     if(oPressed and not pPressed){
         multitiles.incrementY(0.01);
+        camera->update_height();
     }
     if(pPressed and not oPressed){
         multitiles.decrementY(0.01);
+        camera->update_height();
     }
 
     float increment = 0.05f;

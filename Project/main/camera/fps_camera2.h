@@ -66,9 +66,8 @@ public:
 
     virtual void move(float x, float y, float z) override {
 
-      vec3 center_noy = normalize(vec3(center.x, 0.0, center.z));
 
-      vec3 zpivot = normalize(center_noy - position);
+      vec3 zpivot = normalize(center - position);
       vec3 xpivot = normalize(cross(up, zpivot));
 
       vec3 oldPosition = position;
@@ -76,8 +75,8 @@ public:
       position += zpivot * z + xpivot * x;
       center += xpivot * x + zpivot * z + up*y;
 
-      clamp(-4.5, 4.5, position[0]);
-      clamp(-4.5, 4.5, position[2]);
+      clamp(-4.75, 4.75, position[0]);
+      clamp(-4.75, 4.75, position[2]);
 
       const GLfloat x_percent =  ((position.x + 5.0) / 10.0);
       const GLfloat z_percent = 1.0 - ((position.z + 5.0) / 10.0);
@@ -89,9 +88,6 @@ public:
       //cout << "center " << center.x << " " << center.y << " " << center.z << endl;
 
       GLfloat height_r = terrain.getCurrentHeight(fb_width, fb_height)*3 + 0.37;
-      cout << "height" << height_r << endl;
-
-
 
 
       position.y = height_r;
@@ -114,6 +110,23 @@ public:
 
     virtual small_t type_of_camera() override{
       return CAMERA_TYPE_FPS;
+    }
+    virtual void update_height() override {
+
+      const GLfloat x_percent =  ((position.x + 5.0) / 10.0);
+      const GLfloat z_percent = 1.0 - ((position.z + 5.0) / 10.0);
+
+      const GLuint fb_width  = x_percent * window_width;
+      const GLuint fb_height = z_percent * window_height;
+
+      //cout << "position " << position.x << " " << position.y << " " << position.z << endl;
+      //cout << "center " << center.x << " " << center.y << " " << center.z << endl;
+
+      GLfloat height_r = terrain.getCurrentHeight(fb_width, fb_height)*3 + 0.37;
+
+      position.y = height_r;
+      view_matrix = LookAt(position, center, up);
+      global_view_matrix = LookAt(position, center, up);
     }
 
 

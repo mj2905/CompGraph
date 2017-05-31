@@ -79,5 +79,7 @@ public:
     virtual void beginPitchAccel() override{}
     virtual void beginReversePitchAccel() override{}
 
+    virtual void update_height() override {}
+
 
 };

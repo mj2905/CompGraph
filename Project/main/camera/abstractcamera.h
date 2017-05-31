@@ -82,4 +82,6 @@ public:
     mat4 getView() {
         return view_matrix;
     }
+
+    virtual void update_height() = 0;
 };
