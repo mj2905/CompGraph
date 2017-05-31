@@ -208,9 +208,11 @@ camera->move(0, 0, increment);
 
     if(wasdqe_direction[0] == WASDQE_W) {
         camera->beginFwAccel();
+        camera->increaseVelocity();
     }
     else if(wasdqe_direction[0] == WASDQE_S) {
         camera->beginBwAccel();
+        camera->decreaseVelocity();
     }
     if(wasdqe_direction[1] == WASDQE_A) {
         camera->beginPitchAccel();
@@ -457,13 +459,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         else if(action == GLFW_RELEASE) {
             pPressed = false;
         }
-    }
-
-    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-      camera->increaseVelocity();
-    }
-    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-      camera->decreaseVelocity();
     }
 
 }
