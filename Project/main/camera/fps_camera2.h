@@ -96,7 +96,7 @@ public:
 
       GLfloat height_r = terrain.getCurrentHeight(fb_width, fb_height)*3 + 0.37;
 
-
+      clamp(WATER_HEIGHT, 1000.0, height_r);
       position.y = height_r;
       view_matrix = LookAt(position, center, up);
       global_view_matrix = LookAt(position, center, up);
@@ -130,6 +130,7 @@ public:
       //cout << "center " << center.x << " " << center.y << " " << center.z << endl;
 
       GLfloat height_r = terrain.getCurrentHeight(fb_width, fb_height)*3 + 0.37;
+      clamp(WATER_HEIGHT, 1000.0, height_r);
 
       position.y = height_r;
       view_matrix = LookAt(position, center, up);
