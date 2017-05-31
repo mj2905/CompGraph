@@ -170,55 +170,45 @@ void Display() {
     multitiles.Draw(quad_model_matrix, camera->getView(), projection_matrix,1);
 }
 
-bool upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
-bool uPressed = false, iPressed = false, oPressed = false, pPressed = false;
+bool iPressed = false, kPressed = false, jPressed = false, lPressed = false;
 
 void Update() {
     //multitiles.incrementY(); //to move with the camera
 
-    if(uPressed and not iPressed){
-        multitiles.incrementX(0.01);
-    }
-    if(iPressed and not uPressed){
-        multitiles.decrementX(0.01);
-    }
-
-    if(oPressed and not pPressed){
+    if(iPressed and not kPressed){
         multitiles.incrementY(0.01);
     }
-    if(pPressed and not oPressed){
+    if(kPressed and not iPressed){
         multitiles.decrementY(0.01);
     }
 
-    float increment = 0.05f;
+    if(jPressed and not lPressed){
+        multitiles.decrementX(0.01);
+    }
+    if(lPressed and not jPressed){
+        multitiles.incrementX(0.01);
+    }
 
-    if(upPressed and not downPressed) {
-camera->move(0, 0, increment);
-    }
-    if(downPressed and not upPressed) {
-        camera->move(0, 0, -increment);
-    }
-    if(leftPressed and not rightPressed) {
-        camera->move(increment, 0, 0);
-    }
-    if(rightPressed and not leftPressed) {
-        camera->move(-increment, 0, 0);
-    }
+    float increment = 0.05f;
 
 
     if(wasdqe_direction[0] == WASDQE_W) {
         camera->beginFwAccel();
         camera->increaseVelocity();
+        camera->move(0, 0, increment);
     }
     else if(wasdqe_direction[0] == WASDQE_S) {
         camera->beginBwAccel();
         camera->decreaseVelocity();
+        camera->move(0, 0, -increment);
     }
     if(wasdqe_direction[1] == WASDQE_A) {
         camera->beginPitchAccel();
+        camera->move(increment, 0, 0);
     }
     else if(wasdqe_direction[1] == WASDQE_D) {
         camera->beginReversePitchAccel();
+        camera->move(-increment, 0, 0);
     }
     if(wasdqe_direction[2] == WASDQE_Q) {
         camera->beginYawAccel();
@@ -278,7 +268,6 @@ void MousePos(GLFWwindow* window, double x, double y) {
 // Gets called when the windows/framebuffer is resized.
 void SetupProjection(GLFWwindow* window, int width, int height) {
 
-    bool modified = window_width != width || window_height != height;
     window_width = width;
     window_height = height;
 
@@ -291,10 +280,8 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
     projection_matrix = PerspectiveProjection(45.0f,
                                               (GLfloat)window_width / window_height,
                                               0.1f, 100.0f);
-    if(modified) {
-        multitiles.Cleanup();
-        multitiles.Init(width, height, light);
-    }
+    multitiles.Cleanup();
+    multitiles.Init(width, height, light);
 
 }
 
@@ -389,52 +376,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
 
-
-    if (key == GLFW_KEY_UP) {
-      if(action == GLFW_PRESS) {
-        upPressed = true;
-      }
-      else if(action == GLFW_RELEASE) {
-        upPressed = false;
-      }
-    }
-
-    if (key == GLFW_KEY_DOWN) {
-      if(action == GLFW_PRESS) {
-        downPressed = true;
-      }
-      else if(action == GLFW_RELEASE) {
-        downPressed = false;
-      }
-    }
-
-    if (key == GLFW_KEY_LEFT) {
-      if(action == GLFW_PRESS) {
-        leftPressed = true;
-      }
-      else if(action == GLFW_RELEASE) {
-        leftPressed = false;
-      }
-    }
-
-    if (key == GLFW_KEY_RIGHT) {
-      if(action == GLFW_PRESS) {
-        rightPressed = true;
-      }
-      else if(action == GLFW_RELEASE) {
-        rightPressed = false;
-      }
-    }
-
-    if (key == GLFW_KEY_U) {
-        if(action == GLFW_PRESS) {
-            uPressed = true;
-        }
-        else if(action == GLFW_RELEASE) {
-            uPressed = false;
-        }
-    }
-
     if (key == GLFW_KEY_I) {
         if(action == GLFW_PRESS) {
             iPressed = true;
@@ -444,21 +385,30 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
 
-    if (key == GLFW_KEY_O) {
+    if (key == GLFW_KEY_K) {
         if(action == GLFW_PRESS) {
-            oPressed = true;
+            kPressed = true;
         }
         else if(action == GLFW_RELEASE) {
-            oPressed = false;
+            kPressed = false;
         }
     }
 
-    if (key == GLFW_KEY_P) {
+    if (key == GLFW_KEY_J) {
         if(action == GLFW_PRESS) {
-            pPressed = true;
+            jPressed = true;
         }
         else if(action == GLFW_RELEASE) {
-            pPressed = false;
+            jPressed = false;
+        }
+    }
+
+    if (key == GLFW_KEY_L) {
+        if(action == GLFW_PRESS) {
+            lPressed = true;
+        }
+        else if(action == GLFW_RELEASE) {
+            lPressed = false;
         }
     }
 
