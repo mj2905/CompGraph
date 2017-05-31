@@ -244,6 +244,8 @@ void MousePos(GLFWwindow* window, double x, double y) {
 
 // Gets called when the windows/framebuffer is resized.
 void SetupProjection(GLFWwindow* window, int width, int height) {
+
+    bool modified = window_width != width || window_height != height;
     window_width = width;
     window_height = height;
 
@@ -256,13 +258,11 @@ void SetupProjection(GLFWwindow* window, int width, int height) {
     projection_matrix = PerspectiveProjection(45.0f,
                                               (GLfloat)window_width / window_height,
                                               0.1f, 100.0f);
+    if(modified) {
+        multitiles.Cleanup();
+        multitiles.Init(width, height, light);
+    }
 
-    multitiles.Cleanup();
-    multitiles.Init(width, height, light);
-
-    //GLfloat top = 1.0f;
-    //GLfloat right = (GLfloat)window_width / window_height * top;
-    //projection_matrix = OrthographicProjection(-right, right, -top, top, -10.0, 10.0f);
 }
 
 void ErrorCallback(int error, const char* description) {
@@ -452,11 +452,6 @@ int main(int argc, char *argv[]) {
     }
 
     cout << "OpenGL" << glGetString(GL_VERSION) << endl;
-
-    //vector<vec3> points = {vec3(0), vec3(1, 1, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0)};
-    //Bezier bezier(points);
-    //float t = 0.2;
-    //cout << bezier.apply(t).x << " " << bezier.apply(t).y << " " << bezier.apply(t).z << endl;
 
     // initialize our OpenGL program
     Init();
