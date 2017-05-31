@@ -139,7 +139,7 @@ void Init() {
     terrain = multitiles.getTerrain();
 
     //camera = new InertiaCamera();
-    camera = new fps_camera2(*terrain);
+    camera = new InertiaCamera();
     camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -194,26 +194,24 @@ void Update() {
         multitiles.incrementX(0.01);
     }
 
-    float increment = 0.05f;
-
 
     if(wasdqe_direction[0] == WASDQE_W) {
         camera->beginFwAccel();
         camera->increaseVelocity();
-        camera->move(0, 0, increment);
+        camera->move(0, 0, 1);
     }
     else if(wasdqe_direction[0] == WASDQE_S) {
         camera->beginBwAccel();
         camera->decreaseVelocity();
-        camera->move(0, 0, -increment);
+        camera->move(0, 0, -1);
     }
     if(wasdqe_direction[1] == WASDQE_A) {
         camera->beginPitchAccel();
-        camera->move(increment, 0, 0);
+        camera->move(1, 0, 0);
     }
     else if(wasdqe_direction[1] == WASDQE_D) {
         camera->beginReversePitchAccel();
-        camera->move(-increment, 0, 0);
+        camera->move(-1, 0, 0);
     }
     if(wasdqe_direction[2] == WASDQE_Q) {
         camera->beginYawAccel();
@@ -304,8 +302,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     //switching camera
     if (key == KEY_BEZIER_CAMERA && camera->type_of_camera() != CAMERA_TYPE_BEZIER) {
       delete camera;
-      camera = new BezierCamera({vec3(-1.7f, 3, 4), vec3(-1.5f,1.85f,3.15f), vec3(0,3.7,-2.3), vec3(-2.5f, 2.5f, 1), vec3(-3.5f, 3.5f, -3.8f)},
-                                {vec3(-1,0,-1), vec3(-0.7f,1.6,-1.5), vec3(-0.25f, 1, 0.44f), vec3(-2,2.2f,-2.25f)});
+      camera = new BezierCamera({vec3(-1.7f, 3, 4), vec3(-1.5f,1.85f,3.15f), vec3(-4, 3.7, -2.4), vec3(-2.5f, 2.5f, 1), vec3(-3.5f, 3.5f, -3.8f)},
+                                {vec3(-1,1.6,1.9), vec3(-0.7f,1.6,-1.5), vec3(-1.3, 2, -1), vec3(-2,2.2f,-2.25f)});
       camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
     }
 
@@ -316,13 +314,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key == KEY_FPS_CAMERA && camera->type_of_camera() != CAMERA_TYPE_FPS) {
       delete camera;
-      camera = new FPSCamera(*terrain, multitiles);
+      camera = new FPSCamera2(*terrain);
       camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
+      camera->update_height();
     }
     else if (key == KEY_NORMAL_CAMERA && camera->type_of_camera() != CAMERA_TYPE_NORMAL) {
       delete camera;
       camera = new Camera();
-      camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
+      camera->Init(vec3(0,3.7,-2.3), vec3(-0.25f, 1, 0.44f), vec3(0.0f, 1.0f, 0.0f));
     }
 
 

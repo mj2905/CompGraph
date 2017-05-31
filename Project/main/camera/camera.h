@@ -17,6 +17,7 @@ class Camera : public AbstractCamera {
 private:
 
     const float MIN_DISTANCE_POLE = 0.1f;
+    const float increment = 0.05;
 
 
 public:
@@ -48,6 +49,10 @@ public:
 
     virtual void move(float x, float y, float z) override {
 
+        x *= increment;
+        y *= increment;
+        z *= increment;
+
         vec3 zpivot = normalize(center - position);
         vec3 xpivot = normalize(cross(up, zpivot));
 
@@ -55,6 +60,9 @@ public:
 
         position += zpivot * z + xpivot * x + up*y;
         center += xpivot * x + zpivot * z + up*y;
+
+        //cout << "position " << position.x << " " << position.y << " " << position.z << endl;
+        //cout << "center " << center.x << " " << center.y << " " << center.z << endl;
 
         AbstractCamera::Init(position, center, up);
 

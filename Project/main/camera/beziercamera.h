@@ -18,7 +18,7 @@ private:
     Bezier camera_aim;
     float time;
 
-    float velocity = 0.0001;
+    float velocity = 0.0005;
     int way = 1;
 
     const float MIN_DISTANCE_POLE = 0.1f;

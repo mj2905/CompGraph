@@ -14,12 +14,13 @@
 
 using namespace glm;
 
-class fps_camera2 : public AbstractCamera {
+class FPSCamera2 : public AbstractCamera {
 
 private:
 
     const float MIN_DISTANCE_POLE = 0.1f;
     Terrain& terrain;
+    const float increment = 0.01;
 
 
     inline void clamp(GLfloat min, GLfloat max, GLfloat& val) {
@@ -36,9 +37,9 @@ private:
 
 public:
 
-    fps_camera2(Terrain& terrain): AbstractCamera(), terrain(terrain) {}
+    FPSCamera2(Terrain& terrain): AbstractCamera(), terrain(terrain) {}
 
-    virtual ~fps_camera2() {}
+    virtual ~FPSCamera2() {}
 
     virtual void animate() override {}
 
@@ -66,6 +67,9 @@ public:
 
     virtual void move(float x, float y, float z) override {
 
+        x *= increment;
+        y *= increment;
+        z *= increment;
 
       vec3 tmp = center - position;
       tmp.y = 0;
