@@ -23,6 +23,7 @@
 #include "camera/camera.h"
 #include "camera/inertiacamera.h"
 #include "camera/fps_camera.h"
+#include "camera/fps_camera2.h"
 
 #include "shadowmap/shadowmap.h"
 
@@ -137,7 +138,8 @@ void Init() {
 
     terrain = multitiles.getTerrain();
 
-    camera = new InertiaCamera();
+    //camera = new InertiaCamera();
+    camera = new fps_camera2(*terrain);
     camera->Init(vec3(-1.7, 3, 4), vec3(-1, 1.6, 1.9), vec3(0.0f, 1.0f, 0.0f));
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

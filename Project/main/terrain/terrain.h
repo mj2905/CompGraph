@@ -115,6 +115,16 @@ public:
           return ret;
         }
 
+        float getCurrentHeight(GLuint width, GLuint height) {
+              GLfloat ret = 0.1f;
+              framebuffer_terrain.Bind();
+            //  glReadPixels(width/2, height/2, 1, 1, GL_RED, GL_FLOAT, &ret);
+              glReadPixels(width, height, 1, 1, GL_RED, GL_FLOAT, &ret);
+              framebuffer_terrain.Unbind();
+
+              return ret;
+            }
+
     void Cleanup() {
         mountainsCreator.Cleanup();
         mountains.Cleanup();
